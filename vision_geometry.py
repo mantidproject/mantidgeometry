@@ -122,10 +122,10 @@ def main():
         x_coord = sample_elastic_distance * math.cos(math.radians(elastic_angle[elastic_index]))
         y_coord = sample_elastic_distance * math.sin(math.radians(elastic_angle[elastic_index]))
 
-        #det.addDetector(x_coord, y_coord, z_coord, 90.0, 90.0, elastic_angle[elastic_index], bank_name, "eightpack-elastic")
+        det.addDetector(x_coord, y_coord, z_coord, -90.0, 0, 0., bank_name, "eightpack-elastic")
 #        det.addDetector(sample_elastic_distance, 90.0, elastic_angle[elastic_index], 0, 0, 0,
 #                        bank_name, "eightpack-elastic", True)
-        det.addDetector(name=bank_name, comp_type="eightpack-elastic")
+        #det.addDetector(name=bank_name, comp_type="eightpack-elastic")
 
         idlist.append(elastic_bank_start[elastic_index])
         idlist.append(elastic_bank_start[elastic_index]+2047)
