@@ -70,7 +70,7 @@ def main():
     for k in range(BACKSCATTERING_NTUBES):
         id_start = 26624+(256*k)
         id_end = 26624 + (256*k) + 255
-        angle = 2.25 + 4.5*k
+        angle = -(2.25 + 4.5*k)
         bankid = 21 + k
         bank_name = "bank%d" % bankid
 
@@ -122,10 +122,7 @@ def main():
         x_coord = sample_elastic_distance * math.cos(math.radians(elastic_angle[elastic_index]))
         y_coord = sample_elastic_distance * math.sin(math.radians(elastic_angle[elastic_index]))
 
-        det.addDetector(x_coord, y_coord, z_coord, -90.0, 0, 0., bank_name, "eightpack-elastic")
-#        det.addDetector(sample_elastic_distance, 90.0, elastic_angle[elastic_index], 0, 0, 0,
-#                        bank_name, "eightpack-elastic", True)
-        #det.addDetector(name=bank_name, comp_type="eightpack-elastic")
+        det.addDetector(x_coord, y_coord, z_coord, -90.0, 0, 0., bank_name, "eightpack-elastic", facingSample=True)
 
         idlist.append(elastic_bank_start[elastic_index])
         idlist.append(elastic_bank_start[elastic_index]+2047)
@@ -139,29 +136,43 @@ def main():
     # Inelastic
     inelastic_banklist = [1,2,4,5,7,8,10,11,13,14,16,17,19,20]
     inelastic_bank_start=[0,1024,4096,5120,8192,9216,12288,13312,16384,17408,20480,21504,24576,25600]
-    inelastic_angle = [22.5,-22.5,-67.5,-112.5,-157.5,157.5]
+    inelastic_angle = [45.0,45.0,0.0,0.0,-45.0,-45.0,-90.0,-90.0,-135.0,-135.0,180.0,180.0,135.0,135.0]
+
+    sample_inelastic_distance = 0.5174
+
+    det.addComponent("inelastic", "inelastic")
+    handle = det.makeTypeElement("inelastic")
+
+    idlist = []
+    inelastic_index = 0
+
+    for i in inelastic_banklist:
+        bank_name = "bank%d" % i
+        bank_comp = det.addComponent(bank_name, root=handle, blank_location=True)
+#        location_element = le.SubElement(bank_comp, "location")
+#        le.SubElement(location_element, "rot", **{"val":"90", "axis-x":"0",
+#                                              "axis-y":"0", "axis-z":"1"})
+
+        if inelastic_index % 2 == 0:
+            # Facing Downstream
+            z_coord = 0.01
+        else:
+            # Facing to Moderator
+            z_coord = -0.01
+
+        x_coord = sample_inelastic_distance * math.cos(math.radians(inelastic_angle[inelastic_index]))
+        y_coord = sample_inelastic_distance * math.sin(math.radians(inelastic_angle[inelastic_index]))
+
+        det.addDetector(-x_coord, y_coord, z_coord, 0, 0, inelastic_angle[inelastic_index]+90, bank_name, "eightpack-inelastic")
+
+        idlist.append(inelastic_bank_start[inelastic_index])
+        idlist.append(inelastic_bank_start[inelastic_index]+1023)
+        idlist.append(None)
+
+        inelastic_index += 1
 
 
-#    det.addComponent("inelastic", "inelastic")
-#    handle = det.makeTypeElement("inelastic")
-#
-#    idlist = []
-#    inelastic_index = 0
-#
-#    for i in inelastic_banklist:
-#        bank_name = "bank%d" % i
-#        det.addComponent(bank_name, root=handle)
-#
-#        det.addDetector(0.5, 0.0, 0.0, 90.0, inelastic_index*15, 0, bank_name, "eightpack-inelastic")
-#
-#        idlist.append(inelastic_bank_start[inelastic_index])
-#        idlist.append(inelastic_bank_start[inelastic_index]+1023)
-#        idlist.append(None)
-#
-#        inelastic_index += 1
-#
-#
-#    det.addDetectorIds("inelastic", idlist)
+    det.addDetectorIds("inelastic", idlist)
 
 
     # 8 packs
@@ -193,7 +204,7 @@ def main():
     # PIXELS
     
     det.addComment("PIXEL FOR INELASTIC TUBES")
-    det.addCylinderPixel("pixel-inelastic-tube", (0.0, 0.0, 0.0), (0.0, 1.0, 0.0), 
+    det.addCylinderPixel("pixel-inelastic-tube", (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
                          (INELASTIC_TUBE_WIDTH/2.0), 
                          (INELASTIC_TUBE_LENGTH/INELASTIC_TUBE_NPIXELS))
     
@@ -203,7 +214,7 @@ def main():
                          (BS_ELASTIC_LONG_TUBE_LENGTH/BS_ELASTIC_LONG_TUBE_NPIXELS))
 
     det.addComment("PIXEL FOR BACKSCATTERING ELASTIC TUBES (SHORT)")
-    det.addCylinderPixel("pixel-bs-elastic-short-tube", (0.0, 0.0, 0.0), (0.0, 0.0, 1.0),
+    det.addCylinderPixel("pixel-bs-elastic-short-tube", (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
                          (BS_ELASTIC_SHORT_TUBE_WIDTH/2.0), 
                          (BS_ELASTIC_SHORT_TUBE_LENGTH/BS_ELASTIC_SHORT_TUBE_NPIXELS))
     

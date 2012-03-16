@@ -198,7 +198,7 @@ class MantidGeom:
     def makeIdListElement(self, name):
         return le.SubElement(self.__root, "idlist", idname=name)
 
-    def addDetector(self, x, y, z, rot_x, rot_y, rot_z, name, comp_type, usepolar=None):
+    def addDetector(self, x, y, z, rot_x, rot_y, rot_z, name, comp_type, usepolar=None, facingSample=False):
         """
         Add a detector in a type element for the XML definition.
         """
@@ -206,9 +206,9 @@ class MantidGeom:
         comp_element = le.SubElement(type_element, "component", type=comp_type)
         
         if usepolar is not None:
-            self.addLocationPolar(comp_element, x, y, z)
+            self.addLocationPolar(comp_element, x, y, z, facingSample=facingSample)
         else:
-           self.addLocation(comp_element, x, y, z, rot_x, rot_y, rot_z)
+           self.addLocation(comp_element, x, y, z, rot_x, rot_y, rot_z, facingSample=facingSample)
 
     def addSingleDetector(self, root, x, y, z, rot_x, rot_y, rot_z, name=None,
                           id=None, usepolar=None):
@@ -224,7 +224,7 @@ class MantidGeom:
         else:
             self.addLocation(root, x, y, z, rot_x, rot_y, rot_z, name)
 
-    def addLocation(self, root, x, y, z, rot_x, rot_y, rot_z, name=None):
+    def addLocation(self, root, x, y, z, rot_x, rot_y, rot_z, name=None, facingSample=False):
         """
         Add a location element to a specific parent node given by root.
         """
@@ -248,6 +248,9 @@ class MantidGeom:
         if rot_z is not None:
             le.SubElement(r2, "rot", **{"val":str(rot_z), "axis-x":"0",
                                         "axis-y":"0", "axis-z":"1"})
+
+        if facingSample:
+            le.SubElement(pos_loc, "facing", x="0.0", y="0.0", z="0.0")
 
     def addLocationPolar(self, root, r, theta, phi, name=None):
         if name is not None:
@@ -365,7 +368,7 @@ class MantidGeom:
         for i in range(num_tubes):
             tube_name = "tube%d" % (i + 1)
             x = pack_start + (i * effective_tube_width)
-            le.SubElement(component, "location", name=tube_name, x=str(x))
+            location_element = le.SubElement(component, "location", name=tube_name, x=str(x))
 
     def addPixelatedTube(self, name, num_pixels, tube_height,
                          type_name="pixel"):
