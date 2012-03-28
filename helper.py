@@ -198,7 +198,8 @@ class MantidGeom:
     def makeIdListElement(self, name):
         return le.SubElement(self.__root, "idlist", idname=name)
 
-    def addDetector(self, x, y, z, rot_x, rot_y, rot_z, name, comp_type, usepolar=None, facingSample=False):
+    def addDetector(self, x, y, z, rot_x, rot_y, rot_z, name, comp_type, usepolar=None, facingSample=False,
+                    neutronic=False, nx=None,  ny=None, nz=None):
         """
         Add a detector in a type element for the XML definition.
         """
@@ -208,7 +209,9 @@ class MantidGeom:
         if usepolar is not None:
             self.addLocationPolar(comp_element, x, y, z, facingSample=facingSample)
         else:
-           self.addLocation(comp_element, x, y, z, rot_x, rot_y, rot_z, facingSample=facingSample)
+            self.addLocation(comp_element, x, y, z, rot_x, rot_y, rot_z, facingSample=facingSample,
+                neutronic=neutronic, nx=nx, ny=ny, nz=nz)
+
 
     def addSingleDetector(self, root, x, y, z, rot_x, rot_y, rot_z, name=None,
                           id=None, usepolar=None):
@@ -224,7 +227,8 @@ class MantidGeom:
         else:
             self.addLocation(root, x, y, z, rot_x, rot_y, rot_z, name)
 
-    def addLocation(self, root, x, y, z, rot_x, rot_y, rot_z, name=None, facingSample=False):
+    def addLocation(self, root, x, y, z, rot_x, rot_y, rot_z, name=None, facingSample=False,
+                    neutronic=False, nx=None, ny=None, nz=None):
         """
         Add a location element to a specific parent node given by root.
         """
@@ -251,6 +255,10 @@ class MantidGeom:
 
         if facingSample:
             le.SubElement(pos_loc, "facing", x="0.0", y="0.0", z="0.0")
+
+        if neutronic:
+            le.SubElement(pos_loc, "neutronic", x=str(nx), y=str(ny), z=str(nz))
+
 
     def addLocationPolar(self, root, r, theta, phi, name=None):
         if name is not None:
@@ -348,7 +356,8 @@ class MantidGeom:
                 equation=join(processed[1:]).replace(processed[0],"value")
                 le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})  
 
-    def addNPack(self, name, num_tubes, tube_width, air_gap, type_name="tube"):
+    def addNPack(self, name, num_tubes, tube_width, air_gap, type_name="tube",
+                 neutronic=False, neutronicIsPhysical=False):
         """
         Add a block of N tubes in a pack. A name for the pack type needs
         to be specified as well as the number of tubes in the pack, the tube
@@ -369,13 +378,22 @@ class MantidGeom:
             tube_name = "tube%d" % (i + 1)
             x = pack_start + (i * effective_tube_width)
             location_element = le.SubElement(component, "location", name=tube_name, x=str(x))
+            if (neutronic):
+                if (neutronicIsPhysical):
+                    le.SubElement(location_element, "neutronic", x=str(x))
+                else:
+                    le.SubElement(location_element, "neutronic", x="0.0")
+
 
     def addPixelatedTube(self, name, num_pixels, tube_height,
-                         type_name="pixel"):
+                         type_name="pixel", neutronic=False, neutronicIsPhysical=False):
         """
         Add a tube of N pixels. If there are going to be more than one pixel
         type specified later, an optional type name can be given. The default
         pixel type name will be pixel.
+        The neutronic flag indicates that the neutronic position will also be
+        included.  The neutronicIsPhysical will if True, set the neutronic position to
+        be the same as the physical - otherwise the neutronic position will be 0.0.
         """
         type_element = le.SubElement(self.__root, "type", outline="yes",
                                      name=name)
@@ -390,7 +408,12 @@ class MantidGeom:
         for i in range(num_pixels):
             pixel_name = "pixel%d" % (i + 1)
             y = tube_start + (i * pixel_width)
-            le.SubElement(component, "location", name=pixel_name, y=str(y))
+            location_element = le.SubElement(component, "location", name=pixel_name, y=str(y))
+            if (neutronic):
+                if (neutronicIsPhysical):
+                    le.SubElement(location_element, "neutronic", y=str(y))
+                else:
+                    le.SubElement(location_element, "neutronic", y="0.0")
 
     def addCylinderPixel(self, name, center_bottom_base, axis, pixel_radius,
                          pixel_height, is_type="detector"):

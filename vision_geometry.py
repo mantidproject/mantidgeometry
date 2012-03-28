@@ -53,7 +53,7 @@ def main():
     xml_outfile = inst_name+"_Definition.xml"
     
     det = MantidGeom(inst_name, comment=" Created by Stuart Campbell ")
-    det.addSnsDefaults(indirect=False)
+    det.addSnsDefaults(indirect=True)
     det.addComment("SOURCE AND SAMPLE POSITION")
     det.addModerator(-16.0)
     det.addSamplePosition()
@@ -137,6 +137,7 @@ def main():
     inelastic_banklist = [1,2,4,5,7,8,10,11,13,14,16,17,19,20]
     inelastic_bank_start=[0,1024,4096,5120,8192,9216,12288,13312,16384,17408,20480,21504,24576,25600]
     inelastic_angle = [45.0,45.0,0.0,0.0,-45.0,-45.0,-90.0,-90.0,-135.0,-135.0,180.0,180.0,135.0,135.0]
+    inelastic_angle_for_rotation = [-45.0,-45.0,180.0,180.0,-135.0,-135.0,-90.0,-90.0,-225.0,-225.0,0.0,0.0,45.0,45.0]
 
     sample_inelastic_distance = 0.5174
 
@@ -153,17 +154,26 @@ def main():
 #        le.SubElement(location_element, "rot", **{"val":"90", "axis-x":"0",
 #                                              "axis-y":"0", "axis-z":"1"})
 
+        # Neutronic Positions
+        z_coord_neutronic = sample_inelastic_distance * math.tan(math.radians(45.0))
+
         if inelastic_index % 2 == 0:
             # Facing Downstream
             z_coord = 0.01
         else:
             # Facing to Moderator
             z_coord = -0.01
+            z_coord_neutronic = -z_coord_neutronic
 
+            # Physical Positions
         x_coord = sample_inelastic_distance * math.cos(math.radians(inelastic_angle[inelastic_index]))
         y_coord = sample_inelastic_distance * math.sin(math.radians(inelastic_angle[inelastic_index]))
 
-        det.addDetector(-x_coord, y_coord, z_coord, 0, 0, inelastic_angle[inelastic_index]+90, bank_name, "eightpack-inelastic")
+        det.addDetector(-x_coord, y_coord, z_coord, 0, 0, inelastic_angle_for_rotation[inelastic_index]-90.0, bank_name,
+            "eightpack-inelastic", neutronic=True, nx=-x_coord, ny=y_coord, nz=z_coord_neutronic)
+
+        efixed = ("Efixed", "3.64", "meV")
+        det.addDetectorParameters(bank_name, efixed )
 
         idlist.append(inelastic_bank_start[inelastic_index])
         idlist.append(inelastic_bank_start[inelastic_index]+1023)
@@ -179,27 +189,29 @@ def main():
     
     det.addComment("INELASTIC 8-PACK")
     det.addNPack("eightpack-inelastic", INELASTIC_TUBES_PER_BANK, INELASTIC_TUBE_WIDTH, 
-                 INELASTIC_AIR_GAP, "tube-inelastic")    
+                 INELASTIC_AIR_GAP, "tube-inelastic", neutronic=True)
     
     det.addComment("ELASTIC 8-PACK")
     det.addNPack("eightpack-elastic", ELASTIC_TUBES_PER_BANK, ELASTIC_TUBE_WIDTH, 
-                 ELASTIC_AIR_GAP, "tube-elastic")
+                 ELASTIC_AIR_GAP, "tube-elastic", neutronic=True, neutronicIsPhysical=True)
  
     # TUBES
     det.addComment("INELASTIC TUBE")
     det.addPixelatedTube("tube-inelastic", INELASTIC_TUBE_NPIXELS, 
-                         INELASTIC_TUBE_LENGTH, "pixel-inelastic-tube")
+                         INELASTIC_TUBE_LENGTH, "pixel-inelastic-tube", neutronic=True)
     
     det.addComment("BACKSCATTERING LONG TUBE")
-    det.addPixelatedTube("tube-long-bs-elastic", BS_ELASTIC_LONG_TUBE_NPIXELS, 
-                         BS_ELASTIC_LONG_TUBE_LENGTH, "pixel-bs-elastic-long-tube")
+    det.addPixelatedTube("tube-long-bs-elastic", BS_ELASTIC_LONG_TUBE_NPIXELS,
+        BS_ELASTIC_LONG_TUBE_LENGTH, "pixel-bs-elastic-long-tube",
+        neutronic=True, neutronicIsPhysical=True)
     det.addComment("BACKSCATTERING SHORT TUBE")
     det.addPixelatedTube("tube-short-bs-elastic", BS_ELASTIC_SHORT_TUBE_NPIXELS, 
-                         BS_ELASTIC_SHORT_TUBE_LENGTH, "pixel-bs-elastic-short-tube")
+        BS_ELASTIC_SHORT_TUBE_LENGTH, "pixel-bs-elastic-short-tube",
+        neutronic=True, neutronicIsPhysical=True)
 
     det.addComment("ELASTIC TUBE (90 degrees)")
     det.addPixelatedTube("tube-elastic", ELASTIC_TUBE_NPIXELS, 
-                         ELASTIC_TUBE_LENGTH, "pixel-elastic-tube")
+                         ELASTIC_TUBE_LENGTH, "pixel-elastic-tube", neutronic=True, neutronicIsPhysical=True)
 
     # PIXELS
     
