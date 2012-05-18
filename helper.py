@@ -239,8 +239,8 @@ class MantidGeom:
         else:
             self.addLocation(root, x, y, z, rot_x, rot_y, rot_z, name)
 
-    def addLocation(self, root, x, y, z, rot_x, rot_y, rot_z, name=None, facingSample=False,
-                    neutronic=False, nx=None, ny=None, nz=None):
+    def addLocation(self, root, x, y, z, rot_x=None, rot_y=None, rot_z=None, name=None,
+                    facingSample=False, neutronic=False, nx=None, ny=None, nz=None):
         """
         Add a location element to a specific parent node given by root.
         """
@@ -271,12 +271,15 @@ class MantidGeom:
         if neutronic:
             le.SubElement(pos_loc, "neutronic", x=str(nx), y=str(ny), z=str(nz))
 
+        return pos_loc
+
 
     def addLocationPolar(self, root, r, theta, phi, name=None):
         if name is not None:
             pos_loc = le.SubElement(root, "location", r=r, t=theta, p=phi, name=name)
         else:
             pos_loc = le.SubElement(root, "location", r=r, t=theta, p=phi)
+        return pos_loc
 
     def addLocationRTP(self, root, r, t, p, rot_x, rot_y, rot_z, name=None):
         """
