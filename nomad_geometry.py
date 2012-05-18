@@ -1,6 +1,16 @@
 #!/usr/bin/env python
 
 from helper import INCH_TO_METRE, MantidGeom
+from lxml import etree as le # python-lxml on rpm based systems
+
+def makeLoc(instr, det, name, x, y, z, rot_y, rot_inner, rot_innermost):
+    sub = instr.addLocation(det, x=x, y=y, z=z, rot_y=rot_y, name=name)
+    sub = le.SubElement(sub, "rot", **{"val":str(rot_inner)})
+    le.SubElement(sub, "rot", **{"val":str(rot_innermost), "axis-x":"0", "axis-y":"1", "axis-z":"0"})
+
+def makeAttrs(idstart):
+    """Return list of pixel ids appropriate for rectangular detectors."""
+    return {"idstart":idstart, "idfillbyfirst":"y", "idstepbyrow":128}
 
 if __name__ == "__main__":
     inst_name = "NOMAD"
@@ -28,7 +38,11 @@ if __name__ == "__main__":
 
     # add in groups
     group1 = instr.makeTypeElement("Group1")
-    det = instr.makeDetectorElement("one_inch", root=group1, extra_attrs={"idstart":0, "idfillbyfirst":"y", "idstepbyrow":128})
+    det = instr.makeDetectorElement("one_inch", root=group1, extra_attrs=makeAttrs(0))
+    makeLoc(instr, det, "bank1",
+            x=-0.900835, y=-0.50034125, z=1.940845, rot_y=-89.3663312,
+            rot_inner=92.7740541972, rot_innermost=102.872503501)
+
     group2 = instr.makeTypeElement("Group2")
     group3 = instr.makeTypeElement("Group3")
     group4 = instr.makeTypeElement("Group4")
