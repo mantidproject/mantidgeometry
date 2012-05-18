@@ -1,2 +1,2 @@
-
-helper.pyc
+*.pyc
+*.py~
