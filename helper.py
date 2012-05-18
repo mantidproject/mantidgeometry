@@ -450,7 +450,7 @@ class MantidGeom:
         le.SubElement(type_element, "algebra", val="cyl-approx")
 
     def addCuboidPixel(self, name, lfb_pt, lft_pt, lbb_pt, rfb_pt,
-                      is_type="detector"):
+                      is_type="detector", shape_id="shape"):
         """
         Add a cuboid pixel. The origin of the cuboid is assumed to be the
         center of the front face of the cuboid. The parameters lfb_pt, lft_pt,
@@ -458,7 +458,7 @@ class MantidGeom:
         """
         type_element = le.SubElement(self.__root, "type",
                                      **{"name":name, "is":is_type})
-        cuboid = le.SubElement(type_element, "cuboid", id="shape")
+        cuboid = le.SubElement(type_element, "cuboid", id=shape_id)
         le.SubElement(cuboid, "left-front-bottom-point", x=str(lfb_pt[0]),
                       y=str(lfb_pt[1]), z=str(lfb_pt[2]))
         le.SubElement(cuboid, "left-front-top-point", x=str(lft_pt[0]),
@@ -467,7 +467,7 @@ class MantidGeom:
                       y=str(lbb_pt[1]), z=str(lbb_pt[2]))
         le.SubElement(cuboid, "right-front-bottom-point", x=str(rfb_pt[0]),
                       y=str(rfb_pt[1]), z=str(rfb_pt[2]))
-        le.SubElement(type_element, "algebra", val="shape")
+        le.SubElement(type_element, "algebra", val=shape_id)
 
     def addDummyMonitor(self, radius, height):
         """
