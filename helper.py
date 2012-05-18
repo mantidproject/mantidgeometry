@@ -1,16 +1,25 @@
-from lxml import etree as le
+from lxml import etree as le # python-lxml on rpm based systems
 from string import split,join
+INCH_TO_METRE = 0.0254
 class MantidGeom:
 
-    def __init__(self, instname, comment=None):
+    def __init__(self, instname, comment=None, valid_from=None):
         from datetime import datetime
-        the_future = datetime(2100, 1, 31, 23, 59, 59)
+        the_future = str(datetime(2100, 1, 31, 23, 59, 59))
+        last_modified = str(datetime.now())
+        if valid_from is None:
+            valid_from = last_modified
         self.__root = le.Element("instrument", **{"name": instname,
-                                 "valid-from": str(datetime.now()),
-                                 "valid-to": str(the_future)})
+                                 "valid-from": valid_from,
+                                 "valid-to": the_future,
+                                 "last-modified": last_modified})
         if comment is not None:
-            self.__root.append(le.Comment(comment))
-            
+            if type(comment) == list or type(comment) == tuple:
+                for bit in comment:
+                    self.__root.append(le.Comment(bit))
+            else:
+                self.__root.append(le.Comment(comment))
+
     def writeGeom(self, filename):
         """
         Write the XML geometry to the given filename
@@ -180,7 +189,7 @@ class MantidGeom:
         """
         return le.SubElement(self.__root, "type", name=name)
             
-    def makeDetectorElement(self, name, idlist_type=None, root=None):
+    def makeDetectorElement(self, name, idlist_type=None, root=None, extra_attrs={}):
         """
         Return a component element.
         """
@@ -189,11 +198,14 @@ class MantidGeom:
         else:
             root_element = self.__root
 
+        for key in extra_attrs.keys():
+            extra_attrs[key] = str(extra_attrs[key]) # convert everything to strings
+
         if idlist_type is not None:
             return le.SubElement(root_element, "component", type=name,
-                                 idlist=idlist_type)
+                                     idlist=idlist_type, **extra_attrs)
         else:
-            return le.SubElement(root_element, "component", type=name)
+            return le.SubElement(root_element, "component", type=name, **extra_attrs)
 
     def makeIdListElement(self, name):
         return le.SubElement(self.__root, "idlist", idname=name)
@@ -509,7 +521,7 @@ class MantidGeom:
         """
         idElt = le.SubElement(self.__root, "idlist", idname="monitors")
         for i in range(len(ids)):
-            le.SubElement(idElt, "id", val=ids[i])
+            le.SubElement(idElt, "id", val=str(ids[i]))
 
     def addDetectorParameters(self, component_name, *args):
         """
