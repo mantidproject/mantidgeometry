@@ -183,11 +183,13 @@ class MantidGeom:
           l=le.SubElement(comp, "location")
         return l        
 
-    def makeTypeElement(self, name):
+    def makeTypeElement(self, name, extra_attrs={}):
         """
         Return a simple type element.
         """
-        return le.SubElement(self.__root, "type", name=name)
+        for key in extra_attrs.keys():
+            extra_attrs[key] = str(extra_attrs[key]) # convert everything to strings
+        return le.SubElement(self.__root, "type", name=name, **extra_attrs)
             
     def makeDetectorElement(self, name, idlist_type=None, root=None, extra_attrs={}):
         """
@@ -262,8 +264,10 @@ class MantidGeom:
             r2 = r1
 
         if rot_z is not None:
-            le.SubElement(r2, "rot", **{"val":str(rot_z), "axis-x":"0",
-                                        "axis-y":"0", "axis-z":"1"})
+            r3 = le.SubElement(r2, "rot", **{"val":str(rot_z), "axis-x":"0",
+                                             "axis-y":"0", "axis-z":"1"})
+        else:
+            r3 = r2
 
         if facingSample:
             le.SubElement(pos_loc, "facing", x="0.0", y="0.0", z="0.0")
@@ -271,7 +275,7 @@ class MantidGeom:
         if neutronic:
             le.SubElement(pos_loc, "neutronic", x=str(nx), y=str(ny), z=str(nz))
 
-        return pos_loc
+        return r3
 
 
     def addLocationPolar(self, root, r, theta, phi, name=None):
