@@ -301,115 +301,115 @@ if __name__ == "__main__":
 
     # ---------- add in group5
     group5 = instr.makeTypeElement("Group5") # TODO
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(64512))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(64512))
     makeLoc(instr, det, "bank64",
             x=-0.503307, y=0.003906, z=-0.687783, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(65536))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(65536))
     makeLoc(instr, det, "bank65",
             x=-0.448507, y=0.003906, z=-0.674083, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(66560))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(66560))
     makeLoc(instr, det, "bank66",
             x=-0.393707, y=0.003906, z=-0.687783, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(67584))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(67584))
     makeLoc(instr, det, "bank67",
             x=-0.338907, y=0.003906, z=-0.674083, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(68608))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(68608))
     makeLoc(instr, det, "bank68",
             x=-0.284107, y=0.003906, z=-0.687783, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(69632))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(69632))
     makeLoc(instr, det, "bank69",
             x=-0.229307, y=0.003906, z=-0.674083, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(70656))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(70656))
     makeLoc(instr, det, "bank70",
             x=-0.174507, y=0.003906, z=-0.687783, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(71680))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(71680))
     makeLoc(instr, det, "bank71",
             x=-0.11970685, y=0.003906, z=-0.674083, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(72704))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(72704))
     makeLoc(instr, det, "bank72",
             x=-0.0649067, y=0.003906, z=-0.687783, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(73728))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(73728))
     makeLoc(instr, det, "bank73",
             x=0.044693295, y=0.003906, z=-0.674083, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(74752))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(74752))
     makeLoc(instr, det, "bank74",
             x=0.0994933, y=0.003906, z=-0.687783, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(75776))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(75776))
     makeLoc(instr, det, "bank75",
             x=0.154293, y=0.003906, z=-0.674083, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(76800))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(76800))
     makeLoc(instr, det, "bank76",
             x=0.209093, y=0.003906, z=-0.687783, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(77824))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(77824))
     makeLoc(instr, det, "bank77",
             x=0.263893, y=0.003906, z=-0.674083, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(78848))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(78848))
     makeLoc(instr, det, "bank78",
             x=0.318693, y=0.003906, z=-0.687783, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(79872))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(79872))
     makeLoc(instr, det, "bank79",
             x=0.373493, y=0.003906, z=-0.674083, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(80896))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(80896))
     makeLoc(instr, det, "bank80",
             x=0.428293, y=0.003906, z=-0.687783, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group5, extra_attrs=makeAttrs(81920))
+    det = instr.makeDetectorElement("half_inch_back", root=group5, extra_attrs=makeAttrs(81920))
     makeLoc(instr, det, "bank81",
             x=0.483093, y=0.003906, z=-0.674083, rot=180.0)
 
     # ---------- add in group6
     group6 = instr.makeTypeElement("Group6") # TODO
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(82944))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(82944))
     makeLoc(instr, det, "bank82",
             x=-0.5457338, y=0.003906, z=2.51979, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(83968))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(83968))
     makeLoc(instr, det, "bank83",
             x=-0.4909338, y=0.003906, z=2.53349, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(84992))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(84992))
     makeLoc(instr, det, "bank84",
             x=-0.4361338, y=0.003906, z=2.51979, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(86016))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(86016))
     makeLoc(instr, det, "bank85",
             x=-0.381338, y=0.003906, z=2.53349, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(87040))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(87040))
     makeLoc(instr, det, "bank86",
             x=-0.3265338, y=0.003906, z=2.51979, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(88064))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(88064))
     makeLoc(instr, det, "bank87",
             x=-0.2717338, y=0.003906, z=2.53349, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(89088))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(89088))
     makeLoc(instr, det, "bank88",
             x=-0.2169338, y=0.003906, z=2.51979, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(90112))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(90112))
     makeLoc(instr, det, "bank89",
             x=-0.16213365, y=0.003906, z=2.53349, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(91136))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(91136))
     makeLoc(instr, det, "bank90",
             x=-0.1073334, y=0.003906, z=2.51979, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(92160))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(92160))
     makeLoc(instr, det, "bank91",
             x=0.07197215, y=0.003906, z=2.53349, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(93184))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(93184))
     makeLoc(instr, det, "bank92",
             x=0.12677215, y=0.003906, z=2.51979, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(94208))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(94208))
     makeLoc(instr, det, "bank93",
             x=0.1815723, y=0.003906, z=2.53349, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(95232))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(95232))
     makeLoc(instr, det, "bank94",
             x=0.2363718, y=0.003906, z=2.51979, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(96256))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(96256))
     makeLoc(instr, det, "bank95",
             x=0.2911718, y=0.003906, z=2.53349, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(97280))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(97280))
     makeLoc(instr, det, "bank96",
             x=0.3459718, y=0.003906, z=2.51979, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(98304))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(98304))
     makeLoc(instr, det, "bank97",
             x=0.4007718, y=0.003906, z=2.53349, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(99328))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(99328))
     makeLoc(instr, det, "bank98",
             x=0.4555718, y=0.003906, z=2.51979, rot=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group6, extra_attrs=makeAttrs(100352))
+    det = instr.makeDetectorElement("half_inch", root=group6, extra_attrs=makeAttrs(100352))
     makeLoc(instr, det, "bank99",
             x=0.5103718, y=0.003906, z=2.53349, rot=180.0)
 
@@ -417,12 +417,23 @@ if __name__ == "__main__":
     instr.addComment(" xsize=0.2112m  ysize=1.016m ")
     det = instr.makeTypeElement("one_inch",
                                 {"is":"rectangular_detector", "type":"onepixel",
-                                 "xpixels":8, "xstart":0.0924, "xstep":-0.0264,
-                                 "ypixels":128, "ystart":0.508, "ystep":-0.0079375})
+                                 "xpixels":8, "xstart":0.0924, "xstep":(-0.0254*5.5/6.), # tubes are at 5.5inches for 6 tubes on centre
+                                 "ypixels":128, "ystart":0.508, "ystep":(-1./128.)}) # 1m tubes
     le.SubElement(det, "properties")
 
-    instr.addComment("New Detector Panel (128x8) - half_inch") # TODO
-    instr.addComment("New Detector Panel (128x8) - half_inch_back") # TODO
+    instr.addComment("New Detector Panel (128x8) - half_inch")
+    det = instr.makeTypeElement("half_inch",
+                                {"is":"rectangular_detector", "type":"halfpixel",
+                                 "xpixels":8, "xstart":-0.023975, "xstep":+0.00685,
+                                 "ypixels":128, "ystart":-0.5, "ystep":+0.0078125})
+    le.SubElement(det, "properties")
+
+    instr.addComment("New Detector Panel (128x8) - half_inch_back")
+    det = instr.makeTypeElement("half_inch_back",
+                                {"is":"rectangular_detector", "type":"halfpixel",
+                                "xpixels":8, "xstart":0.023975, "xstep":-0.00685,
+                                "ypixels":128, "ystart":-0.5, "ystep":+0.0078125})
+    le.SubElement(det, "properties")
 
     instr.addComment("Shape for monitors")
     instr.addComment("TODO: Update to real shape")
