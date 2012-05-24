@@ -25,7 +25,8 @@ if __name__ == "__main__":
     xml_outfile = inst_name+"_Definition.xml"
 
     # boiler plate stuff
-    instr = MantidGeom(inst_name, comment=" Created by Peter Peterson ", valid_from="2012-07-01 00:00:01")
+    instr = MantidGeom(inst_name, comment=" Created by Peter Peterson ", valid_from="2000-07-01 00:00:01")
+                                                                        #valid_from="2012-07-01 00:00:01")
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults()
     instr.addComment("SOURCE")
@@ -316,159 +317,162 @@ if __name__ == "__main__":
 
     # ---------- add in group5
     group5 = instr.makeTypeElement("Group5") # TODO
+    z=-0.687783
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(64512))
     makeLoc(instr, det, "bank64",
-            x=-0.503307, y=0.003906, z=-0.687783, rot=180.0)
+            x=-0.503307, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(65536))
     makeLoc(instr, det, "bank65",
-            x=-0.448507, y=0.003906, z=-0.674083, rot=180.0)
+            x=-0.448507, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(66560))
     makeLoc(instr, det, "bank66",
-            x=-0.393707, y=0.003906, z=-0.687783, rot=180.0)
+            x=-0.393707, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(67584))
     makeLoc(instr, det, "bank67",
-            x=-0.338907, y=0.003906, z=-0.674083, rot=180.0)
+            x=-0.338907, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(68608))
     makeLoc(instr, det, "bank68",
-            x=-0.284107, y=0.003906, z=-0.687783, rot=180.0)
+            x=-0.284107, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(69632))
     makeLoc(instr, det, "bank69",
-            x=-0.229307, y=0.003906, z=-0.674083, rot=180.0)
+            x=-0.229307, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(70656))
     makeLoc(instr, det, "bank70",
-            x=-0.174507, y=0.003906, z=-0.687783, rot=180.0)
+            x=-0.174507, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(71680))
     makeLoc(instr, det, "bank71",
-            x=-0.11970685, y=0.003906, z=-0.674083, rot=180.0)
+            x=-0.11970685, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(72704))
     makeLoc(instr, det, "bank72",
-            x=-0.0649067, y=0.003906, z=-0.687783, rot=180.0)
+            x=-0.0649067, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(73728))
     makeLoc(instr, det, "bank73",
-            x=0.044693295, y=0.003906, z=-0.674083, rot=180.0)
+            x=0.044693295, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(74752))
     makeLoc(instr, det, "bank74",
-            x=0.0994933, y=0.003906, z=-0.687783, rot=180.0)
+            x=0.0994933, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(75776))
     makeLoc(instr, det, "bank75",
-            x=0.154293, y=0.003906, z=-0.674083, rot=180.0)
+            x=0.154293, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(76800))
     makeLoc(instr, det, "bank76",
-            x=0.209093, y=0.003906, z=-0.687783, rot=180.0)
+            x=0.209093, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(77824))
     makeLoc(instr, det, "bank77",
-            x=0.263893, y=0.003906, z=-0.674083, rot=180.0)
+            x=0.263893, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(78848))
     makeLoc(instr, det, "bank78",
-            x=0.318693, y=0.003906, z=-0.687783, rot=180.0)
+            x=0.318693, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(79872))
     makeLoc(instr, det, "bank79",
-            x=0.373493, y=0.003906, z=-0.674083, rot=180.0)
+            x=0.373493, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(80896))
     makeLoc(instr, det, "bank80",
-            x=0.428293, y=0.003906, z=-0.687783, rot=180.0)
+            x=0.428293, y=0.003906, z=z, rot=180.0)
     det = instr.makeDetectorElement("half_inch_back", root=group5)#, extra_attrs=makeAttrs(81920))
     makeLoc(instr, det, "bank81",
-            x=0.483093, y=0.003906, z=-0.674083, rot=180.0)
+            x=0.483093, y=0.003906, z=z, rot=180.0)
 
     # ---------- add in group6
     group6 = instr.makeTypeElement("Group6") # TODO
+    z=2.51979
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(82944))
     makeLoc(instr, det, "bank82",
-            x=-0.5457338, y=0.003906, z=2.51979, rot=180.0)
+            x=-0.5457338, y=0.003906, z=z, rot=180.0) #
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(83968))
     makeLoc(instr, det, "bank83",
-            x=-0.4909338, y=0.003906, z=2.53349, rot=180.0)
+            x=-0.4909338, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(84992))
     makeLoc(instr, det, "bank84",
-            x=-0.4361338, y=0.003906, z=2.51979, rot=180.0)
+            x=-0.4361338, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(86016))
     makeLoc(instr, det, "bank85",
-            x=-0.381338, y=0.003906, z=2.53349, rot=180.0)
+            x=-0.381338, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(87040))
     makeLoc(instr, det, "bank86",
-            x=-0.3265338, y=0.003906, z=2.51979, rot=180.0)
+            x=-0.3265338, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(88064))
     makeLoc(instr, det, "bank87",
-            x=-0.2717338, y=0.003906, z=2.53349, rot=180.0)
+            x=-0.2717338, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(89088))
     makeLoc(instr, det, "bank88",
-            x=-0.2169338, y=0.003906, z=2.51979, rot=180.0)
+            x=-0.2169338, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(90112))
     makeLoc(instr, det, "bank89",
-            x=-0.16213365, y=0.003906, z=2.53349, rot=180.0)
+            x=-0.16213365, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(91136))
     makeLoc(instr, det, "bank90",
-            x=-0.1073334, y=0.003906, z=2.51979, rot=180.0)
+            x=-0.1073334, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(92160))
     makeLoc(instr, det, "bank91",
-            x=0.07197215, y=0.003906, z=2.53349, rot=180.0)
+            x=0.07197215, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(93184))
     makeLoc(instr, det, "bank92",
-            x=0.12677215, y=0.003906, z=2.51979, rot=180.0)
+            x=0.12677215, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(94208))
     makeLoc(instr, det, "bank93",
-            x=0.1815723, y=0.003906, z=2.53349, rot=180.0)
+            x=0.1815723, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(95232))
     makeLoc(instr, det, "bank94",
-            x=0.2363718, y=0.003906, z=2.51979, rot=180.0)
+            x=0.2363718, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(96256))
     makeLoc(instr, det, "bank95",
-            x=0.2911718, y=0.003906, z=2.53349, rot=180.0)
+            x=0.2911718, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(97280))
     makeLoc(instr, det, "bank96",
-            x=0.3459718, y=0.003906, z=2.51979, rot=180.0)
+            x=0.3459718, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(98304))
     makeLoc(instr, det, "bank97",
-            x=0.4007718, y=0.003906, z=2.53349, rot=180.0)
+            x=0.4007718, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(99328))
     makeLoc(instr, det, "bank98",
-            x=0.4555718, y=0.003906, z=2.51979, rot=180.0)
+            x=0.4555718, y=0.003906, z=z, rot=180.0) #.003906
     det = instr.makeDetectorElement("half_inch", root=group6)#, extra_attrs=makeAttrs(100352))
     makeLoc(instr, det, "bank99",
-            x=0.5103718, y=0.003906, z=2.53349, rot=180.0)
+            x=0.5103718, y=0.003906, z=z, rot=180.0) #.003906
 
     # ---------- detector panels
-
-    #instr.addComment("New Detector Panel (128x8) - one_inch")
-    #det = instr.makeTypeElement("one_inch",
-    #                            {"is":"rectangular_detector", "type":"onepixel",
-    #                             "xpixels":8, "xstart":0.0924, "xstep":(-0.0254*5.5/6.), # tubes are at 5.5inches for 6 tubes on centre
-    #                             "ypixels":128, "ystart":0.508, "ystep":(-1./128.)}) # 1m tubes
-    #le.SubElement(det, "properties")
 
     instr.addComment("New Detector Panel (128x8) - one_inch")
     det = instr.makeTypeElement("one_inch")
     le.SubElement(det, "properties")
     det = instr.addComponent("tube", root=det, blank_location=False)
-    xstart = 0.0924
-    xstep = -0.0264 #(-0.0254*5.5/6.) # tubes are at 5.5inches for 6 tubes on centre
+    xstep = (-0.0254*5.5/5.) # tubes are at 5.5inches for 6 tubes on centre OLD=-0.0264
+    xstart = -8.*.5*xstep + .5*xstep # OLD=0.0924
     for j in range(8):
         name="tube%d"  % (j+1)
         x = float(j)*xstep + xstart
+        #if j == 0 or j == 7:
+        #    print j, x
         instr.addLocation(det, x, 0., 0., name=name)
 
     instr.addComment("New Detector Panel (128x8) - half_inch")
     det = instr.makeTypeElement("half_inch")
     le.SubElement(det, "properties")
     det = instr.addComponent("halftube", root=det, blank_location=False)
-    xstart = -0.0924
     xstep = 0.00685
+    xstart = -.5*8.*xstep + .5*xstep # OLD=-0.0924
     for j in range(8):
         name="halftube%d"  % (j+1)
         x = float(j)*xstep + xstart
-        instr.addLocation(det, x, 0., 0., name=name)
+        #if j == 0 or j == 7:
+        #    print j, x
+        z = -1.* float(j % 2) * (.0254/2+.001) 
+        instr.addLocation(det, x, 0., z, name=name)
 
     instr.addComment("New Detector Panel (128x8) - half_inch_back")
     det = instr.makeTypeElement("half_inch_back")
     le.SubElement(det, "properties")
     det = instr.addComponent("halftube", root=det, blank_location=False)
-    xstart = 0.023975
     xstep = -0.00685
+    xstart = -.5*8.*xstep + .5*xstep # OLD=0.023975
     for j in range(8):
         name="halftube_back%d"  % (j+1)
         x = float(j)*xstep + xstart
-        instr.addLocation(det, x, 0., 0., name=name)
+        #if j == 0 or j == 7:
+        #    print j, x
+        z = -1.* float(j % 2) * (.0254/2+.001) 
+        instr.addLocation(det, x, 0., z, name=name)
 
     # ---------- monitors
 
@@ -479,7 +483,7 @@ if __name__ == "__main__":
     # ---------- detector tubes
     ypixels = 128
     ystep = -1./128. # 1m tubes
-    ystart = .5 # *(1.-ystep)
+    ystart = .5+.5*ystep
 
     instr.addComment(" 1m 128 pixel half inch tube ")
     tube = instr.makeTypeElement("halftube", {"outline":"yes"})
@@ -488,9 +492,11 @@ if __name__ == "__main__":
     for i in range(ypixels):
         name = "pixel%d" % (i+1)
         y = float(i)*ystep + ystart
+        #if i == 0 or i == 127:
+        #    print y
         instr.addLocation(tube, 0., y, 0., name=name)
 
-    ystart  = 0.508 # redefine
+    #ystart  = 0.508 # redefine
     instr.addComment(" 1m 128 pixel inch tube ")
     tube = instr.makeTypeElement("tube", {"outline":"yes"})
     le.SubElement(tube, "properties")
@@ -498,7 +504,8 @@ if __name__ == "__main__":
     for i in range(ypixels):
         name = "pixel%d" % (i+1)
         y = float(i)*ystep + ystart
-        #y = (float(i)*1./128.) - (.5 - .5/128.)
+        #if i == 0 or i == 127:
+        #    print y
         instr.addLocation(tube, 0., y, 0., name=name)
 
     instr.addComment("Shape for half inch tube pixels")
