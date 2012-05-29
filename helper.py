@@ -1,16 +1,26 @@
-from lxml import etree as le
+from lxml import etree as le # python-lxml on rpm based systems
 from string import split,join
+INCH_TO_METRE = 0.0254
 class MantidGeom:
 
-    def __init__(self, instname, comment=None):
+    def __init__(self, instname, comment=None, valid_from=None, valid_to=None):
         from datetime import datetime
-        the_future = datetime(2100, 1, 31, 23, 59, 59)
+        if valid_to is None:
+            valid_to = str(datetime(2100, 1, 31, 23, 59, 59))
+        last_modified = str(datetime.now())
+        if valid_from is None:
+            valid_from = last_modified
         self.__root = le.Element("instrument", **{"name": instname,
-                                 "valid-from": str(datetime.now()),
-                                 "valid-to": str(the_future)})
+                                 "valid-from": valid_from,
+                                 "valid-to": valid_to,
+                                 "last-modified": last_modified})
         if comment is not None:
-            self.__root.append(le.Comment(comment))
-            
+            if type(comment) == list or type(comment) == tuple:
+                for bit in comment:
+                    self.__root.append(le.Comment(bit))
+            else:
+                self.__root.append(le.Comment(comment))
+
     def writeGeom(self, filename):
         """
         Write the XML geometry to the given filename
@@ -174,13 +184,15 @@ class MantidGeom:
           l=le.SubElement(comp, "location")
         return l        
 
-    def makeTypeElement(self, name):
+    def makeTypeElement(self, name, extra_attrs={}):
         """
         Return a simple type element.
         """
-        return le.SubElement(self.__root, "type", name=name)
+        for key in extra_attrs.keys():
+            extra_attrs[key] = str(extra_attrs[key]) # convert everything to strings
+        return le.SubElement(self.__root, "type", name=name, **extra_attrs)
             
-    def makeDetectorElement(self, name, idlist_type=None, root=None):
+    def makeDetectorElement(self, name, idlist_type=None, root=None, extra_attrs={}):
         """
         Return a component element.
         """
@@ -189,11 +201,14 @@ class MantidGeom:
         else:
             root_element = self.__root
 
+        for key in extra_attrs.keys():
+            extra_attrs[key] = str(extra_attrs[key]) # convert everything to strings
+
         if idlist_type is not None:
             return le.SubElement(root_element, "component", type=name,
-                                 idlist=idlist_type)
+                                     idlist=idlist_type, **extra_attrs)
         else:
-            return le.SubElement(root_element, "component", type=name)
+            return le.SubElement(root_element, "component", type=name, **extra_attrs)
 
     def makeIdListElement(self, name):
         return le.SubElement(self.__root, "idlist", idname=name)
@@ -227,8 +242,8 @@ class MantidGeom:
         else:
             self.addLocation(root, x, y, z, rot_x, rot_y, rot_z, name)
 
-    def addLocation(self, root, x, y, z, rot_x, rot_y, rot_z, name=None, facingSample=False,
-                    neutronic=False, nx=None, ny=None, nz=None):
+    def addLocation(self, root, x, y, z, rot_x=None, rot_y=None, rot_z=None, name=None,
+                    facingSample=False, neutronic=False, nx=None, ny=None, nz=None):
         """
         Add a location element to a specific parent node given by root.
         """
@@ -250,8 +265,10 @@ class MantidGeom:
             r2 = r1
 
         if rot_z is not None:
-            le.SubElement(r2, "rot", **{"val":str(rot_z), "axis-x":"0",
-                                        "axis-y":"0", "axis-z":"1"})
+            r3 = le.SubElement(r2, "rot", **{"val":str(rot_z), "axis-x":"0",
+                                             "axis-y":"0", "axis-z":"1"})
+        else:
+            r3 = r2
 
         if facingSample:
             le.SubElement(pos_loc, "facing", x="0.0", y="0.0", z="0.0")
@@ -259,12 +276,15 @@ class MantidGeom:
         if neutronic:
             le.SubElement(pos_loc, "neutronic", x=str(nx), y=str(ny), z=str(nz))
 
+        return r3
+
 
     def addLocationPolar(self, root, r, theta, phi, name=None):
         if name is not None:
             pos_loc = le.SubElement(root, "location", r=r, t=theta, p=phi, name=name)
         else:
             pos_loc = le.SubElement(root, "location", r=r, t=theta, p=phi)
+        return pos_loc
 
     def addLocationRTP(self, root, r, t, p, rot_x, rot_y, rot_z, name=None):
         """
@@ -435,7 +455,7 @@ class MantidGeom:
         le.SubElement(type_element, "algebra", val="cyl-approx")
 
     def addCuboidPixel(self, name, lfb_pt, lft_pt, lbb_pt, rfb_pt,
-                      is_type="detector"):
+                      is_type="detector", shape_id="shape"):
         """
         Add a cuboid pixel. The origin of the cuboid is assumed to be the
         center of the front face of the cuboid. The parameters lfb_pt, lft_pt,
@@ -443,7 +463,7 @@ class MantidGeom:
         """
         type_element = le.SubElement(self.__root, "type",
                                      **{"name":name, "is":is_type})
-        cuboid = le.SubElement(type_element, "cuboid", id="shape")
+        cuboid = le.SubElement(type_element, "cuboid", id=shape_id)
         le.SubElement(cuboid, "left-front-bottom-point", x=str(lfb_pt[0]),
                       y=str(lfb_pt[1]), z=str(lfb_pt[2]))
         le.SubElement(cuboid, "left-front-top-point", x=str(lft_pt[0]),
@@ -452,7 +472,7 @@ class MantidGeom:
                       y=str(lbb_pt[1]), z=str(lbb_pt[2]))
         le.SubElement(cuboid, "right-front-bottom-point", x=str(rfb_pt[0]),
                       y=str(rfb_pt[1]), z=str(rfb_pt[2]))
-        le.SubElement(type_element, "algebra", val="shape")
+        le.SubElement(type_element, "algebra", val=shape_id)
 
     def addDummyMonitor(self, radius, height):
         """
@@ -509,7 +529,7 @@ class MantidGeom:
         """
         idElt = le.SubElement(self.__root, "idlist", idname="monitors")
         for i in range(len(ids)):
-            le.SubElement(idElt, "id", val=ids[i])
+            le.SubElement(idElt, "id", val=str(ids[i]))
 
     def addDetectorParameters(self, component_name, *args):
         """
