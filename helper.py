@@ -3,15 +3,16 @@ from string import split,join
 INCH_TO_METRE = 0.0254
 class MantidGeom:
 
-    def __init__(self, instname, comment=None, valid_from=None):
+    def __init__(self, instname, comment=None, valid_from=None, valid_to=None):
         from datetime import datetime
-        the_future = str(datetime(2100, 1, 31, 23, 59, 59))
+        if valid_to is None:
+            valid_to = str(datetime(2100, 1, 31, 23, 59, 59))
         last_modified = str(datetime.now())
         if valid_from is None:
             valid_from = last_modified
         self.__root = le.Element("instrument", **{"name": instname,
                                  "valid-from": valid_from,
-                                 "valid-to": the_future,
+                                 "valid-to": valid_to,
                                  "last-modified": last_modified})
         if comment is not None:
             if type(comment) == list or type(comment) == tuple:
