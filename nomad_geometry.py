@@ -25,7 +25,8 @@ if __name__ == "__main__":
     xml_outfile = inst_name+"_Definition.xml"
 
     # boiler plate stuff
-    instr = MantidGeom(inst_name, comment=" Created by Peter Peterson ", valid_from="2012-08-01 00:00:01")
+    instr = MantidGeom(inst_name, comment=" Created by Peter Peterson ", valid_from="2012-07-01 00:00:01",
+                       valid_to="2012-07-31 23:59:59")
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults()
     instr.addComment("SOURCE")
@@ -48,7 +49,15 @@ if __name__ == "__main__":
     info = instr.addDetectorIds("Group3", makeIds(14, 37888, 8*128))
     info = instr.addDetectorIds("Group4", makeIds(12, 52224, 8*128))
     info = instr.addDetectorIds("Group5", makeIds(18, 64512, 8*128))
-    info = instr.addDetectorIds("Group6", makeIds(18, 82944, 8*128))
+    ids = makeIds(18, 82944, 8*128)
+    print ids
+    ids_len = len(ids)
+    for i in range(3):
+        ids.insert(0, ids[ids_len-1])
+    del ids[ids_len:]
+    print ids
+    info = instr.addDetectorIds("Group6", ids)
+    #info = instr.addDetectorIds("Group6", makeIds(18, 82944, 8*128))
 
     # ---------- add in group1
     group1 = instr.makeTypeElement("Group1")
@@ -128,7 +137,7 @@ if __name__ == "__main__":
     det = instr.makeDetectorElement("one_inch", root=group2)
     makeLoc(instr, det, "bank18",
             x=-0.6737715, y=-0.504005, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=z)
+            rot_inner=90.0, rot_innermost=144.78248153)
     det = instr.makeDetectorElement("one_inch", root=group2)
     makeLoc(instr, det, "bank19",
             x=-0.784765, y=-0.303534, z=z, rot=-90.0,
