@@ -128,7 +128,7 @@ if __name__ == "__main__":
     det = instr.makeDetectorElement("one_inch", root=group2)
     makeLoc(instr, det, "bank18",
             x=-0.6737715, y=-0.504005, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=z)
+            rot_inner=90.0, rot_innermost=144.78248153)
     det = instr.makeDetectorElement("one_inch", root=group2)
     makeLoc(instr, det, "bank19",
             x=-0.784765, y=-0.303534, z=z, rot=-90.0,
