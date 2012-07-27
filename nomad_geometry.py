@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# Much of the information for this is taken from ~zjn/idl/detpos.pro
+
 from helper import INCH_TO_METRE, MantidGeom
 from lxml import etree as le # python-lxml on rpm based systems
 
@@ -25,7 +27,8 @@ if __name__ == "__main__":
     xml_outfile = inst_name+"_Definition.xml"
 
     # boiler plate stuff
-    instr = MantidGeom(inst_name, comment=" Created by Peter Peterson ", valid_from="2012-08-01 00:00:01")
+    instr = MantidGeom(inst_name, comment=" Created by Peter Peterson ", valid_from="2012-07-01 00:00:01",
+                       valid_to="2012-07-31 23:59:59")
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults()
     instr.addComment("SOURCE")
@@ -48,7 +51,15 @@ if __name__ == "__main__":
     info = instr.addDetectorIds("Group3", makeIds(14, 37888, 8*128))
     info = instr.addDetectorIds("Group4", makeIds(12, 52224, 8*128))
     info = instr.addDetectorIds("Group5", makeIds(18, 64512, 8*128))
-    info = instr.addDetectorIds("Group6", makeIds(18, 82944, 8*128))
+    ids = makeIds(18, 82944, 8*128)
+    #print ids
+    ids_len = len(ids)
+    for i in range(3):
+        ids.insert(0, ids[ids_len-1])
+    del ids[ids_len:]
+    #print ids
+    info = instr.addDetectorIds("Group6", ids)
+    #info = instr.addDetectorIds("Group6", makeIds(18, 82944, 8*128))
 
     # ---------- add in group1
     group1 = instr.makeTypeElement("Group1")
@@ -380,19 +391,16 @@ if __name__ == "__main__":
     # ---------- add in group6
     group6 = instr.makeTypeElement("Group6")
     y = 0.0078125 # 0. # 0.003906
-    z = 6.69/8.45*3.2 # 2.51979
-    rot = 180.0
+    z = 6.69/8.45*3.2# 2.51979
+    rot = 0.
     names = ["bank%d" % i for i in range(82,100)]
-    x = [-0.5457338, -0.4909338, -0.4361338, -0.381338, -0.3265338, -0.2717338,
-         -0.2169338, -0.16213365, -0.1073334, 0.07197215, 0.12677215, 0.1815723,
-         0.2363718, 0.2911718, 0.3459718, 0.4007718, 0.4555718, 0.5103718]
     def tubeX(ntube):
-        return 1.34/8.45*3.2 - (.0254/2+.001)/2*(ntube+32) + .062 +0.13951937869822478 # +.06
+        return 1.34/8.45*3.2 - (.0254/2+.001)/2*(ntube+32) + .062 + .217444
     x2 = []
     for i in range(len(names)):
         x2.append((tubeX(i*8+0) + tubeX(i*8+7))*.5)
     x2.reverse()
-    print x2
+    #print x2
     for name, x in zip(names, x2):
         det = instr.makeDetectorElement("half_inch", root=group6)
         makeLoc(instr, det, name,
@@ -417,11 +425,12 @@ if __name__ == "__main__":
     det = instr.makeTypeElement("half_inch")
     le.SubElement(det, "properties")
     det = instr.addComponent("halftube", root=det, blank_location=False)
-    xstep = 0.00685
-    xstart = -.5*8.*xstep + .5*xstep # OLD=-0.0924
-    for j in range(8):
+    xstep = -0.00685
+    xstart = -1*(-.5*8.*xstep + .5*xstep) # OLD=-0.0924
+    tubenumbers = [1,0,3,2,5,4,7,6]
+    for (tube,j) in zip(range(8),tubenumbers):
         name="halftube%d"  % (j+1)
-        x = float(j)*xstep + xstart
+        x = float(tube)*xstep + xstart
         #if j == 0 or j == 7:
         #    print j, x
         z = -1.* float((j + 1)% 2) * (.0254/2+.001) 
@@ -449,9 +458,8 @@ if __name__ == "__main__":
 
     # ---------- detector tubes
     ypixels = 128
-    ystep = 1./128. # 1m tubes
-    ystart = -.5-.5*ystep
-
+    ystep = .9/float(ypixels) # 1m tubes
+    ystart = -.5*float(ypixels)*ystep+ystep#-.446484#-.5-.5*ystep
     instr.addComment(" 1m 128 pixel half inch tube ")
     tube = instr.makeTypeElement("halftube", {"outline":"yes"})
     le.SubElement(tube, "properties")
@@ -463,7 +471,7 @@ if __name__ == "__main__":
         #    print y
         instr.addLocation(tube, 0., y, 0., name=name)
 
-    ystep = -1./128. # pixels go in the other direction
+    ystep = -1./float(ypixels) # pixels go in the other direction
     ystart = .5+.5*ystep
     instr.addComment(" 1m 128 pixel inch tube ")
     tube = instr.makeTypeElement("tube", {"outline":"yes"})
@@ -478,7 +486,7 @@ if __name__ == "__main__":
 
     instr.addComment("Shape for half inch tube pixels")
     instr.addCylinderPixel("halfpixel", # 1 metre long 1/2 inch tube
-                           (0.,0.,0.), (0.,1.,0.), .25*.0254, 1./128.)
+                           (0.,0.,0.), (0.,1.,0.), .25*.0254, .9/128.)
 
     instr.addComment("Shape for inch tube pixels")
     instr.addCylinderPixel("onepixel", # 1 metre long 1 inch tube
