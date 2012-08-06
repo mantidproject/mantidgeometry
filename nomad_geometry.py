@@ -2,7 +2,7 @@
 
 # Much of the information for this is taken from ~zjn/idl/detpos.pro
 
-from helper import INCH_TO_METRE, MantidGeom
+from helper import INCH_TO_METRE, DEG_TO_RAD, MantidGeom
 from lxml import etree as le # python-lxml on rpm based systems
 
 def makeLoc(instr, det, name, x, y, z, rot, rot_inner=None, rot_innermost=None):
@@ -278,6 +278,89 @@ if __name__ == "__main__":
             rot_inner=90.0, rot_innermost=40.3447402631)
 
     # ---------- add in group4
+    """
+N_forth=12
+ii=[2,3,4,5,6,7,13,14,15,16,17,18]+1
+;z0_forth=-.2/8.45*3.2
+;x0_forth=2.67/8.45*3.2
+;z1_forth=-2.8/8.45*3.2
+;x1_forth=2.08/8.45*3.2
+z0_forth=-.28/7.06*2.7+.0016
+x0_forth=2.66/7.06*2.7
+z1_forth=-2.79/7.06*2.7-.0016
+x1_forth=2.09/7.06*2.7
+dx_forth=x1_forth-x0_forth
+dz_forth=z1_forth-z0_forth
+section=360/float(23)
+
+
+for i=0,n_forth-1 do begin
+angle=(360*(ii(i)+.5)/float(N_forth))*!dtor
+x0=-x0_forth*cos(section*ii(i)*!dtor)
+y0=x0_forth*sin(section*ii(i)*!dtor)
+x1=-x1_forth*cos(section*ii(i)*!dtor)
+y1=x1_forth*sin(section*ii(i)*!dtor)
+
+for j=0,7 do begin
+x0j=x0+j*(.0254+0.001)*sin(section*(ii(i)+.5)*!dtor)
+y0j=y0+j*(.0254+0.001)*cos(section*(ii(i)+.5)*!dtor)
+x1j=x1+j*(.0254+0.001)*sin(section*(ii(i)+.5)*!dtor)
+y1j=y1+j*(.0254+0.001)*cos(section*(ii(i)+.5)*!dtor)
+x((i+n_first+n_second+n_third)*8+j,*)=x0j+(x1j-x0j)*(1-onehundredtwentyeight/128.)
+y((i+n_first+n_second+n_third)*8+j,*)=y0j+(y1j-y0j)*(1-onehundredtwentyeight/128.)
+z((i+n_first+n_second+n_third)*8+j,*)=z0_forth+dz_forth*(1-onehundredtwentyeight/128.)
+end
+end
+N_back=19
+z0_back=-1.78/8.45*3.2
+y0_back=1.32/8.45*3.2
+for i=0,n_back-1 do begin
+
+for j=0,7 do begin
+ntube=i*8+j
+x((i+n_first+n_second+n_third+n_forth)*8+j,*)=(1-onehundredtwentyeight/128.)-0.5
+y((i+n_first+n_second+n_third+n_forth)*8+j,*)=y0_back-(.0254/2+.001)/2*ntube
+z((i+n_first+n_second+n_third+n_forth)*8+j,*)=z0_back-((i/2)*2 eq i)*(.0254/2+.001)
+end
+end
+    """
+    n_forth=12
+    ii=[i+1 for i in (2,3,4,5,6,7,13,14,15,16,17,18)]
+    #;z0_forth=-.2/8.45*3.2
+    #;x0_forth=2.67/8.45*3.2
+    #;z1_forth=-2.8/8.45*3.2
+    #;x1_forth=2.08/8.45*3.2
+    z0_forth=-.28/7.06*2.7+.0016
+    x0_forth=2.66/7.06*2.7
+    z1_forth=-2.79/7.06*2.7-.0016
+    x1_forth=2.09/7.06*2.7
+    dx_forth=x1_forth-x0_forth
+    dz_forth=z1_forth-z0_forth
+    section=360/float(23)
+    from math import cos, sin
+    x=[]
+    y=[]
+    z=[]
+    for i in range(n_forth):
+        angle=(360*(ii[i]+.5)/float(n_forth))*DEG_TO_RAD
+        x0=-x0_forth*cos(section*ii[i]*DEG_TO_RAD)
+        y0=x0_forth*sin(section*ii[i]*DEG_TO_RAD)
+        x1=-x1_forth*cos(section*ii[i]*DEG_TO_RAD)
+        y1=x1_forth*sin(section*ii[i]*DEG_TO_RAD)
+
+        for j in range(7):
+            x0j=x0+j*(.0254+0.001)*sin(section*(ii[i]+.5)*DEG_TO_RAD)
+            y0j=y0+j*(.0254+0.001)*cos(section*(ii[i]+.5)*DEG_TO_RAD)
+            x1j=x1+j*(.0254+0.001)*sin(section*(ii[i]+.5)*DEG_TO_RAD)
+            y1j=y1+j*(.0254+0.001)*cos(section*(ii[i]+.5)*DEG_TO_RAD)
+            for k in range(128):
+                x.append(x0j+(x1j-x0j)*(1-k/128.))
+                y.append(y0j+(y1j-y0j)*(1-k/128.))
+                z.append(z0_forth+dz_forth*(1-k/128.))
+    print x[0:8*128]
+    print y[0:8*128]
+    print z[0:8*128]
+    #####
     group4 = instr.makeTypeElement("Group4")
     z = .5*((-.28/7.06*2.7+.0016) + (-2.79/7.06*2.7-.0016)) # -0.590803
     det = instr.makeDetectorElement("one_inch", root=group4)
