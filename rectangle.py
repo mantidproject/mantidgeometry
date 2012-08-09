@@ -116,6 +116,10 @@ class Vector:
 
     length = property(lambda self: math.sqrt(self.dot(self)))
 
+UNIT_X = Vector(1.,0.,0.)
+UNIT_Y = Vector(0.,1.,0.)
+UNIT_Z = Vector(0.,0.,1.)
+
 def getAngle(y, x):
     """
     Returns the angle in radians using atan2.
@@ -208,9 +212,31 @@ class Rectangle:
         print                       # REMOVE
         print "****", self.__orient # REMOVE
 
-        alpha = getAngle(self.__orient[0][1], self.__orient[0][0])
+        alpha = 0.#getAngle(self.__orient[0][1], self.__orient[0][0])
         beta  = 0.
-        gamma = getAngle(self.__orient[1][2], self.__orient[2][2])
+        gamma = 0.#getAngle(self.__orient[1][2], self.__orient[2][2])
+
+        # calculate beta
+        print "----------"
+        beta = getAngle(UNIT_Z.cross(self.__orient[2]).length,
+                        UNIT_Z.dot(self.__orient[2]))
+        print "**** beta = ", beta
+
+        if abs(math.sin(beta)) < TOLERANCE:
+            print "WARNING! beta =", math.sin(beta)
+
+        # calculate alpha
+        print "----------"
+        alpha = getAngle(UNIT_Z.dot(self.__orient[1]),
+                         UNIT_Z.dot(self.__orient[0]))
+        print "**** alpha = ", alpha
+
+        # calculate gamma
+        print "----------"
+        gamma = getAngle(UNIT_Y.dot(self.__orient[2]),
+                         -1.*UNIT_X.dot(self.__orient[2]))
+        print "**** gamma = ", gamma
+
 
         #beta = math.acos(self.__orient[2][2])
         #print "beta[%f] = %f degrees" \
@@ -240,6 +266,7 @@ if __name__ == "__main__":
     print "center =", rect.center
     print "orientation =", rect.orientation
     rot = rect.euler_rot
+    print "=========="
     print "rotations = ", rot
     if not rot[0][0] == 90.:
         print "alpha is %f != 90" % rot[0][0]
