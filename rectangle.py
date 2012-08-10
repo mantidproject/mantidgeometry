@@ -120,15 +120,17 @@ UNIT_X = Vector(1.,0.,0.)
 UNIT_Y = Vector(0.,1.,0.)
 UNIT_Z = Vector(0.,0.,1.)
 
-def getAngle(y, x):
+def getAngle(y, x, debug=False):
     """
     Returns the angle in radians using atan2.
     """
-    print "getAngle(%f, %f)=" % (y, x), # REMOVE
+    if debug:
+        print "getAngle(%f, %f)=" % (y, x),
     angle = math.atan2(y, x)
     if angle < 0:
         angle += 2*math.pi
-    print math.degrees(angle)           # REMOVE
+    if debug:
+        print math.degrees(angle)
     return angle
 
 class Rectangle:
@@ -209,46 +211,30 @@ class Rectangle:
         George Arfken, Mathematical methods for physicists, 3rd edition
         Academic Press, 1985
         """
-        print                       # REMOVE
-        print "****", self.__orient # REMOVE
-
-        alpha = 0.#getAngle(self.__orient[0][1], self.__orient[0][0])
-        beta  = 0.
-        gamma = 0.#getAngle(self.__orient[1][2], self.__orient[2][2])
-
         # calculate beta
-        print "----------"
         beta = getAngle(UNIT_Z.cross(self.__orient[2]).length,
                         UNIT_Z.dot(self.__orient[2]))
-        print "**** beta = ", beta
 
-        if abs(math.sin(beta)) < TOLERANCE:
-            print "WARNING! beta =", math.sin(beta)
+        if abs(math.sin(beta)) < TOLERANCE: # special case for numerics
+            # since alpha and gamma are coincident, just force gamma to be zero
+            gamma = 0.
 
-        # calculate alpha
-        print "----------"
-        alpha = getAngle(UNIT_Z.dot(self.__orient[1]),
-                         UNIT_Z.dot(self.__orient[0]))
-        print "**** alpha = ", alpha
+            # calculate alpha
+            cos_beta = UNIT_Z.dot(self.__orient[2])
+            if cos_beta == 1. or cos_beta == -1.:
+                alpha = getAngle(UNIT_X.dot(self.__orient[1]),
+                                 UNIT_Y.dot(self.__orient[1]))
+            else:
+                raise RuntimeError("Equations aren't worked out for cos(beta)=%f" % cos_beta)
 
-        # calculate gamma
-        print "----------"
-        gamma = getAngle(UNIT_Y.dot(self.__orient[2]),
-                         -1.*UNIT_X.dot(self.__orient[2]))
-        print "**** gamma = ", gamma
+        else: # go with the traditional route
+            # calculate alpha
+            alpha = getAngle(UNIT_Z.dot(self.__orient[1]),
+                             UNIT_Z.dot(self.__orient[0]))
 
-
-        #beta = math.acos(self.__orient[2][2])
-        #print "beta[%f] = %f degrees" \
-        #    % (self.__orient[2][2], math.degrees(beta))
-
-        #gamma = math.asin(self.__orient[2][1]/math.sin(beta))
-        #print "gamma[%f] = %f degrees" \
-        #    % (self.__orient[2][1]/math.sin(beta), math.degrees(gamma))
-
-        #alpha = math.asin(self.__orient[1][2]/math.sin(beta))
-        #print "alpha[%f] = %f degrees" \
-        #    % (self.__orient[1][2]/math.sin(beta), math.degrees(alpha))
+            # calculate gamma
+            gamma = getAngle(UNIT_Y.dot(self.__orient[2]),
+                             -1.*UNIT_X.dot(self.__orient[2]))
 
         # output for each: rotation angle (in degrees), axis of rotation
         alpha_rot = [math.degrees(alpha), (0., 0., 1.)]
@@ -263,14 +249,27 @@ class Rectangle:
 
 if __name__ == "__main__":
     rect = Rectangle((0,0,0), (1,0,0), (1,1,0), (0,1,0))
+    print "Rectangle((0,0,0), (1,0,0), (1,1,0), (0,1,0))"
     print "center =", rect.center
     print "orientation =", rect.orientation
     rot = rect.euler_rot
-    print "=========="
     print "rotations = ", rot
     if not rot[0][0] == 90.:
         print "alpha is %f != 90" % rot[0][0]
     if not rot[1][0] == 180.:
         print "beta is %f != 180" % rot[1][0]
+    if not rot[2][0] == 0.:
+        print "gamma is %f != 0" % rot[2][0]
+
+    print
+    rect = Rectangle((0,1,0), (1,1,0), (1,0,0), (0,0,0))
+    print "center =", rect.center
+    print "orientation =", rect.orientation
+    rot = rect.euler_rot
+    print "rotations = ", rot
+    if not rot[0][0] == 90.:
+        print "alpha is %f != 90" % rot[0][0]
+    if not rot[1][0] == 0.:
+        print "beta is %f != 0" % rot[1][0]
     if not rot[2][0] == 0.:
         print "gamma is %f != 0" % rot[2][0]
