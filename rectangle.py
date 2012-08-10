@@ -70,13 +70,23 @@ class Vector:
         if abs(length) < TOLERANCE:
             raise RuntimeError("Zero vector of zero length")
         if abs(length -1.) < TOLERANCE:
-            return # nothing to do
+            return self # nothing to do
         self.__data = [it/length for it in self.__data]
 
         return self
 
     def __getitem__(self, key):
         return self.__data[key]
+
+    def __eq__(self, other):
+        other = Vector(other)
+        if not self.x == other.x:
+            return False
+        if not self.y == other.y:
+            return False
+        if not self.z == other.z:
+            return False
+        return True
 
     def __add__(self, other):
         temp = Vector()
@@ -245,31 +255,3 @@ class Rectangle:
     center = property(lambda self: self.__center[:])
     orientation = property(lambda self: self.__orient[:])
     euler_rot = property(__euler_rotations)
-
-
-if __name__ == "__main__":
-    rect = Rectangle((0,0,0), (1,0,0), (1,1,0), (0,1,0))
-    print "Rectangle((0,0,0), (1,0,0), (1,1,0), (0,1,0))"
-    print "center =", rect.center
-    print "orientation =", rect.orientation
-    rot = rect.euler_rot
-    print "rotations = ", rot
-    if not rot[0][0] == 90.:
-        print "alpha is %f != 90" % rot[0][0]
-    if not rot[1][0] == 180.:
-        print "beta is %f != 180" % rot[1][0]
-    if not rot[2][0] == 0.:
-        print "gamma is %f != 0" % rot[2][0]
-
-    print
-    rect = Rectangle((0,1,0), (1,1,0), (1,0,0), (0,0,0))
-    print "center =", rect.center
-    print "orientation =", rect.orientation
-    rot = rect.euler_rot
-    print "rotations = ", rot
-    if not rot[0][0] == 90.:
-        print "alpha is %f != 90" % rot[0][0]
-    if not rot[1][0] == 0.:
-        print "beta is %f != 0" % rot[1][0]
-    if not rot[2][0] == 0.:
-        print "gamma is %f != 0" % rot[2][0]
