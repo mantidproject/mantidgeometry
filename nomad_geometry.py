@@ -3,6 +3,7 @@
 # Much of the information for this is taken from ~zjn/idl/detpos.pro
 
 from helper import INCH_TO_METRE, DEG_TO_RAD, MantidGeom
+from rectangle import Rectangle
 from lxml import etree as le # python-lxml on rpm based systems
 
 def makeLoc(instr, det, name, x, y, z, rot, rot_inner=None, rot_innermost=None):
@@ -343,10 +344,10 @@ end
     z=[]
     for i in range(n_forth):
         angle=(360*(ii[i]+.5)/float(n_forth))*DEG_TO_RAD
-        x0=-x0_forth*cos(section*ii[i]*DEG_TO_RAD)
-        y0=x0_forth*sin(section*ii[i]*DEG_TO_RAD)
-        x1=-x1_forth*cos(section*ii[i]*DEG_TO_RAD)
-        y1=x1_forth*sin(section*ii[i]*DEG_TO_RAD)
+        x0=-x0_forth*cos(section*(ii[i]+.5)*DEG_TO_RAD)
+        y0= x0_forth*sin(section*(ii[i]+.5)*DEG_TO_RAD)
+        x1=-x1_forth*cos(section*(ii[i]+.5)*DEG_TO_RAD)
+        y1= x1_forth*sin(section*(ii[i]+.5)*DEG_TO_RAD)
 
         for j in range(7):
             x0j=x0+j*(.0254+0.001)*sin(section*(ii[i]+.5)*DEG_TO_RAD)
@@ -357,16 +358,23 @@ end
                 x.append(x0j+(x1j-x0j)*(1-k/128.))
                 y.append(y0j+(y1j-y0j)*(1-k/128.))
                 z.append(z0_forth+dz_forth*(1-k/128.))
-    print x[0:8*128]
-    print y[0:8*128]
-    print z[0:8*128]
+    print len(x), len(y), len(z)
+    #print x[0:8*128]
+    #print y[0:8*128]
+    #print z[0:8*128]
     #####
+    rect = Rectangle((x[0],    y[0],    z[0]),    (x[127], y[127], z[127]),
+                     (x[1023], y[1023], z[1023]), (x[896], y[896], z[896]))
+
     group4 = instr.makeTypeElement("Group4")
     z = .5*((-.28/7.06*2.7+.0016) + (-2.79/7.06*2.7-.0016)) # -0.590803
+
     det = instr.makeDetectorElement("one_inch", root=group4)
     makeLoc(instr, det, "bank52",
             x=-0.71647125, y=-0.5438845, z=z, rot=-100.380800509,
             rot_inner=82.7514091291, rot_innermost=145.442056102)
+    print "x=-0.71647125, y=-0.5438845, z=z, rot=-100.380800509, rot_inner=82.7514091291, rot_innermost=145.442056102"
+
     det = instr.makeDetectorElement("one_inch", root=group4)
     makeLoc(instr, det, "bank53",
             x=-0.8366405, y=-0.330414, z=z, rot=-101.93010022,
