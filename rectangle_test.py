@@ -85,20 +85,38 @@ class TestVector(unittest.TestCase):
         self.assertAlmostEqual(temp.length, 374.16573867739413)
         self.assertEqual(temp.normalize().length, 1.)
 
-    def test__add__(self):
-        pass
+    def testVectorMath(self):
+        a = Vector(UNIT_X)
+        b = Vector(UNIT_Y)
+        a = a+b
+        self.assertEqual(a.x, 1.)
+        self.assertEqual(a.y, 1.)
+        self.assertEqual(a.z, 0.)
 
-    def test__sub__(self):
-        pass
+        a = Vector(UNIT_X)
+        b = Vector(UNIT_Y)
+        a = a-b
+        self.assertEqual(a.x,  1.)
+        self.assertEqual(a.y, -1.)
+        self.assertEqual(a.z,  0.)
 
-    def test__div__(self):
-        pass
+        a = Vector(UNIT_X)
+        a = a/2.
+        self.assertEqual(a.x,  .5)
+        self.assertEqual(a.y,  0.)
+        self.assertEqual(a.z,  0.)
 
-    def test__mul__(self):
-        pass
+        a = Vector(UNIT_X)
+        a = a*2.
+        self.assertEqual(a.x,  2.)
+        self.assertEqual(a.y,  0.)
+        self.assertEqual(a.z,  0.)
 
-    def test__rmul__(self):
-        pass
+        a = Vector(UNIT_X)
+        a = 2.*a
+        self.assertEqual(a.x,  2.)
+        self.assertEqual(a.y,  0.)
+        self.assertEqual(a.z,  0.)
 
 def suite():
     suite_rect  = unittest.TestLoader().loadTestsFromTestCase(TestRectangle)
