@@ -162,22 +162,45 @@ class Rectangle:
         d2 = self.__magnitudeSq(p1, p3)
         d3 = self.__magnitudeSq(p1, p4)
         if d1 > d2 or d3 > d2:
-            raise RuntimeError("The Points are in the incorrect order")
+            if d1 > d2:
+                specific = " (d1=|p1-p2|=%f > d2=|p1-p3|=%f)" % (d1, d2)
+            if d3 > d2:
+                specific = " (d3=|p1-p4|=%f > d2=|p1-p3|=%f)" % (d3, d2)
+            raise RuntimeError("The Points are in the incorrect order"+specific)
 
 
         # Parallelogram opposite side from p1 to p4 is parallel and 
         # equal lengths.
-        for num in p2+p4-p1-p3:
+        left = p2-p1
+        right = p4-p3
+        if abs(left.length - right.length) > TOLERANCE:
+            msg = "Left and right sides are not equal length: " \
+                + "left=%f != right=%f (diff=%f)" \
+                % (left.length, right.length, abs(left.length-right.length))
+            raise RuntimeError(msg)
+
+        top = p2-p3
+        bottom = p4-p1
+        if abs(top.length - bottom.length) > TOLERANCE:
+            msg = "Top and bottom sides are not equal length: "\
+                + "top=%f != bottom=%f (diff=%f)" \
+                % (top.length, bottom.length, abs(top.length-bottom.length))
+            raise RuntimeError(msg)
+
+        # opposite sides should add up to zero length vector
+        for (i,num) in zip(('x', 'y', 'z'), left+right):
             if abs(num) > TOLERANCE:
-                raise RuntimeError(" points not rectangle corners")
+                msg = "Points not rectangle corners (num[%s]=%f > %f)" \
+                                       % (i,num, TOLERANCE)
+                raise RuntimeError(msg)
 
         # Make sure the points are at right angles. Eliminates collinear
         # case too
-        dotProd = (p2 - p1).dot(p4 - p1)
-
-        # will catch the collinear case here
+        dotProd = left.dot(bottom)
         if abs(dotProd) > TOLERANCE:
-            raise RuntimeError(" This is not a rectangle")
+            msg = " This is not a rectangle (p2-p1)dot(p4-p1) = %f > %f" \
+                % (dotProd, TOLERANCE)
+            raise RuntimeError(msg)
 
         self.__center = (p1 + p2 + p3 + p4) / float(Rectangle.NPOINTS)
         self.__calcOrientation(p1, p2, p3, p4)
