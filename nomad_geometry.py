@@ -13,6 +13,16 @@ def makeLoc(instr, det, name, x, y, z, rot, rot_inner=None, rot_innermost=None):
         if rot_innermost is not None:
             le.SubElement(sub, "rot", **{"val":str(rot_innermost), "axis-x":"0", "axis-y":"1", "axis-z":"0"})
 
+def makeRectLoc(instr, det, name, rect):
+    center = rect.center
+    rotations = rect.euler_rot
+    sub = instr.addLocation(det, x=center[0], y=center[1], z=center[2],
+                            name=name, rot_z=rotations[0][0])
+    if rotations[1][0] != 0.: # second rotation angle about y-axis
+        sub = le.SubElement(sub, "rot", genRotationDict(rotations[1]))
+        if rotations[2][0] != 0.: # third rotation angle about z-axis
+            le.SubElement(sub, "rot", genRotationDict(rotations[2]))
+
 def makeAttrs(idstart):
     """Return list of pixel ids appropriate for rectangular detectors."""
     return {"idstart":idstart, "idfillbyfirst":"y", "idstepbyrow":128}
@@ -294,7 +304,6 @@ dx_forth=x1_forth-x0_forth
 dz_forth=z1_forth-z0_forth
 section=360/float(23)
 
-
 for i=0,n_forth-1 do begin
 angle=(360*(ii(i)+.5)/float(N_forth))*!dtor
 x0=-x0_forth*cos(section*ii(i)*!dtor)
@@ -312,113 +321,66 @@ y((i+n_first+n_second+n_third)*8+j,*)=y0j+(y1j-y0j)*(1-onehundredtwentyeight/128
 z((i+n_first+n_second+n_third)*8+j,*)=z0_forth+dz_forth*(1-onehundredtwentyeight/128.)
 end
 end
-N_back=19
-z0_back=-1.78/8.45*3.2
-y0_back=1.32/8.45*3.2
-for i=0,n_back-1 do begin
-
-for j=0,7 do begin
-ntube=i*8+j
-x((i+n_first+n_second+n_third+n_forth)*8+j,*)=(1-onehundredtwentyeight/128.)-0.5
-y((i+n_first+n_second+n_third+n_forth)*8+j,*)=y0_back-(.0254/2+.001)/2*ntube
-z((i+n_first+n_second+n_third+n_forth)*8+j,*)=z0_back-((i/2)*2 eq i)*(.0254/2+.001)
-end
-end
     """
-    n_forth=12
-    ii=[i+1 for i in (2,3,4,5,6,7,13,14,15,16,17,18)]
+    ii=[float(i+1) for i in (2,3,4,5,6,7,13,14,15,16,17,18)]
+    n_forth=len(ii)
     #;z0_forth=-.2/8.45*3.2
     #;x0_forth=2.67/8.45*3.2
     #;z1_forth=-2.8/8.45*3.2
     #;x1_forth=2.08/8.45*3.2
-    z0_forth=-.28/7.06*2.7+.0016
-    x0_forth=2.66/7.06*2.7
+    z0_forth=-0.28/7.06*2.7+.0016
+    x0_forth= 2.66/7.06*2.7
     z1_forth=-2.79/7.06*2.7-.0016
-    x1_forth=2.09/7.06*2.7
+    x1_forth= 2.09/7.06*2.7
     dx_forth=x1_forth-x0_forth
     dz_forth=z1_forth-z0_forth
-    section=360/float(23)
-    from math import cos, sin
+    print "dx =", dx_forth, (dx_forth/8.)
+    print "dz =", dz_forth, (dz_forth/128.)
+    from math import cos, sin, radians, pi
+    section=(2.*pi)/23.
     x=[]
     y=[]
     z=[]
-    for i in range(n_forth):
-        angle=(360*(ii[i]+.5)/float(n_forth))*DEG_TO_RAD
-        x0=-x0_forth*cos(section*(ii[i]+.5)*DEG_TO_RAD)
-        y0= x0_forth*sin(section*(ii[i]+.5)*DEG_TO_RAD)
-        x1=-x1_forth*cos(section*(ii[i]+.5)*DEG_TO_RAD)
-        y1= x1_forth*sin(section*(ii[i]+.5)*DEG_TO_RAD)
+    for i in ii:
+        angle = section*i
+        x0=-x0_forth*cos(angle)
+        y0= x0_forth*sin(angle)
+        x1=-x1_forth*cos(angle)
+        y1= x1_forth*sin(angle)
 
-        for j in range(7):
-            x0j=x0+j*(.0254+0.001)*sin(section*(ii[i]+.5)*DEG_TO_RAD)
-            y0j=y0+j*(.0254+0.001)*cos(section*(ii[i]+.5)*DEG_TO_RAD)
-            x1j=x1+j*(.0254+0.001)*sin(section*(ii[i]+.5)*DEG_TO_RAD)
-            y1j=y1+j*(.0254+0.001)*cos(section*(ii[i]+.5)*DEG_TO_RAD)
+        for j in range(8):
+            x0j=x0+j*(.0254+0.001)*sin(angle)
+            y0j=y0+j*(.0254+0.001)*cos(angle)
+            x1j=x1+j*(.0254+0.001)*sin(angle)
+            y1j=y1+j*(.0254+0.001)*cos(angle)
             for k in range(128):
-                x.append(x0j+(x1j-x0j)*(1-k/128.))
-                y.append(y0j+(y1j-y0j)*(1-k/128.))
-                z.append(z0_forth+dz_forth*(1-k/128.))
+                k = float(k)
+                x.append(x0j+(x1j-x0j)*(1.-k/128.))
+                y.append(y0j+(y1j-y0j)*(1.-k/128.))
+                z.append(z0_forth+dz_forth*(1.-k/128.))
     print len(x), len(y), len(z)
     #print x[0:8*128]
     #print y[0:8*128]
     #print z[0:8*128]
     #####
-    rect = Rectangle((x[0],    y[0],    z[0]),    (x[127], y[127], z[127]),
-                     (x[1023], y[1023], z[1023]), (x[896], y[896], z[896]))
+    LL = 0*128+0   # LOWER LEFT CORNER
+    UL = 0*128+127 # UPPER LEFT CORNER
+    LR = 7*128+0   # LOWER RIGHT CORNER
+    UR = 7*128+127 # UPPER RIGHT CORNER
 
     group4 = instr.makeTypeElement("Group4")
-    z = .5*((-.28/7.06*2.7+.0016) + (-2.79/7.06*2.7-.0016)) # -0.590803
-
-    det = instr.makeDetectorElement("one_inch", root=group4)
-    makeLoc(instr, det, "bank52",
-            x=-0.71647125, y=-0.5438845, z=z, rot=-100.380800509,
-            rot_inner=82.7514091291, rot_innermost=145.442056102)
-    print "x=-0.71647125, y=-0.5438845, z=z, rot=-100.380800509, rot_inner=82.7514091291, rot_innermost=145.442056102"
-
-    det = instr.makeDetectorElement("one_inch", root=group4)
-    makeLoc(instr, det, "bank53",
-            x=-0.8366405, y=-0.330414, z=z, rot=-101.93010022,
-            rot_inner=85.7981490801, rot_innermost=160.873964923)
-    det = instr.makeDetectorElement("one_inch", root=group4)
-    makeLoc(instr, det, "bank54",
-            x=-0.89476125, y=-0.0924384, z=z, rot=-102.609961197,
-            rot_inner=89.1442736336, rot_innermost=176.180633801)
-    det = instr.makeDetectorElement("one_inch", root=group4)
-    makeLoc(instr, det, "bank55",
-            x=-0.88651975, y=0.152392725, z=z, rot=-102.382153342,
-            rot_inner=92.5513960694, rot_innermost=-168.537574441)
-    det = instr.makeDetectorElement("one_inch", root=group4)
-    makeLoc(instr, det, "bank56",
-            x=-0.81253, y=0.38592175, z=z, rot=-101.259734987,
-            rot_inner=95.7771900875, rot_innermost=-153.178651419)
-    det = instr.makeDetectorElement("one_inch", root=group4)
-    makeLoc(instr, det, "bank57",
-            x=-0.6782785, y=0.590829, z=z, rot=-99.3065608131,
-            rot_inner=98.5886817118, rot_innermost=-137.656749509)
-    det = instr.makeDetectorElement("one_inch", root=group4)
-    makeLoc(instr, det, "bank58",
-            x=0.63573875, y=0.636378, z=z, rot=-80.693405525,
-            rot_inner=98.5885823254, rot_innermost=-42.3428178708)
-    det = instr.makeDetectorElement("one_inch", root=group4)
-    makeLoc(instr, det, "bank59",
-            x=0.7838565, y=0.44125875, z=z, rot=-78.7402567115,
-            rot_inner=95.7771942637, rot_innermost=-26.8213477452)
-    det = instr.makeDetectorElement("one_inch", root=group4)
-    makeLoc(instr, det, "bank60",
-            x=0.8738395, y=0.213413675, z=z, rot=-77.6177951612,
-            rot_inner=92.5514008681, rot_innermost=-11.4623986459)
-    det = instr.makeDetectorElement("one_inch", root=group4)
-    makeLoc(instr, det, "bank61",
-            x=0.89901375, y=-0.030258525, z=z, rot=-77.3901270893,
-            rot_inner=89.1445508423, rot_innermost=3.81816021827)
-    det = instr.makeDetectorElement("one_inch", root=group4)
-    makeLoc(instr, det, "bank62",
-            x=0.857512, y=-0.271688, z=z, rot=-78.0699239299,
-            rot_inner=85.7981574327, rot_innermost=19.1260368466)
-    det = instr.makeDetectorElement("one_inch", root=group4)
-    makeLoc(instr, det, "bank63",
-            x=0.7524125, y=-0.492967, z=z, rot=-79.6191744094,
-            rot_inner=82.7513919919, rot_innermost=34.5579407336)
+    for i in range(n_forth):
+        offset = i*8*128
+        bank = "bank%d" % (i+52)
+        print bank, "i =", i, "offset=", offset
+        rect = Rectangle( # original is LL, UL, UR, LR
+                         (-y[offset+UR], x[offset+UR], z[offset+UR]), # bad at top, close
+                         (-y[offset+LR], x[offset+LR], z[offset+LR]), # bad at top
+                         (-y[offset+LL], x[offset+LL], z[offset+LL]), # bad at top, close
+                         (-y[offset+UL], x[offset+UL], z[offset+UL]) # close at top, bad
+                         )
+        det = instr.makeDetectorElement("one_inch_special", root=group4)
+        rect.makeLocation(instr, det, bank)
 
     # ---------- add in group5
     group5 = instr.makeTypeElement("Group5")
@@ -512,6 +474,20 @@ end
         #    print j, x
         instr.addLocation(det, x, 0., 0., name=name)
 
+    instr.addComment("New Detector Panel (128x8) - one_inch")
+    det = instr.makeTypeElement("one_inch_special")
+    le.SubElement(det, "properties")
+    det = instr.addComponent("tubespecial", root=det, blank_location=False)
+    xstep = (0.0254*5.5/5.) # tubes are at 5.5inches for 6 tubes on centre OLD=-0.0264
+    xstep = ((2.66/7.06*2.7) - (2.09/7.06*2.7))/8.
+    xstart = (-4. + .5) * xstep # OLD=0.0924
+    for j in range(8):
+        name="tube%d"  % (j+1)
+        x = float(j)*xstep + xstart
+        if j == 0 or j == 7:
+            print j, x
+        instr.addLocation(det, x, 0., 0., name=name)
+
     instr.addComment("New Detector Panel (128x8) - half_inch")
     det = instr.makeTypeElement("half_inch")
     le.SubElement(det, "properties")
@@ -573,6 +549,20 @@ end
         y = float(i)*ystep + ystart
         #if i == 0 or i == 127:
         #    print y
+        instr.addLocation(tube, 0., y, 0., name=name)
+
+    ystep = -1./float(ypixels) # pixels go in the other direction
+    ystep = ((-2.79/7.06*2.7-.0016) - (-0.28/7.06*2.7+.0016))/128.
+    ystart = -1.*(64.-.5)*ystep #.5+.5*ystep
+    instr.addComment(" 1m 128 pixel inch tube ")
+    tube = instr.makeTypeElement("tubespecial", {"outline":"yes"})
+    le.SubElement(tube, "properties")
+    tube = instr.addComponent("onepixel", root=tube, blank_location=False)
+    for i in range(ypixels):
+        name = "pixel%d" % (i+1)
+        y = float(i)*ystep + ystart
+        if i == 0 or i == 127:
+            print i, y
         instr.addLocation(tube, 0., y, 0., name=name)
 
     instr.addComment("Shape for half inch tube pixels")

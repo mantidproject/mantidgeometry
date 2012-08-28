@@ -4,6 +4,12 @@
 #
 
 import math
+HAS_LXML = True
+try:
+    from lxml import etree as le # python-lxml on rpm based systems
+except ImportError, e:
+    print "WARNING: Failed to load lxml. Xml output turned off for rectangle.py"
+    HAS_LXML = False
 
 TOLERANCE = .0001
 
@@ -137,8 +143,8 @@ def getAngle(y, x, debug=False):
     if debug:
         print "getAngle(%f, %f)=" % (y, x),
     angle = math.atan2(y, x)
-    if angle < 0:
-        angle += 2*math.pi
+    #if angle < 0:
+    #    angle += 2*math.pi
     if debug:
         print math.degrees(angle)
     return angle
@@ -151,6 +157,9 @@ class Rectangle:
     BOTTOMRIGHT = 4
 
     def __init__(self, p1, p2, p3, p4):
+        """
+        The points should be specified as lower-left (p1) in a clockwise order.
+        """
         p1 = Vector(p1)
         p2 = Vector(p2)
         p3 = Vector(p3)
@@ -226,16 +235,23 @@ class Rectangle:
         yvec = -.5*(p1 + p4) + self.__center
 
         # normalize the vectors
+        zvec = xvec.cross(yvec)
         xvec.normalize()
         yvec.normalize()
+        zvec.normalize()
+
+        #print "x =", xvec, "y =", yvec, "z =", zvec
+        #print "x dot y =", xvec.dot(yvec)
+        #print "x dot z =", xvec.dot(zvec)
+        #print "y dot z =", yvec.dot(zvec)
 
         # xvec should change most in x direction
         self.__orient = []
         self.__orient.append(xvec)
         self.__orient.append(yvec)
-        self.__orient.append(xvec.cross(yvec))
+        self.__orient.append(zvec)
 
-    def __euler_rotations(self):
+    def __euler_rotations_zyz(self):
         """
         The Euler angles are about the z (alpha), then unrotated y (beta),
         then unrotated z (gamma). This is described in equations and pretty 
@@ -275,6 +291,78 @@ class Rectangle:
         gamma_rot = [math.degrees(gamma), (0., 0., 1.)]
         return (alpha_rot, beta_rot, gamma_rot)
 
+    def __euler_rotations_yzy(self):
+        """
+        This is very similar to __euler_roatations_zyz except the rotations are about 
+        the y (alpha), then unrotated z (beta), then unrotated y (gamma).
+        """
+        rotated_x = self.__orient[0]
+        rotated_y = self.__orient[1]
+        rotated_z = self.__orient[2]
+
+        # calculate beta
+        beta = getAngle(UNIT_Y.cross(rotated_y).length,
+                        UNIT_Y.dot(rotated_y))
+
+        if abs(math.sin(beta)) < TOLERANCE: # special case for numerics
+            # since alpha and gamma are coincident, just force gamma to be zero
+            gamma = 0.
+
+            # calculate alpha
+            alpha = getAngle(UNIT_Z.dot(rotated_x),
+                             UNIT_Z.dot(rotated_z))
+        else:
+            # calculate alpha
+            alpha = getAngle(UNIT_Y.dot(rotated_z),
+                             -1.*UNIT_Y.dot(rotated_x))
+
+            # calculate gamma
+            gamma = getAngle(UNIT_Z.dot(rotated_y),
+                             UNIT_X.dot(rotated_y))
+
+        # output for each: rotation angle (in degrees), axis of rotation
+        alpha_rot = [-1.*math.degrees(alpha), (0., 1., 0.)]
+        beta_rot  = [-1.*math.degrees(beta),  (0., 0., 1.)]
+        gamma_rot = [-1.*math.degrees(gamma), (0., 1., 0.)]
+        return (alpha_rot, beta_rot, gamma_rot)
+
     center = property(lambda self: self.__center[:])
     orientation = property(lambda self: self.__orient[:])
-    euler_rot = property(__euler_rotations)
+    euler_rot = property(__euler_rotations_zyz)
+
+    def __genRotationDict(self, rotation):
+        """
+        Generate the dict used for creating attributes.
+        """
+        (angle, axis) = rotation
+        axis = [str(int(val)) for val in axis]
+
+        result = {}
+        result["val"]    = str(angle)
+        if axis[0] != '0' or axis[1] != '0' or axis[2] != '1':
+            result["axis-x"] = axis[0]
+            result["axis-y"] = axis[1]
+            result["axis-z"] = axis[2]
+        return result
+
+    def makeLocation(self, instr, det, name):
+        """
+        @param instr The root instrument that does most of the work.
+        @param det   The detector component.
+        @param name  The name of the bank.
+        """
+        if not HAS_LXML:
+            raise RuntimeError("lxml is not loaded")
+
+        rotations = list(self.__euler_rotations_yzy()) # cache within the function
+        rotations.reverse() # may need this back
+
+        sub = instr.addLocation(det, x=self.__center[0], y=self.__center[1], z=self.__center[2],
+                                name=name, rot_y=rotations[0][0])
+        if abs(rotations[1][0]) > TOLERANCE: # second rotation angle about y-axis
+            sub = le.SubElement(sub, "rot", self.__genRotationDict(rotations[1]))
+            if abs(rotations[2][0]) > TOLERANCE: # third rotation angle about z-axis
+                le.SubElement(sub, "rot", self.__genRotationDict(rotations[2]))
+
+
+
