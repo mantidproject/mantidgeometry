@@ -1,4 +1,6 @@
+__author__ = 'Stuart Campbell'
 
+import lxml
 
 # Some static information
 INSTRUMENT_NAME = "VISION"
