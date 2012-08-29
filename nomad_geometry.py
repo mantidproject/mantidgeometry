@@ -11,7 +11,9 @@ def makeLoc(instr, det, name, x, y, z, rot, rot_inner=None, rot_innermost=None):
     if rot_inner is not None:
         sub = le.SubElement(sub, "rot", **{"val":str(rot_inner)})
         if rot_innermost is not None:
-            le.SubElement(sub, "rot", **{"val":str(rot_innermost), "axis-x":"0", "axis-y":"1", "axis-z":"0"})
+            le.SubElement(sub, "rot",
+                          **{"val":str(rot_innermost),
+                             "axis-x":"0", "axis-y":"1", "axis-z":"0"})
 
 def makeRectLoc(instr, det, name, rect):
     center = rect.center
@@ -38,7 +40,8 @@ if __name__ == "__main__":
     xml_outfile = inst_name+"_Definition.xml"
 
     # boiler plate stuff
-    instr = MantidGeom(inst_name, comment=" Created by Peter Peterson ", valid_from="2012-07-01 00:00:01",
+    instr = MantidGeom(inst_name, comment=" Created by Peter Peterson ",
+                       valid_from="2012-07-01 00:00:01",
                        valid_to="2012-07-31 23:59:59")
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults()

@@ -31,7 +31,8 @@ class Vector:
                     self.__data = x.__data[:]
                 except AttributeError, e:
                     if len(x) != Vector.LENGTH:
-                        raise RuntimeError("Expected 3 values, found %d" % len(x))
+                        msg = "Expected 3 values, found %d" % len(x)
+                        raise RuntimeError(msg)
                     self.__data = x[:Vector.LENGTH]
         else:
             self.__data = [x, y, z]
@@ -274,7 +275,8 @@ class Rectangle:
                 alpha = getAngle(UNIT_X.dot(self.__orient[1]),
                                  UNIT_Y.dot(self.__orient[1]))
             else:
-                raise RuntimeError("Equations aren't worked out for cos(beta)=%f" % cos_beta)
+                msg = "Equations aren't worked out for cos(beta)=%f" % cos_beta
+                raise RuntimeError(msg)
 
         else: # go with the traditional route
             # calculate alpha
@@ -293,8 +295,9 @@ class Rectangle:
 
     def __euler_rotations_yzy(self):
         """
-        This is very similar to __euler_roatations_zyz except the rotations are about 
-        the y (alpha), then unrotated z (beta), then unrotated y (gamma).
+        This is very similar to __euler_roatations_zyz except the rotations 
+        are about the y (alpha), then unrotated z (beta), then unrotated 
+        y (gamma).
         """
         rotated_x = self.__orient[0]
         rotated_y = self.__orient[1]
@@ -354,14 +357,17 @@ class Rectangle:
         if not HAS_LXML:
             raise RuntimeError("lxml is not loaded")
 
-        rotations = list(self.__euler_rotations_yzy()) # cache within the function
-        rotations.reverse() # may need this back
+        # cache within the function
+        rotations = list(self.__euler_rotations_yzy())
+        rotations.reverse() # may need this
 
-        sub = instr.addLocation(det, x=self.__center[0], y=self.__center[1], z=self.__center[2],
+        sub = instr.addLocation(det, x=self.__center[0],
+                                y=self.__center[1], z=self.__center[2],
                                 name=name, rot_y=rotations[0][0])
-        if abs(rotations[1][0]) > TOLERANCE: # second rotation angle about y-axis
-            sub = le.SubElement(sub, "rot", self.__genRotationDict(rotations[1]))
-            if abs(rotations[2][0]) > TOLERANCE: # third rotation angle about z-axis
+        if abs(rotations[1][0]) > TOLERANCE: # second rotation
+            sub = le.SubElement(sub, "rot",
+                                self.__genRotationDict(rotations[1]))
+            if abs(rotations[2][0]) > TOLERANCE: # third rotation angle
                 le.SubElement(sub, "rot", self.__genRotationDict(rotations[2]))
 
 
