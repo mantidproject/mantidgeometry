@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
 # Much of the information for this is taken from ~zjn/idl/detpos.pro
-
 from helper import INCH_TO_METRE, DEG_TO_RAD, MantidGeom
-from rectangle import Rectangle
+from rectangle import Rectangle, Vector
 from lxml import etree as le # python-lxml on rpm based systems
+
+# All of the tubes are 40" long with a 2mm gap between tubes
+TUBE_LENGTH = 40.*.0254
+AIR_GAP = .002
 
 def makeLoc(instr, det, name, x, y, z, rot, rot_inner=None, rot_innermost=None):
     sub = instr.addLocation(det, x=x, y=y, z=z, rot_y=rot, name=name)
@@ -35,6 +38,117 @@ def makeIds(numBanks, offset, size):
         ids.extend((i*size+offset, (i+1)*size+offset-1, None))
     return ids
 
+class DetPack:
+    def __init__(self, tuberadius, ysize, airgap=0., xsize=0., xnum=8, ynum=128,
+                 xstart=None, xstartdiff=0., ystart=None, ystartdiff=0.,
+                 debug=False):
+        """
+        Create a n-pack of detector tubes where y is along the tube and x 
+        is between tubes.
+
+        @param tuberadius : The radius if the detector tube
+        @param airgap : Gap between tubes
+        @param xsize  : The extent of the pack (tube centers)
+        @param ysize  : The length of the tube
+        @param xnum   : Number of tubes (default=8)
+        @param ynum   : Number of pixels along a tube (default=128)
+        @param xstart : Used to calculate tube position. Default is 
+        to put tubes centered at zero.
+        @param xstartdiff : Offset (in metres) to add to the xstart 
+        calculation. This is ignored if xstart is specified.
+        @param ystart : Used to calculate pixel position. Default is
+        to center the tube at zero.
+        @param xstartdiff : Offset (in metres) to add to the ystart 
+        calculation. This is ignored if ystart is specified.
+        @param debug  : enable debug printing (default=False)
+        """
+        self.__debug = bool(debug)
+
+        self.radius = float(tuberadius)
+
+        if xnum <= 0:
+            raise ValueError("Cannot have xnum = %d (<= 0)" % xnum)
+        if xsize > 0.:
+            xsize  = float(xsize)
+            self.xstep = xsize/float(xnum)
+        else:
+            self.xstep = 2.*tuberadius + airgap
+            xsize = float(xnum) * self.xstep
+        self.xnum   = int(xnum)
+        if xstart is not None:
+            self.xstart = float(xstart)
+        else:
+            self.xstart = -1. * (.5*float(self.xnum) - .5) * self.xstep \
+                + xstartdiff
+
+        if self.__debug:
+            print "XSIZE:", xsize, self.xstep*self.xnum, \
+                (xsize-self.xstep*self.xnum)
+
+        if ynum <= 0:
+            raise ValueError("Cannot have ynum = %d (<= 0)" % ynum)
+        self.ysize  = float(ysize)
+        self.ystep = ysize/float(ynum)
+        self.ynum   = int(ynum)
+        if ystart is not None:
+            self.ystart = float(ystart)
+        else:
+            self.ystart = -1. * (.5*float(self.ynum) - .5) * self.ystep \
+                + ystartdiff
+
+        if self.__debug:
+            print "YSIZE:", ysize, self.ystep*self.ynum, \
+                (ysize-self.ystep*self.ynum)
+
+        self.namepixel = "pixel"
+        self.nametube  = "tube"
+        self.namepack  = "pack"
+
+    def setNames(self, pixel=None, tube=None, pack=None):
+        if pixel is not None:
+            self.namepixel = pixel
+        if tube is not None:
+            self.nametube = tube
+        if pack is not None:
+            self.namepack = pack
+
+    def writePack(self, instr, comment=""):
+        if len(comment) > 0:
+            instr.addComment(comment)
+        instr.addComment("New Detector Panel (128x8) - one_inch")
+        det = instr.makeTypeElement(self.namepack)
+        le.SubElement(det, "properties")
+        det = instr.addComponent(self.nametube, root=det, blank_location=False)
+        debug_ids = [0, self.xnum-1]
+        for j in range(self.xnum):
+            name="tube%d"  % (j+1)
+            x = float(j)*self.xstep + self.xstart
+            if self.__debug and (j in debug_ids):
+                print "x[%d] = %f" % (j, x)
+            instr.addLocation(det, x, 0., 0., name=name)
+
+    def writeTube(self, instr, comment=""):
+        if len(comment) > 0:
+            instr.addComment(comment)
+        tube = instr.makeTypeElement(self.nametube, {"outline":"yes"})
+        le.SubElement(tube, "properties")
+        tube = instr.addComponent(self.namepixel, root=tube, blank_location=False)
+        debug_ids = [0, self.ynum-1]
+        for i in range(self.ynum):
+            name = "pixel%d" % (i+1)
+            y = float(i)*self.ystep + self.ystart
+            if self.__debug and (i in debug_ids):
+                print "y[%d] = %f" % (i, y)
+            instr.addLocation(tube, 0., y, 0., name=name)
+
+    def writePixel(self, instr, comment=""):
+        if len(comment) > 0:
+            instr.addComment(comment)
+        instr.addCylinderPixel(self.namepixel,
+                               (0.,0.,0.), # base (radius, theta, phi)
+                               (0.,1.,0.), # axis
+                               self.radius,   # pixel radius
+                               abs(self.ystep))    # pixel height
 if __name__ == "__main__":
     inst_name = "NOMAD"
     xml_outfile = inst_name+"_Definition.xml"
@@ -76,7 +190,7 @@ if __name__ == "__main__":
     #info = instr.addDetectorIds("Group6", makeIds(18, 82944, 8*128))
 
     # ---------- add in group1
-"""
+    """
 ;;;source idl code
 N_first=14
 z0_first=6.41/8.45*3.2
@@ -106,7 +220,7 @@ y(i*8+j,*)=y0j+(y1j-y0j)*(1-onehundredtwentyeight/128.)
 z(i*8+j,*)=z0_first+dz_first*(1-onehundredtwentyeight/128.)
 end
 end
-"""
+    """
     group1 = instr.makeTypeElement("Group1")
     z = .5*((6.41/8.45*3.2) + (3.86/8.45*3.2))# 1.940845
     det = instr.makeDetectorElement("one_inch", root=group1)
@@ -167,7 +281,7 @@ end
             rot_inner=92.774014947, rot_innermost=77.1274554878)
 
     # ---------- add in group2
-"""
+    """
 ;;; source idl code
 N_second=23
 ;z0_second=5.05/8.45*3.2
@@ -181,8 +295,6 @@ x1_second=2.22/7.06*2.7
 dx_second=x1_second-x0_second
 dz_second=z1_second-z0_second
 section=360/float(n_second)
-
-
 
 for i=0,n_second-1 do begin
 angle=(360*(i+.5)/float(N_second))*!dtor
@@ -201,7 +313,7 @@ y((i+n_first)*8+j,*)=y0j+(y1j-y0j)*onehundredtwentyeight/128.
 z((i+n_first)*8+j,*)=z0_second+dz_second*onehundredtwentyeight/128.
 end
 end
-"""
+    """
     group2 = instr.makeTypeElement("Group2")
     z = .5*((5.09/7.06*2.7-0.0095) + (2.45/7.06*2.7+0.0095)) # 1.445654
     det = instr.makeDetectorElement("one_inch", root=group2)
@@ -298,7 +410,7 @@ end
             rot_inner=90.0, rot_innermost=82.173807641)
 
     # ---------- add in group3
-"""
+    """
 ;;; source idl code
 N_third=14
 ii=[3,4,5,6,7,8,9,18,19,20,21,22,23,24]+.5
@@ -315,8 +427,6 @@ x1_third=1.00
 dx_third=x1_third-x0_third
 dz_third=z1_third-z0_third
 section=360/float(29)
-
-
 
 for i=0,n_third-1 do begin
 angle=(360*(ii(i)+.5)/float(N_third))*!dtor
@@ -335,7 +445,7 @@ y((i+n_first+n_second)*8+j,*)=y0j+(y1j-y0j)*(1-onehundredtwentyeight/128.)
 z((i+n_first+n_second)*8+j,*)=z0_third+dz_third*(1-onehundredtwentyeight/128.)
 end
 end
-"""
+    """
     group3 = instr.makeTypeElement("Group3")
     z = .5*((2.59/7.06*2.7-0.0076) + (-0.04/7.06*2.7+.0076)) # 0.48373677
     det = instr.makeDetectorElement("one_inch", root=group3)
@@ -396,7 +506,7 @@ end
             rot_inner=90.0, rot_innermost=40.3447402631)
 
     # ---------- add in group4
-"""
+    """
 ;;; source idl code
 N_forth=12
 ii=[2,3,4,5,6,7,13,14,15,16,17,18]+1
@@ -413,37 +523,36 @@ dz_forth=z1_forth-z0_forth
 section=360/float(23)
 
 for i=0,n_forth-1 do begin
-angle=(360*(ii(i)+.5)/float(N_forth))*!dtor
-x0=-x0_forth*cos(section*ii(i)*!dtor)
-y0=x0_forth*sin(section*ii(i)*!dtor)
-x1=-x1_forth*cos(section*ii(i)*!dtor)
-y1=x1_forth*sin(section*ii(i)*!dtor)
+  angle=(360*(ii(i)+.5)/float(N_forth))*!dtor
+  x0=-x0_forth*cos(section*ii(i)*!dtor)
+  y0= x0_forth*sin(section*ii(i)*!dtor)
+  x1=-x1_forth*cos(section*ii(i)*!dtor)
+  y1= x1_forth*sin(section*ii(i)*!dtor)
 
-for j=0,7 do begin
-x0j=x0+j*(.0254+0.001)*sin(section*(ii(i)+.5)*!dtor)
-y0j=y0+j*(.0254+0.001)*cos(section*(ii(i)+.5)*!dtor)
-x1j=x1+j*(.0254+0.001)*sin(section*(ii(i)+.5)*!dtor)
-y1j=y1+j*(.0254+0.001)*cos(section*(ii(i)+.5)*!dtor)
-x((i+n_first+n_second+n_third)*8+j,*)=x0j+(x1j-x0j)*(1-onehundredtwentyeight/128.)
-y((i+n_first+n_second+n_third)*8+j,*)=y0j+(y1j-y0j)*(1-onehundredtwentyeight/128.)
-z((i+n_first+n_second+n_third)*8+j,*)=z0_forth+dz_forth*(1-onehundredtwentyeight/128.)
-end
+  for j=0,7 do begin
+    x0j=x0+j*(.0254+0.001)*sin(section*(ii(i)+.5)*!dtor)
+    y0j=y0+j*(.0254+0.001)*cos(section*(ii(i)+.5)*!dtor)
+    x1j=x1+j*(.0254+0.001)*sin(section*(ii(i)+.5)*!dtor)
+    y1j=y1+j*(.0254+0.001)*cos(section*(ii(i)+.5)*!dtor)
+    x((i+n_first+n_second+n_third)*8+j,*)=x0j+(x1j-x0j)*(1-onehundredtwentyeight/128.)
+    y((i+n_first+n_second+n_third)*8+j,*)=y0j+(y1j-y0j)*(1-onehundredtwentyeight/128.)
+    z((i+n_first+n_second+n_third)*8+j,*)=z0_forth+dz_forth*(1-onehundredtwentyeight/128.)
+  end
 end
     """
     ii=[float(i+1) for i in (2,3,4,5,6,7,13,14,15,16,17,18)]
     n_forth=len(ii)
-    #;z0_forth=-.2/8.45*3.2
-    #;x0_forth=2.67/8.45*3.2
-    #;z1_forth=-2.8/8.45*3.2
-    #;x1_forth=2.08/8.45*3.2
+
     z0_forth=-0.28/7.06*2.7+.0016
     x0_forth= 2.66/7.06*2.7
     z1_forth=-2.79/7.06*2.7-.0016
     x1_forth= 2.09/7.06*2.7
+
     dx_forth=x1_forth-x0_forth
     dz_forth=z1_forth-z0_forth
-    print "dx =", dx_forth, (dx_forth/8.)
-    print "dz =", dz_forth, (dz_forth/128.)
+
+    #print "dx =", dx_forth, (dx_forth/8.)
+    #print "dz =", dz_forth, (dz_forth/128.)
     from math import cos, sin, radians, pi
     section=(2.*pi)/23.
     x=[]
@@ -459,14 +568,16 @@ end
         for j in range(8):
             x0j=x0+j*(.0254+0.001)*sin(angle)
             y0j=y0+j*(.0254+0.001)*cos(angle)
-            x1j=x1+j*(.0254+0.001)*sin(angle)
-            y1j=y1+j*(.0254+0.001)*cos(angle)
+
+            xextent = -1. * dx_forth * cos(angle)
+            yextent =       dx_forth * sin(angle)
+
             for k in range(128):
                 k = float(k)
-                x.append(x0j+(x1j-x0j)*(1.-k/128.))
-                y.append(y0j+(y1j-y0j)*(1.-k/128.))
-                z.append(z0_forth+dz_forth*(1.-k/128.))
-    print len(x), len(y), len(z)
+                x.append(x0j      + xextent *(1.-k/128.))
+                y.append(y0j      + yextent *(1.-k/128.))
+                z.append(z0_forth + dz_forth*(1.-k/128.))
+    #print len(x), len(y), len(z)
     #print x[0:8*128]
     #print y[0:8*128]
     #print z[0:8*128]
@@ -476,22 +587,31 @@ end
     LR = 7*128+0   # LOWER RIGHT CORNER
     UR = 7*128+127 # UPPER RIGHT CORNER
 
+    pack4 = DetPack(tuberadius = .5*.0254,
+                    airgap     = AIR_GAP,
+                    xstartdiff = -1.*(.0254+AIR_GAP),
+                    ysize      = -1.*TUBE_LENGTH,
+                    ystartdiff = -1.*TUBE_LENGTH/128.,
+                    debug=False)
+    pack4.setNames(pixel="bank4pixel", tube="bank4tube", pack="bank4pack")
+
     group4 = instr.makeTypeElement("Group4")
     for i in range(n_forth):
         offset = i*8*128
         bank = "bank%d" % (i+52)
-        print bank, "i =", i, "offset=", offset
-        rect = Rectangle( # original is LL, UL, UR, LR
-                         (-y[offset+UR], x[offset+UR], z[offset+UR]), # bad at top, close
-                         (-y[offset+LR], x[offset+LR], z[offset+LR]), # bad at top
-                         (-y[offset+LL], x[offset+LL], z[offset+LL]), # bad at top, close
-                         (-y[offset+UL], x[offset+UL], z[offset+UL]) # close at top, bad
-                         )
-        det = instr.makeDetectorElement("one_inch_special", root=group4)
+        #print bank, "i =", i, "offset=", offset
+        #if i == 6:
+        #    for point in rect.points:
+        #        print point
+        rect = Rectangle((-y[offset+UR], x[offset+UR], z[offset+UR]),
+                         (-y[offset+LR], x[offset+LR], z[offset+LR]),
+                         (-y[offset+LL], x[offset+LL], z[offset+LL]),
+                         (-y[offset+UL], x[offset+UL], z[offset+UL]))
+        det = instr.makeDetectorElement(pack4.namepack, root=group4)
         rect.makeLocation(instr, det, bank)
 
     # ---------- add in group5
-"""
+    """
 ;;; source idl code
 N_back=19
 z0_back=-1.78/8.45*3.2
@@ -505,7 +625,7 @@ y((i+n_first+n_second+n_third+n_fourth)*8+j,*)=y0_back-(.0254/2+.001)/2*ntube
 z((i+n_first+n_second+n_third+n_fourth)*8+j,*)=z0_back-((i/2)*2 eq i)*(.0254/2+.001)
 end
 end
-"""
+    """
     group5 = instr.makeTypeElement("Group5")
     y = 0. # 0.003906
     z = -1.78/8.45*3.2 # -0.687783
@@ -565,7 +685,7 @@ end
             x=0.483093, y=y, z=z, rot=180.0)
 
     # ---------- add in group6 - results match
-"""
+    """
 ;;; source idl code
 
 N_forward=19
@@ -581,7 +701,7 @@ y((i+n_first+n_second+n_third+n_fourth+n_back)*8+j,*)=y0_forward-(.0254/2+.001)/
 z((i+n_first+n_second+n_third+n_fourth+n_back)*8+j,*)=z0_forward-((j/2)*2 eq j)*(.0254/2+.001)
 end
 end
-"""
+    """
     group6 = instr.makeTypeElement("Group6")
     y = 0.0078125 # 0. # 0.003906
     z = 6.69/8.45*3.2# 2.51979
@@ -614,19 +734,7 @@ end
         #    print j, x
         instr.addLocation(det, x, 0., 0., name=name)
 
-    instr.addComment("New Detector Panel (128x8) - one_inch")
-    det = instr.makeTypeElement("one_inch_special")
-    le.SubElement(det, "properties")
-    det = instr.addComponent("tubespecial", root=det, blank_location=False)
-    xstep = (0.0254*5.5/5.) # tubes are at 5.5inches for 6 tubes on centre OLD=-0.0264
-    xstep = ((2.66/7.06*2.7) - (2.09/7.06*2.7))/8.
-    xstart = (-4. + .5) * xstep # OLD=0.0924
-    for j in range(8):
-        name="tube%d"  % (j+1)
-        x = float(j)*xstep + xstart
-        if j == 0 or j == 7:
-            print j, x
-        instr.addLocation(det, x, 0., 0., name=name)
+    pack4.writePack(instr, " bank 4 - New Detector Panel (128x8) - one inch ")
 
     instr.addComment("New Detector Panel (128x8) - half_inch")
     det = instr.makeTypeElement("half_inch")
@@ -691,19 +799,7 @@ end
         #    print y
         instr.addLocation(tube, 0., y, 0., name=name)
 
-    ystep = -1./float(ypixels) # pixels go in the other direction
-    ystep = ((-2.79/7.06*2.7-.0016) - (-0.28/7.06*2.7+.0016))/128.
-    ystart = -1.*(64.-.5)*ystep #.5+.5*ystep
-    instr.addComment(" 1m 128 pixel inch tube ")
-    tube = instr.makeTypeElement("tubespecial", {"outline":"yes"})
-    le.SubElement(tube, "properties")
-    tube = instr.addComponent("onepixel", root=tube, blank_location=False)
-    for i in range(ypixels):
-        name = "pixel%d" % (i+1)
-        y = float(i)*ystep + ystart
-        if i == 0 or i == 127:
-            print i, y
-        instr.addLocation(tube, 0., y, 0., name=name)
+    pack4.writeTube(instr, " bank 4 - 1m 128 pixel inch tube ")
 
     instr.addComment("Shape for half inch tube pixels")
     instr.addCylinderPixel("halfpixel", # 1 metre long 1/2 inch tube
@@ -712,6 +808,8 @@ end
     instr.addComment("Shape for inch tube pixels")
     instr.addCylinderPixel("onepixel", # 1 metre long 1 inch tube
                            (0.,0.,0.), (0.,1.,0.), .5*.0254, 1./128.)
+
+    pack4.writePixel(instr, "Shape for bank 4 pixels")
 
     # monitor ids
     instr.addComment("MONITOR IDS")
