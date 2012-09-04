@@ -214,6 +214,7 @@ class Rectangle:
 
         self.__center = (p1 + p2 + p3 + p4) / float(Rectangle.NPOINTS)
         self.__calcOrientation(p1, p2, p3, p4)
+        self.__points = (p1, p2, p3, p4)
 
     def __magnitudeSq(self, first, second):
         """
@@ -329,9 +330,23 @@ class Rectangle:
         gamma_rot = [-1.*math.degrees(gamma), (0., 1., 0.)]
         return (alpha_rot, beta_rot, gamma_rot)
 
-    center = property(lambda self: self.__center[:])
-    orientation = property(lambda self: self.__orient[:])
+    def __width(self):
+        width = self.__points[3] - self.__points[0]
+        return width.length
+
+    def __height(self):
+        height = self.__points[1] - self.__points[0]
+        return height.length
+
+    width = property(__width, doc="Width of the rectangle")
+    height = property(__height, doc="Height of the rectangle")
+    center = property(lambda self: self.__center[:],
+                      doc="Center of the rectangle")
+    orientation = property(lambda self: self.__orient[:],
+                           doc="Orientation as a set of three basis vectors")
     euler_rot = property(__euler_rotations_zyz)
+    points = property(lambda self: self.__points[:],
+                      doc="The four corners originally supplied in the constructor")
 
     def __genRotationDict(self, rotation):
         """
