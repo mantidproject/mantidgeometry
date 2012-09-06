@@ -4,10 +4,17 @@
 from helper import INCH_TO_METRE, DEG_TO_RAD, MantidGeom
 from rectangle import Rectangle, Vector
 from lxml import etree as le # python-lxml on rpm based systems
+from math import cos, sin, radians, pi
 
 # All of the tubes are 40" long with a 2mm gap between tubes
-TUBE_LENGTH = 40.*.0254
+TUBE_LENGTH = 40.*.0254 # 1m long matches better in bank4
 AIR_GAP = .002
+
+# Indices for the four corners of an eight-pack
+LL = 0*128+0   # LOWER LEFT CORNER
+UL = 0*128+127 # UPPER LEFT CORNER
+LR = 7*128+0   # LOWER RIGHT CORNER
+UR = 7*128+127 # UPPER RIGHT CORNER
 
 def makeLoc(instr, det, name, x, y, z, rot, rot_inner=None, rot_innermost=None):
     sub = instr.addLocation(det, x=x, y=y, z=z, rot_y=rot, name=name)
@@ -39,7 +46,8 @@ def makeIds(numBanks, offset, size):
     return ids
 
 class DetPack:
-    def __init__(self, tuberadius, ysize, airgap=0., xsize=0., xnum=8, ynum=128,
+    def __init__(self, tuberadius=0., ysize=0., airgap=0., xsize=0.,
+                 xnum=8, ynum=128,
                  xstart=None, xstartdiff=0., ystart=None, ystartdiff=0.,
                  debug=False):
         """
@@ -64,7 +72,9 @@ class DetPack:
         """
         self.__debug = bool(debug)
 
-        self.radius = float(tuberadius)
+        self.radius = abs(float(tuberadius))
+        if (self.radius) <= 0.:
+            raise RuntimeError("Need to specify a tube radius")
 
         if xnum <= 0:
             raise ValueError("Cannot have xnum = %d (<= 0)" % xnum)
@@ -82,7 +92,8 @@ class DetPack:
                 + xstartdiff
 
         if self.__debug:
-            print "XSIZE:", xsize, self.xstep*self.xnum, \
+            print "XSIZE: [%f,%f]" % (self.xstart, self.xstep), \
+                xsize, self.xstep*self.xnum, \
                 (xsize-self.xstep*self.xnum)
 
         if ynum <= 0:
@@ -297,24 +308,87 @@ dz_second=z1_second-z0_second
 section=360/float(n_second)
 
 for i=0,n_second-1 do begin
-angle=(360*(i+.5)/float(N_second))*!dtor
-x0=-x0_second*cos(section*i*!dtor)
-y0=x0_second*sin(section*i*!dtor)
-x1=-x1_second*cos(section*i*!dtor)
-y1=x1_second*sin(section*i*!dtor)
+  angle=(360*(i+.5)/float(N_second))*!dtor
+  x0=-x0_second*cos(section*i*!dtor)
+  y0=x0_second*sin(section*i*!dtor)
+  x1=-x1_second*cos(section*i*!dtor)
+  y1=x1_second*sin(section*i*!dtor)
 
-for j=0,7 do begin
-x0j=x0+j*(.0254+0.001)*sin(section*(i+.5)*!dtor)
-y0j=y0+j*(.0254+0.001)*cos(section*(i+.5)*!dtor)
-x1j=x1+j*(.0254+0.001)*sin(section*(i+.5)*!dtor)
-y1j=y1+j*(.0254+0.001)*cos(section*(i+.5)*!dtor)
-x((i+n_first)*8+j,*)=x0j+(x1j-x0j)*onehundredtwentyeight/128.
-y((i+n_first)*8+j,*)=y0j+(y1j-y0j)*onehundredtwentyeight/128.
-z((i+n_first)*8+j,*)=z0_second+dz_second*onehundredtwentyeight/128.
-end
+  for j=0,7 do begin
+    x0j=x0+j*(.0254+0.001)*sin(section*(i+.5)*!dtor)
+    y0j=y0+j*(.0254+0.001)*cos(section*(i+.5)*!dtor)
+    x1j=x1+j*(.0254+0.001)*sin(section*(i+.5)*!dtor)
+    y1j=y1+j*(.0254+0.001)*cos(section*(i+.5)*!dtor)
+    x((i+n_first)*8+j,*)=x0j+(x1j-x0j)*onehundredtwentyeight/128.
+    y((i+n_first)*8+j,*)=y0j+(y1j-y0j)*onehundredtwentyeight/128.
+    z((i+n_first)*8+j,*)=z0_second+dz_second*onehundredtwentyeight/128.
+  end
 end
     """
+    n_second=23
+
+    z0_second=5.09/7.06*2.7-0.0095
+    x0_second=2.22/7.06*2.7
+    z1_second=2.45/7.06*2.7+0.0095
+    x1_second=2.22/7.06*2.7
+
+    dx_second=x1_second-x0_second
+    dz_second=z1_second-z0_second
+
+    section=(2.*pi)/float(n_second)
+
+    x=[]
+    y=[]
+    z=[]
+    for i in range(n_second):
+        angle = section*i
+        x0=-x0_second*cos(angle)
+        y0=x0_second*sin(angle)
+        x1=-x1_second*cos(angle)
+        y1=x1_second*sin(angle)
+
+        for j in range(8):
+            x0j=x0+j*(.0254+0.001)*sin(angle)
+            y0j=y0+j*(.0254+0.001)*cos(angle)
+            x1j=x1+j*(.0254+0.001)*sin(angle)
+            y1j=y1+j*(.0254+0.001)*cos(angle)
+
+            for k in range(128):
+                k = float(k)
+                x.append(x0j       + (x1j-x0j)*k/128.)
+                y.append(y0j       + (y1j-y0j)*k/128.)
+                z.append(z0_second + dz_second*k/128.)
+
+    #pack2 = DetPack(tuberadius=.5*.0254,
+    #                airgap=AIR_GAP,
+    #                #xsize      = -8.*(.0254+AIR_GAP),
+    #                #xstartdiff = -1.*(.0254+AIR_GAP),
+    #                ysize      = TUBE_LENGTH,
+    #                #ystartdiff = TUBE_LENGTH/128.,
+    #                debug=True)
+    pack2 = DetPack(tuberadius = .5*.0254,
+                    airgap     = AIR_GAP,
+                    #xstartdiff = (.0254+AIR_GAP),
+                    ysize      = TUBE_LENGTH,
+                    ystartdiff = TUBE_LENGTH/128.,
+                    debug=True)
+    pack2.setNames(pixel="bank2pixel", tube="bank2tube", pack="bank2pack")
+
     group2 = instr.makeTypeElement("Group2")
+    for i in range(n_second):
+        offset = i*8*128
+        bank = "bank%d" % (i+15)
+        rect = Rectangle(
+                         (-y[offset+UL], x[offset+UL], z[offset+UL]),
+                         (-y[offset+LL], x[offset+LL], z[offset+LL]),
+                         (-y[offset+LR], x[offset+LR], z[offset+LR]),
+                         (-y[offset+UR], x[offset+UR], z[offset+UR])
+                         )
+        det = instr.makeDetectorElement(pack2.namepack, root=group2)
+        rect.makeLocation(instr, det, bank)
+
+
+    """
     z = .5*((5.09/7.06*2.7-0.0095) + (2.45/7.06*2.7+0.0095)) # 1.445654
     det = instr.makeDetectorElement("one_inch", root=group2)
     makeLoc(instr, det, "bank15",
@@ -408,6 +482,7 @@ end
     makeLoc(instr, det, "bank37",
             x=0.1375204, y=-0.830107, z=z, rot=-90.0,
             rot_inner=90.0, rot_innermost=82.173807641)
+    """
 
     # ---------- add in group3
     """
@@ -553,7 +628,6 @@ end
 
     #print "dx =", dx_forth, (dx_forth/8.)
     #print "dz =", dz_forth, (dz_forth/128.)
-    from math import cos, sin, radians, pi
     section=(2.*pi)/23.
     x=[]
     y=[]
@@ -582,14 +656,10 @@ end
     #print y[0:8*128]
     #print z[0:8*128]
     #####
-    LL = 0*128+0   # LOWER LEFT CORNER
-    UL = 0*128+127 # UPPER LEFT CORNER
-    LR = 7*128+0   # LOWER RIGHT CORNER
-    UR = 7*128+127 # UPPER RIGHT CORNER
 
     pack4 = DetPack(tuberadius = .5*.0254,
                     airgap     = AIR_GAP,
-                    xstartdiff = -1.*(.0254+AIR_GAP),
+                    xstartdiff = (.0254+AIR_GAP),
                     ysize      = -1.*TUBE_LENGTH,
                     ystartdiff = -1.*TUBE_LENGTH/128.,
                     debug=False)
@@ -734,6 +804,7 @@ end
         #    print j, x
         instr.addLocation(det, x, 0., 0., name=name)
 
+    pack2.writePack(instr, " bank 2 - New Detector Panel (128x8) - one inch ")
     pack4.writePack(instr, " bank 4 - New Detector Panel (128x8) - one inch ")
 
     instr.addComment("New Detector Panel (128x8) - half_inch")
@@ -799,6 +870,7 @@ end
         #    print y
         instr.addLocation(tube, 0., y, 0., name=name)
 
+    pack2.writeTube(instr, " bank 2 - 1m 128 pixel inch tube ")
     pack4.writeTube(instr, " bank 4 - 1m 128 pixel inch tube ")
 
     instr.addComment("Shape for half inch tube pixels")
@@ -809,6 +881,7 @@ end
     instr.addCylinderPixel("onepixel", # 1 metre long 1 inch tube
                            (0.,0.,0.), (0.,1.,0.), .5*.0254, 1./128.)
 
+    pack2.writePixel(instr, "Shape for bank 2 pixels")
     pack4.writePixel(instr, "Shape for bank 4 pixels")
 
     # monitor ids
