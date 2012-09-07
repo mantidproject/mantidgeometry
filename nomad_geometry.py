@@ -232,6 +232,65 @@ z(i*8+j,*)=z0_first+dz_first*(1-onehundredtwentyeight/128.)
 end
 end
     """
+    n_first=14
+
+    z0_first=6.41/8.45*3.2
+    x0_first=1.31/8.45*3.2
+    z1_first=3.86/8.45*3.2
+    x1_first=1.44/8.45*3.2
+
+    dx_first=x1_first-x0_first
+    dz_first=z1_first-z0_first
+
+    section=(2.*pi)/float(n_first)
+
+    x=[]
+    y=[]
+    z=[]
+    for i in range(n_first):
+        angle = section*i
+        x0=-x0_first*cos(angle)
+        y0=x0_first*sin(angle)
+        x1=-x1_first*cos(angle)
+        y1=x1_first*sin(angle)
+
+        for j in range(8):
+            angle2 = section*(i+.5)
+            x0j=x0+j*(.0254+0.001)*sin(angle2)
+            y0j=y0+j*(.0254+0.001)*cos(angle2)
+
+            xextent = -1. * dx_first * cos(angle2)
+            yextent =       dx_first * sin(angle2)
+
+            for k in range(128):
+                k = float(k)
+                x.append(x0j      + xextent *(1.-k/128.))
+                y.append(y0j      + yextent *(1.-k/128.))
+                z.append(z0_first + dz_first*(1.-k/128.))
+
+    pack1 = DetPack(tuberadius = .5*.0254,
+                    airgap     = AIR_GAP,
+                    xstartdiff = (.0254+AIR_GAP),
+                    ysize      = -1.*TUBE_LENGTH,
+                    ystartdiff = -1.*TUBE_LENGTH/128.,
+                    debug=True)
+    pack1.setNames(pixel="bank1pixel", tube="bank1tube", pack="bank1pack")
+
+    group1 = instr.makeTypeElement("Group1")
+    for i in range(n_first):
+        offset = i*8*128
+        bank = "bank%d" % (i+1)
+        rect = Rectangle(
+                         (-y[offset+UL], x[offset+UL], z[offset+UL]),
+                         (-y[offset+LL], x[offset+LL], z[offset+LL]),
+                         (-y[offset+LR], x[offset+LR], z[offset+LR]),
+                         (-y[offset+UR], x[offset+UR], z[offset+UR])
+                         )
+       	det = instr.makeDetectorElement(pack1.namepack, root=group1)
+       	rect.makeLocation(instr, det, bank)
+
+
+    """
     group1 = instr.makeTypeElement("Group1")
     z = .5*((6.41/8.45*3.2) + (3.86/8.45*3.2))# 1.940845
     det = instr.makeDetectorElement("one_inch", root=group1)
@@ -290,6 +349,7 @@ end
     makeLoc(instr, det, "bank14",
             x=0.1359277, y=-0.4898775, z=z, rot=-90.6336619129,
             rot_inner=92.774014947, rot_innermost=77.1274554878)
+    """
 
     # ---------- add in group2
     """
@@ -863,6 +923,7 @@ end
         #    print j, x
         instr.addLocation(det, x, 0., 0., name=name)
 
+    pack1.writePack(instr, " bank 1 - New Detector Panel (128x8) - one inch ")
     pack2.writePack(instr, " bank 2 - New Detector Panel (128x8) - one inch ")
     pack3.writePack(instr, " bank 3 - New Detector Panel (128x8) - one inch ")
     pack4.writePack(instr, " bank 4 - New Detector Panel (128x8) - one inch ")
@@ -930,6 +991,7 @@ end
         #    print y
         instr.addLocation(tube, 0., y, 0., name=name)
 
+    pack1.writeTube(instr, " bank 1 - 1m 128 pixel inch tube ")
     pack2.writeTube(instr, " bank 2 - 1m 128 pixel inch tube ")
     pack3.writeTube(instr, " bank 3 - 1m 128 pixel inch tube ")
     pack4.writeTube(instr, " bank 4 - 1m 128 pixel inch tube ")
@@ -942,6 +1004,7 @@ end
     instr.addCylinderPixel("onepixel", # 1 metre long 1 inch tube
                            (0.,0.,0.), (0.,1.,0.), .5*.0254, 1./128.)
 
+    pack1.writePixel(instr, "Shape for bank 1 pixels")
     pack2.writePixel(instr, "Shape for bank 2 pixels")
     pack3.writePixel(instr, "Shape for bank 3 pixels")
     pack4.writePixel(instr, "Shape for bank 4 pixels")
