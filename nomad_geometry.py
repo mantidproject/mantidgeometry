@@ -166,8 +166,8 @@ if __name__ == "__main__":
 
     # boiler plate stuff
     instr = MantidGeom(inst_name, comment=" Created by Peter Peterson ",
-                       valid_from="2012-07-01 00:00:01",
-                       valid_to="2012-07-31 23:59:59")
+                       valid_from="1900-01-31 23:59:59",
+                       valid_to="2100-01-31 23:59:59")
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults()
     instr.addComment("SOURCE")
@@ -348,10 +348,11 @@ end
         y1=x1_second*sin(angle)
 
         for j in range(8):
-            x0j=x0+j*(.0254+0.001)*sin(angle)
-            y0j=y0+j*(.0254+0.001)*cos(angle)
-            x1j=x1+j*(.0254+0.001)*sin(angle)
-            y1j=y1+j*(.0254+0.001)*cos(angle)
+            angle2 = section*(i+.5)
+            x0j=x0+j*(.0254+0.001)*sin(angle2)
+            y0j=y0+j*(.0254+0.001)*cos(angle2)
+            x1j=x1+j*(.0254+0.001)*sin(angle2)
+            y1j=y1+j*(.0254+0.001)*cos(angle2)
 
             for k in range(128):
                 k = float(k)
@@ -521,7 +522,64 @@ z((i+n_first+n_second)*8+j,*)=z0_third+dz_third*(1-onehundredtwentyeight/128.)
 end
 end
     """
+    n_third=14
+
+    z0_third=2.59/7.06*2.7-0.0076
+    x0_third=1.00
+    z1_third=-0.04/7.06*2.7+.0076
+    x1_third=1.00
+
+    dx_third=x1_third-x0_third
+    dz_third=z1_third-z0_third
+    section=(2.*pi)/float(29)
+    
+    x=[]
+    y=[]
+    z=[]
+    ii=[3,4,5,6,7,8,9,18,19,20,21,22,23,24]
+    for i in range(n_third):
+        angle=section*(ii[i]+0.5)
+        x0=-x0_third*cos(angle)
+        y0=x0_third*sin(angle)
+        x1=-x1_third*cos(angle)
+        y1=x1_third*sin(angle)
+    
+        for j in range(8):
+            angle2 = section*(ii[i]+1)
+            x0j=x0+j*(.0254+0.001)*sin(angle2)
+            y0j=y0+j*(.0254+0.001)*cos(angle2)
+            x1j=x1+j*(.0254+0.001)*sin(angle2)
+            y1j=y1+j*(.0254+0.001)*cos(angle2)
+            for k in range(128):
+                k = float(k)
+                x.append(x0j       + (x1j-x0j)*k/128.)
+                y.append(y0j       + (y1j-y0j)*k/128.)
+                z.append(z0_third + dz_third*k/128.)
+
+    pack3 = DetPack(tuberadius = .5*.0254,
+                    airgap     = AIR_GAP,
+                    #xstartdiff = (.0254+AIR_GAP),
+                    ysize      = TUBE_LENGTH,
+                    ystartdiff = TUBE_LENGTH/128.,
+                    debug=True)
+    pack3.setNames(pixel="bank3pixel", tube="bank3tube", pack="bank3pack")
+
     group3 = instr.makeTypeElement("Group3")
+    for i in range(n_third):
+        offset = i*8*128
+        bank = "bank%d" % (i+15+23)
+        rect = Rectangle(
+                         (-y[offset+UL], x[offset+UL], z[offset+UL]),
+                         (-y[offset+LL], x[offset+LL], z[offset+LL]),
+                         (-y[offset+LR], x[offset+LR], z[offset+LR]),
+                         (-y[offset+UR], x[offset+UR], z[offset+UR])
+                         )
+        det = instr.makeDetectorElement(pack3.namepack, root=group3)
+        rect.makeLocation(instr, det, bank)
+
+    """
+    group3 = instr.makeTypeElement("Group3")
+            z((i+n_first+n_second)*8+j,*)=z0_third+dz_third*(1-onehundredtwentyeight/128.)
     z = .5*((2.59/7.06*2.7-0.0076) + (-0.04/7.06*2.7+.0076)) # 0.48373677
     det = instr.makeDetectorElement("one_inch", root=group3)
     makeLoc(instr, det, "bank38",
@@ -579,6 +637,7 @@ end
     makeLoc(instr, det, "bank51",
             x=0.7678705, y=-0.631611, z=z, rot=-90.0,
             rot_inner=90.0, rot_innermost=40.3447402631)
+    """
 
     # ---------- add in group4
     """
@@ -805,6 +864,7 @@ end
         instr.addLocation(det, x, 0., 0., name=name)
 
     pack2.writePack(instr, " bank 2 - New Detector Panel (128x8) - one inch ")
+    pack3.writePack(instr, " bank 3 - New Detector Panel (128x8) - one inch ")
     pack4.writePack(instr, " bank 4 - New Detector Panel (128x8) - one inch ")
 
     instr.addComment("New Detector Panel (128x8) - half_inch")
@@ -871,6 +931,7 @@ end
         instr.addLocation(tube, 0., y, 0., name=name)
 
     pack2.writeTube(instr, " bank 2 - 1m 128 pixel inch tube ")
+    pack3.writeTube(instr, " bank 3 - 1m 128 pixel inch tube ")
     pack4.writeTube(instr, " bank 4 - 1m 128 pixel inch tube ")
 
     instr.addComment("Shape for half inch tube pixels")
@@ -882,6 +943,7 @@ end
                            (0.,0.,0.), (0.,1.,0.), .5*.0254, 1./128.)
 
     pack2.writePixel(instr, "Shape for bank 2 pixels")
+    pack3.writePixel(instr, "Shape for bank 3 pixels")
     pack4.writePixel(instr, "Shape for bank 4 pixels")
 
     # monitor ids
