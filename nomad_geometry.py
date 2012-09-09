@@ -816,6 +816,24 @@ end
 end
     """
     group5 = instr.makeTypeElement("Group5")
+    y = 0.0078125/0.9
+    z = -1.78/8.45*3.2
+    rot = 0.
+    names = ["bank%d" % i for i in range(64,82)]
+    def tube5X(ntube):
+        return 1.34/8.45*3.2 - (.0254/2+.001)/2*(ntube)  
+    x2 = []
+    for i in range(len(names)):
+        x2.append((tube5X(i*8+0) + tube5X(i*8+7))*.5)
+    x2.reverse()
+    #print x2
+    for name, x in zip(names, x2):
+        det = instr.makeDetectorElement("half_inch_back", root=group5)
+        makeLoc(instr, det, name,
+                x=x, y=y, z=z, rot=rot)
+
+    """
+    group5 = instr.makeTypeElement("Group5")
     y = 0. # 0.003906
     z = -1.78/8.45*3.2 # -0.687783
     det = instr.makeDetectorElement("half_inch_back", root=group5)
@@ -872,6 +890,7 @@ end
     det = instr.makeDetectorElement("half_inch_back", root=group5)
     makeLoc(instr, det, "bank81",
             x=0.483093, y=y, z=z, rot=180.0)
+    """
 
     # ---------- add in group6 - results match
     """
@@ -949,9 +968,11 @@ end
     det = instr.addComponent("halftube", root=det, blank_location=False)
     xstep = -0.00685
     xstart = -.5*8.*xstep + .5*xstep # OLD=0.023975
-    for j in range(8):
+    #copied from Group6
+    tubenumbers = [1,0,3,2,5,4,7,6]
+    for (tube,j) in zip(range(8),tubenumbers):
         name="halftube_back%d"  % (j+1)
-        x = float(j)*xstep + xstart
+        x = float(tube)*xstep + xstart
         #if j == 0 or j == 7:
         #    print j, x
         z = -1.* float(j % 2) * (.0254/2+.001) 
