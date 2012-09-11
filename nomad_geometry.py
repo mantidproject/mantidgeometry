@@ -166,12 +166,12 @@ if __name__ == "__main__":
 
     # boiler plate stuff
     instr = MantidGeom(inst_name, comment=" Created by Peter Peterson ",
-                       valid_from="1900-01-31 23:59:59",
-                       valid_to="2100-01-31 23:59:59")
+                       valid_from="2012-07-01 00:00:01",
+                       valid_to="2012-07-31 23:59:59")
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults()
     instr.addComment("SOURCE")
-    instr.addModerator(-19.49958)
+    instr.addModerator(-19.5)
     instr.addComment("SAMPLE")
     instr.addSamplePosition()
 
