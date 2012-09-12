@@ -633,6 +633,18 @@ z((i+n_first+n_second+n_third+n_fourth)*8+j,*)=z0_back-((i/2)*2 eq i)*(.0254/2+.
 end
 end
     """
+    pack5 = DetPack(tuberadius = -.25*.0254,
+                    airgap = .00585, # tubes are overlapping if you ignore z-offset
+                    xstart = 0.023975, # empirical
+                    ysize  =  .9, 
+                    ystart = -0.44296875,
+                    debug = True)
+    pack5tubes = [2,1,4,3,6,5,8,7] # wacky empiracle numbering
+    pack5.setTubeNumbers(pack5tubes)
+    pack5z = [-1.* float((tube+1)% 2) * (.0254/2+.001) for tube in pack5tubes]
+    pack5.setPosZ(pack5z)
+    pack5.setNames(pixel="halfpixel", tube="halftube", pack="half_inch_back")
+
     group5 = instr.makeTypeElement("Group5")
     y = 0.0078125/0.9
     z = -1.78/8.45*3.2
@@ -646,7 +658,7 @@ end
     x2.reverse()
     #print x2
     for name, x in zip(names, x2):
-        det = instr.makeDetectorElement("half_inch_back", root=group5)
+        det = instr.makeDetectorElement(pack5.namepack, root=group5)
         makeLoc(instr, det, name,
                 x=x, y=y, z=z, rot=rot)
 
@@ -672,13 +684,13 @@ end
                     airgap = .00585, # tubes are overlapping if you ignore z-offset
                     xstart = -0.023975, # empirical
                     ysize  =  .9, 
-                    ystartdiff = 0.003515625,
+                    ystart = -0.44296875,
                     debug = True)
     pack6tubes = [2,1,4,3,6,5,8,7] # wacky empiracle numbering
     pack6.setTubeNumbers(pack6tubes)
     pack6z = [-1.* float(tube% 2) * (.0254/2+.001) for tube in pack6tubes]
     pack6.setPosZ(pack6z)
-    pack6.setNames(pixel="halfpixel", tube="halftube", pack="half_inch")
+    pack6.setNames(pixel=pack5.namepixel, tube=pack5.nametube, pack="half_inch")
 
     group6 = instr.makeTypeElement("Group6")
     y = 0.0078125 # 0. # 0.003906
@@ -700,25 +712,8 @@ end
     # ---------- detector panels
     pack1.writePack(instr, " bank 1 and 4 - New Detector Panel (128x8) - one inch - decreasing y ")
     pack2.writePack(instr, " bank 2 and 3 - New Detector Panel (128x8) - one inch - increasing y ")
-
-
     pack6.writePack(instr, "New Detector Panel (128x8) - half_inch - bank 6")
-
-    instr.addComment("New Detector Panel (128x8) - half_inch_back - bank 5")
-    det = instr.makeTypeElement("half_inch_back")
-    le.SubElement(det, "properties")
-    det = instr.addComponent("halftube", root=det, blank_location=False)
-    xstep = -0.00685
-    xstart = -.5*8.*xstep + .5*xstep # OLD=0.023975
-    #copied from Group6
-    tubenumbers = [1,0,3,2,5,4,7,6]
-    for (tube,j) in zip(range(8),tubenumbers):
-        name="halftube_back%d"  % (j+1)
-        x = float(tube)*xstep + xstart
-        #if j == 0 or j == 7:
-        #    print j, x
-        z = -1.* float(j % 2) * (.0254/2+.001) 
-        instr.addLocation(det, x, 0., z, name=name)
+    pack5.writePack(instr, "New Detector Panel (128x8) - half_inch_back - bank 5")
 
     # ---------- monitors
 
@@ -728,7 +723,8 @@ end
 
     # ---------- detector tubes
 
-    pack6.writeTube(instr, " bank 5 and 6 - 1m 128 pixel half inch tube ")
+    # this shape is used for 5 and 6 
+    pack5.writeTube(instr, " bank 5 and 6 - 1m 128 pixel half inch tube ")
 
     # this shape is used for 1 and 4 
     pack1.writeTube(instr, " bank 1 and 4 - 1m 128 pixel inch tube decreasing y")
@@ -737,7 +733,7 @@ end
     pack2.writeTube(instr, " bank 2 and 3 - 1m 128 pixel inch tube increasing y")
 
     # this shape is used for 5 and 6
-    pack6.writePixel(instr, "Shape for half inch tube pixels")
+    pack5.writePixel(instr, "Shape for half inch tube pixels")
 
     # this shape is used for pack/group 1-4
     pack1.writePixel(instr, "Shape for one inch tube pixels")
