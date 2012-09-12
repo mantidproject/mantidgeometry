@@ -274,7 +274,7 @@ end
                     ysize      = -1.*TUBE_LENGTH,
                     ystartdiff = -1.*TUBE_LENGTH/128.,
                     debug=True)
-    pack1.setNames(pixel="bank1pixel", tube="bank1tube", pack="bank1pack")
+    pack1.setNames(pixel="onepixel", tube="bank1tube", pack="bank1pack")
 
     group1 = instr.makeTypeElement("Group1")
     for i in range(n_first):
@@ -433,7 +433,7 @@ end
                     ysize      = TUBE_LENGTH,
                     ystartdiff = TUBE_LENGTH/128.,
                     debug=True)
-    pack2.setNames(pixel="bank2pixel", tube="bank2tube", pack="bank2pack")
+    pack2.setNames(pixel="onepixel", tube="bank2tube", pack="bank2pack")
 
     group2 = instr.makeTypeElement("Group2")
     for i in range(n_second):
@@ -622,7 +622,7 @@ end
                     ysize      = TUBE_LENGTH,
                     ystartdiff = TUBE_LENGTH/128.,
                     debug=True)
-    pack3.setNames(pixel="bank3pixel", tube="bank3tube", pack="bank3pack")
+    pack3.setNames(pixel="onepixel", tube="bank3tube", pack="bank3pack")
 
     group3 = instr.makeTypeElement("Group3")
     for i in range(n_third):
@@ -782,7 +782,7 @@ end
                     ysize      = -1.*TUBE_LENGTH,
                     ystartdiff = -1.*TUBE_LENGTH/128.,
                     debug=False)
-    pack4.setNames(pixel="bank4pixel", tube="bank4tube", pack="bank4pack")
+    pack4.setNames(pixel="onepixel", tube="bank4tube", pack="bank4pack")
 
     group4 = instr.makeTypeElement("Group4")
     for i in range(n_forth):
@@ -928,7 +928,7 @@ end
                 x=x, y=y, z=z, rot=rot)
 
     # ---------- detector panels
-
+    """
     instr.addComment("New Detector Panel (128x8) - one_inch")
     det = instr.makeTypeElement("one_inch")
     le.SubElement(det, "properties")
@@ -941,6 +941,7 @@ end
         #if j == 0 or j == 7:
         #    print j, x
         instr.addLocation(det, x, 0., 0., name=name)
+    """
 
     pack1.writePack(instr, " bank 1 - New Detector Panel (128x8) - one inch ")
     pack2.writePack(instr, " bank 2 - New Detector Panel (128x8) - one inch ")
@@ -999,6 +1000,7 @@ end
         #    print y
         instr.addLocation(tube, 0., y, 0., name=name)
 
+    """
     ystep = -1./float(ypixels) # pixels go in the other direction
     ystart = .5+.5*ystep
     instr.addComment(" 1m 128 pixel inch tube ")
@@ -1011,6 +1013,7 @@ end
         #if i == 0 or i == 127:
         #    print y
         instr.addLocation(tube, 0., y, 0., name=name)
+    """
 
     pack1.writeTube(instr, " bank 1 - 1m 128 pixel inch tube ")
     pack2.writeTube(instr, " bank 2 - 1m 128 pixel inch tube ")
@@ -1021,14 +1024,8 @@ end
     instr.addCylinderPixel("halfpixel", # 1 metre long 1/2 inch tube
                            (0.,0.,0.), (0.,1.,0.), .25*.0254, .9/128.)
 
-    instr.addComment("Shape for inch tube pixels")
-    instr.addCylinderPixel("onepixel", # 1 metre long 1 inch tube
-                           (0.,0.,0.), (0.,1.,0.), .5*.0254, 1./128.)
-
-    pack1.writePixel(instr, "Shape for bank 1 pixels")
-    pack2.writePixel(instr, "Shape for bank 2 pixels")
-    pack3.writePixel(instr, "Shape for bank 3 pixels")
-    pack4.writePixel(instr, "Shape for bank 4 pixels")
+    # this shape is used for pack/group 1-4
+    pack1.writePixel(instr, "Shape for one inch tube pixels")
 
     # monitor ids
     instr.addComment("MONITOR IDS")
