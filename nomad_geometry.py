@@ -273,7 +273,7 @@ end
                     xstartdiff = (.0254+AIR_GAP),
                     ysize      = -1.*TUBE_LENGTH,
                     ystartdiff = -1.*TUBE_LENGTH/128.,
-                    debug=True)
+                    debug=False)
     pack1.setNames(pixel="onepixel", tube="bank1tube", pack="bank1pack")
 
     group1 = instr.makeTypeElement("Group1")
@@ -420,19 +420,12 @@ end
                 y.append(y0j       + (y1j-y0j)*k/128.)
                 z.append(z0_second + dz_second*k/128.)
 
-    #pack2 = DetPack(tuberadius=.5*.0254,
-    #                airgap=AIR_GAP,
-    #                #xsize      = -8.*(.0254+AIR_GAP),
-    #                #xstartdiff = -1.*(.0254+AIR_GAP),
-    #                ysize      = TUBE_LENGTH,
-    #                #ystartdiff = TUBE_LENGTH/128.,
-    #                debug=True)
     pack2 = DetPack(tuberadius = .5*.0254,
                     airgap     = AIR_GAP,
                     #xstartdiff = (.0254+AIR_GAP),
                     ysize      = TUBE_LENGTH,
                     ystartdiff = TUBE_LENGTH/128.,
-                    debug=True)
+                    debug=False)
     pack2.setNames(pixel="onepixel", tube="bank2tube", pack="bank2pack")
 
     group2 = instr.makeTypeElement("Group2")
@@ -621,7 +614,7 @@ end
                     #xstartdiff = (.0254+AIR_GAP),
                     ysize      = TUBE_LENGTH,
                     ystartdiff = TUBE_LENGTH/128.,
-                    debug=True)
+                    debug=False)
     pack3.setNames(pixel="onepixel", tube="bank3tube", pack="bank3pack")
 
     group3 = instr.makeTypeElement("Group3")
