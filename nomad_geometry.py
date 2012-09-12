@@ -274,7 +274,7 @@ end
                     ysize      = -1.*TUBE_LENGTH,
                     ystartdiff = -1.*TUBE_LENGTH/128.,
                     debug=False)
-    pack1.setNames(pixel="onepixel", tube="bank1tube", pack="bank1pack")
+    pack1.setNames(pixel="onepixel", tube="tubedecreasing", pack="bank1pack")
 
     group1 = instr.makeTypeElement("Group1")
     for i in range(n_first):
@@ -426,7 +426,7 @@ end
                     ysize      = TUBE_LENGTH,
                     ystartdiff = TUBE_LENGTH/128.,
                     debug=False)
-    pack2.setNames(pixel="onepixel", tube="bank2tube", pack="bank2pack")
+    pack2.setNames(pixel="onepixel", tube="tubeincreasing", pack="bank2pack")
 
     group2 = instr.makeTypeElement("Group2")
     for i in range(n_second):
@@ -615,7 +615,7 @@ end
                     ysize      = TUBE_LENGTH,
                     ystartdiff = TUBE_LENGTH/128.,
                     debug=False)
-    pack3.setNames(pixel="onepixel", tube="bank3tube", pack="bank3pack")
+    pack3.setNames(pixel="onepixel", tube="tubeincreasing", pack="bank3pack")
 
     group3 = instr.makeTypeElement("Group3")
     for i in range(n_third):
@@ -775,7 +775,7 @@ end
                     ysize      = -1.*TUBE_LENGTH,
                     ystartdiff = -1.*TUBE_LENGTH/128.,
                     debug=False)
-    pack4.setNames(pixel="onepixel", tube="bank4tube", pack="bank4pack")
+    pack4.setNames(pixel="onepixel", tube="tubedecreasing", pack="bank4pack")
 
     group4 = instr.makeTypeElement("Group4")
     for i in range(n_forth):
@@ -1008,10 +1008,11 @@ end
         instr.addLocation(tube, 0., y, 0., name=name)
     """
 
-    pack1.writeTube(instr, " bank 1 - 1m 128 pixel inch tube ")
-    pack2.writeTube(instr, " bank 2 - 1m 128 pixel inch tube ")
-    pack3.writeTube(instr, " bank 3 - 1m 128 pixel inch tube ")
-    pack4.writeTube(instr, " bank 4 - 1m 128 pixel inch tube ")
+    # this shape is used for 1 and 4 
+    pack1.writeTube(instr, " bank 1 and 4 - 1m 128 pixel inch tube decreasing y")
+
+    # this shape is used for 2 and 3
+    pack2.writeTube(instr, " bank 2 and 3 - 1m 128 pixel inch tube increasing y")
 
     instr.addComment("Shape for half inch tube pixels")
     instr.addCylinderPixel("halfpixel", # 1 metre long 1/2 inch tube
