@@ -78,9 +78,9 @@ class DetPack:
 
         if xnum <= 0:
             raise ValueError("Cannot have xnum = %d (<= 0)" % xnum)
-        if xsize > 0.:
+        if xsize != 0.:
             xsize  = float(xsize)
-            self.xstep = xsize/float(xnum)
+            self.xstep = xsize/float(xnum-1) # 1 is for centers
         else:
             self.xstep = 2.*tuberadius + airgap
             xsize = float(xnum) * self.xstep
@@ -95,6 +95,10 @@ class DetPack:
             print "XSIZE: [%f,%f]" % (self.xstart, self.xstep), \
                 xsize, self.xstep*self.xnum, \
                 (xsize-self.xstep*self.xnum)
+
+        # default values
+        self.__z = [0.]*self.xnum
+        self.__tubes = [i+1 for i in range(self.xnum)]
 
         if ynum <= 0:
             raise ValueError("Cannot have ynum = %d (<= 0)" % ynum)
@@ -123,20 +127,32 @@ class DetPack:
         if pack is not None:
             self.namepack = pack
 
+    def setPosZ(self, z):
+        if len(z) != self.xnum:
+            msg = "Must set the same number of z-values (%d) as x-values (%d)" % (len(z), self.xnum)
+            raise ValueError(msg)
+        self.__z = list(z)
+
+    def setTubeNumbers(self, numbers):
+        if len(numbers) != self.xnum:
+            msg = "Must set the same number of tubes (%d) as x-values (%d)" % (len(numbers), self.xnum)
+            raise ValueError(msg)
+        self.__tubes = list(numbers)
+
+
     def writePack(self, instr, comment=""):
         if len(comment) > 0:
             instr.addComment(comment)
-        instr.addComment("New Detector Panel (128x8) - one_inch")
         det = instr.makeTypeElement(self.namepack)
         le.SubElement(det, "properties")
         det = instr.addComponent(self.nametube, root=det, blank_location=False)
         debug_ids = [0, self.xnum-1]
-        for j in range(self.xnum):
-            name="tube%d"  % (j+1)
+        for (j, z, tube) in zip(range(self.xnum), self.__z, self.__tubes):
+            name="tube%d"  % tube
             x = float(j)*self.xstep + self.xstart
             if self.__debug and (j in debug_ids):
                 print "x[%d] = %f" % (j, x)
-            instr.addLocation(det, x, 0., 0., name=name)
+            instr.addLocation(det, x, 0., z, name=name)
 
     def writeTube(self, instr, comment=""):
         if len(comment) > 0:
@@ -201,7 +217,8 @@ if __name__ == "__main__":
     xml_outfile = inst_name+"_Definition.xml"
 
     # boiler plate stuff
-    instr = MantidGeom(inst_name, comment=" Created by Peter Peterson ",
+    instr = MantidGeom(inst_name,
+                       comment=" Created by Peter Peterson and Vickie Lynch",
                        valid_from="2012-07-01 00:00:01",
                        valid_to="2012-07-31 23:59:59")
     instr.addComment("DEFAULTS")
@@ -651,6 +668,18 @@ z((i+n_first+n_second+n_third+n_fourth+n_back)*8+j,*)=z0_forward-((j/2)*2 eq j)*
 end
 end
     """
+    pack6 = DetPack(tuberadius = -.25*.0254,
+                    airgap = .00585, # tubes are overlapping if you ignore z-offset
+                    xstart = -0.023975, # empirical
+                    ysize  =  .9, 
+                    ystartdiff = 0.003515625,
+                    debug = True)
+    pack6tubes = [2,1,4,3,6,5,8,7] # wacky empiracle numbering
+    pack6.setTubeNumbers(pack6tubes)
+    pack6z = [-1.* float(tube% 2) * (.0254/2+.001) for tube in pack6tubes]
+    pack6.setPosZ(pack6z)
+    pack6.setNames(pixel="halfpixel", tube="halftube", pack="half_inch")
+
     group6 = instr.makeTypeElement("Group6")
     y = 0.0078125 # 0. # 0.003906
     z = 6.69/8.45*3.2# 2.51979
@@ -664,7 +693,7 @@ end
     x2.reverse()
     #print x2
     for name, x in zip(names, x2):
-        det = instr.makeDetectorElement("half_inch", root=group6)
+        det = instr.makeDetectorElement(pack6.namepack, root=group6)
         makeLoc(instr, det, name,
                 x=x, y=y, z=z, rot=rot)
 
@@ -672,22 +701,10 @@ end
     pack1.writePack(instr, " bank 1 and 4 - New Detector Panel (128x8) - one inch - decreasing y ")
     pack2.writePack(instr, " bank 2 and 3 - New Detector Panel (128x8) - one inch - increasing y ")
 
-    instr.addComment("New Detector Panel (128x8) - half_inch")
-    det = instr.makeTypeElement("half_inch")
-    le.SubElement(det, "properties")
-    det = instr.addComponent("halftube", root=det, blank_location=False)
-    xstep = -0.00685
-    xstart = -1*(-.5*8.*xstep + .5*xstep) # OLD=-0.0924
-    tubenumbers = [1,0,3,2,5,4,7,6]
-    for (tube,j) in zip(range(8),tubenumbers):
-        name="halftube%d"  % (j+1)
-        x = float(tube)*xstep + xstart
-        #if j == 0 or j == 7:
-        #    print j, x
-        z = -1.* float((j + 1)% 2) * (.0254/2+.001) 
-        instr.addLocation(det, x, 0., z, name=name)
 
-    instr.addComment("New Detector Panel (128x8) - half_inch_back")
+    pack6.writePack(instr, "New Detector Panel (128x8) - half_inch - bank 6")
+
+    instr.addComment("New Detector Panel (128x8) - half_inch_back - bank 5")
     det = instr.makeTypeElement("half_inch_back")
     le.SubElement(det, "properties")
     det = instr.addComponent("halftube", root=det, blank_location=False)
@@ -710,19 +727,8 @@ end
     instr.addDummyMonitor(0.01, .03)
 
     # ---------- detector tubes
-    ypixels = 128
-    ystep = .9/float(ypixels) # 1m tubes
-    ystart = -.5*float(ypixels)*ystep+ystep#-.446484#-.5-.5*ystep
-    instr.addComment(" bank 5 and 6 - 1m 128 pixel half inch tube ")
-    tube = instr.makeTypeElement("halftube", {"outline":"yes"})
-    le.SubElement(tube, "properties")
-    tube = instr.addComponent("halfpixel", root=tube, blank_location=False)
-    for i in range(ypixels):
-        name = "pixel%d" % (i+1)
-        y = float(i)*ystep + ystart
-        #if i == 0 or i == 127:
-        #    print y
-        instr.addLocation(tube, 0., y, 0., name=name)
+
+    pack6.writeTube(instr, " bank 5 and 6 - 1m 128 pixel half inch tube ")
 
     # this shape is used for 1 and 4 
     pack1.writeTube(instr, " bank 1 and 4 - 1m 128 pixel inch tube decreasing y")
@@ -730,9 +736,8 @@ end
     # this shape is used for 2 and 3
     pack2.writeTube(instr, " bank 2 and 3 - 1m 128 pixel inch tube increasing y")
 
-    instr.addComment("Shape for half inch tube pixels")
-    instr.addCylinderPixel("halfpixel", # 1 metre long 1/2 inch tube
-                           (0.,0.,0.), (0.,1.,0.), .25*.0254, .9/128.)
+    # this shape is used for 5 and 6
+    pack6.writePixel(instr, "Shape for half inch tube pixels")
 
     # this shape is used for pack/group 1-4
     pack1.writePixel(instr, "Shape for one inch tube pixels")
