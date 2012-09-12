@@ -202,6 +202,7 @@ class DetPack:
                 return False
             if not innerEq(debug, "ystart", self.ystart, other.ystart):
                 return False
+            # TODO compare x-values and tube numbers
         except:
             return False # any exception means it is not a DetPack
 
@@ -712,8 +713,8 @@ end
     # ---------- detector panels
     pack1.writePack(instr, " bank 1 and 4 - New Detector Panel (128x8) - one inch - decreasing y ")
     pack2.writePack(instr, " bank 2 and 3 - New Detector Panel (128x8) - one inch - increasing y ")
-    pack6.writePack(instr, "New Detector Panel (128x8) - half_inch - bank 6")
     pack5.writePack(instr, "New Detector Panel (128x8) - half_inch_back - bank 5")
+    pack6.writePack(instr, "New Detector Panel (128x8) - half_inch - bank 6")
 
     # ---------- monitors
 
@@ -723,20 +724,22 @@ end
 
     # ---------- detector tubes
 
-    # this shape is used for 5 and 6 
-    pack5.writeTube(instr, " bank 5 and 6 - 1m 128 pixel half inch tube ")
-
     # this shape is used for 1 and 4 
     pack1.writeTube(instr, " bank 1 and 4 - 1m 128 pixel inch tube decreasing y")
 
     # this shape is used for 2 and 3
     pack2.writeTube(instr, " bank 2 and 3 - 1m 128 pixel inch tube increasing y")
 
-    # this shape is used for 5 and 6
-    pack5.writePixel(instr, "Shape for half inch tube pixels")
+    # this shape is used for 5 and 6 
+    pack5.writeTube(instr, " bank 5 and 6 - 1m 128 pixel half inch tube ")
+
+    # ---------- detector pixels
 
     # this shape is used for pack/group 1-4
     pack1.writePixel(instr, "Shape for one inch tube pixels")
+
+    # this shape is used for 5 and 6
+    pack5.writePixel(instr, "Shape for half inch tube pixels")
 
     # monitor ids
     instr.addComment("MONITOR IDS")
