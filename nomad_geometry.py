@@ -160,6 +160,42 @@ class DetPack:
                                (0.,1.,0.), # axis
                                self.radius,   # pixel radius
                                abs(self.ystep))    # pixel height
+
+    def __eq__(self, other):
+        """Compare this to another object for equality. This does not compare names or debug."""
+        def innerEq(debug, label, left, right):
+            if left != right:
+                if debug:
+                    print label, "does not match", left, "!=", right
+                return False
+            return True
+
+        try:
+            debug = (self.__debug or other.__debug)
+            if not innerEq(debug, "radius", self.radius, other.radius):
+                return False
+            if not innerEq(debug, "xstep", self.xstep, other.xstep):
+                return False
+            if not innerEq(debug, "xnum", self.xnum, other.xnum):
+                return False
+            if not innerEq(debug, "xstart", self.xstart, other.xstart):
+                return False
+            if not innerEq(debug, "ystep", self.ystep, other.ystep):
+                return False
+            if not innerEq(debug, "ynum", self.ynum, other.ynum):
+                return False
+            if not innerEq(debug, "ystart", self.ystart, other.ystart):
+                return False
+        except:
+            return False # any exception means it is not a DetPack
+
+        # getting this far means all tests passed
+        return True
+
+    def __ne__(self, other):
+        """Compare this to another object for inequality"""
+        return not self.__eq__(other)
+
 if __name__ == "__main__":
     inst_name = "NOMAD"
     xml_outfile = inst_name+"_Definition.xml"
@@ -274,7 +310,7 @@ end
                     ysize      = -1.*TUBE_LENGTH,
                     ystartdiff = -1.*TUBE_LENGTH/128.,
                     debug=False)
-    pack1.setNames(pixel="onepixel", tube="tubedecreasing", pack="bank1pack")
+    pack1.setNames(pixel="onepixel", tube="tubedecreasing", pack="packdecreasing")
 
     group1 = instr.makeTypeElement("Group1")
     for i in range(n_first):
@@ -364,7 +400,7 @@ end
                     ysize      = TUBE_LENGTH,
                     ystartdiff = TUBE_LENGTH/128.,
                     debug=False)
-    pack2.setNames(pixel="onepixel", tube="tubeincreasing", pack="bank2pack")
+    pack2.setNames(pixel=pack1.namepixel, tube="tubeincreasing", pack="packincreasing")
 
     group2 = instr.makeTypeElement("Group2")
     for i in range(n_second):
@@ -456,7 +492,7 @@ end
                     ysize      = TUBE_LENGTH,
                     ystartdiff = TUBE_LENGTH/128.,
                     debug=False)
-    pack3.setNames(pixel="onepixel", tube="tubeincreasing", pack="bank3pack")
+    pack3.setNames(pixel=pack2.namepixel, tube=pack2.nametube, pack=pack2.namepack)
 
     group3 = instr.makeTypeElement("Group3")
     for i in range(n_third):
@@ -547,7 +583,7 @@ end
                     ysize      = -1.*TUBE_LENGTH,
                     ystartdiff = -1.*TUBE_LENGTH/128.,
                     debug=False)
-    pack4.setNames(pixel="onepixel", tube="tubedecreasing", pack="bank4pack")
+    pack4.setNames(pixel=pack1.namepixel, tube=pack1.nametube, pack=pack1.namepack)
 
     group4 = instr.makeTypeElement("Group4")
     for i in range(n_forth):
@@ -633,25 +669,8 @@ end
                 x=x, y=y, z=z, rot=rot)
 
     # ---------- detector panels
-    """
-    instr.addComment("New Detector Panel (128x8) - one_inch")
-    det = instr.makeTypeElement("one_inch")
-    le.SubElement(det, "properties")
-    det = instr.addComponent("tube", root=det, blank_location=False)
-    xstep = (-0.0254*5.5/5.) # tubes are at 5.5inches for 6 tubes on centre OLD=-0.0264
-    xstart = -8.*.5*xstep + .5*xstep # OLD=0.0924
-    for j in range(8):
-        name="tube%d"  % (j+1)
-        x = float(j)*xstep + xstart
-        #if j == 0 or j == 7:
-        #    print j, x
-        instr.addLocation(det, x, 0., 0., name=name)
-    """
-
-    pack1.writePack(instr, " bank 1 - New Detector Panel (128x8) - one inch ")
-    pack2.writePack(instr, " bank 2 - New Detector Panel (128x8) - one inch ")
-    pack3.writePack(instr, " bank 3 - New Detector Panel (128x8) - one inch ")
-    pack4.writePack(instr, " bank 4 - New Detector Panel (128x8) - one inch ")
+    pack1.writePack(instr, " bank 1 and 4 - New Detector Panel (128x8) - one inch - decreasing y ")
+    pack2.writePack(instr, " bank 2 and 3 - New Detector Panel (128x8) - one inch - increasing y ")
 
     instr.addComment("New Detector Panel (128x8) - half_inch")
     det = instr.makeTypeElement("half_inch")
@@ -721,6 +740,16 @@ end
     # monitor ids
     instr.addComment("MONITOR IDS")
     instr.addMonitorIds([-1,-2])
+
+    # debug information to help reduce definition size
+    """
+    print "pack1 == pack2", pack1 == pack2
+    print "pack1 == pack3", pack1 == pack3
+    print "pack1 == pack4", pack1 == pack4
+    print "pack2 == pack3", pack2 == pack3
+    print "pack2 == pack4", pack2 == pack4
+    print "pack3 == pack4", pack3 == pack4
+    """
 
     # write out the file
     instr.writeGeom(xml_outfile)
