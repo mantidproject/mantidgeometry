@@ -289,68 +289,6 @@ end
        	det = instr.makeDetectorElement(pack1.namepack, root=group1)
        	rect.makeLocation(instr, det, bank)
 
-
-    """
-    group1 = instr.makeTypeElement("Group1")
-    z = .5*((6.41/8.45*3.2) + (3.86/8.45*3.2))# 1.940845
-    det = instr.makeDetectorElement("one_inch", root=group1)
-    makeLoc(instr, det, "bank1",
-            x=-0.0900835, y=-0.50034125, z=z, rot=-89.3663312,
-            rot_inner=92.7740541972, rot_innermost=102.872503501)
-    det = instr.makeDetectorElement("one_inch", root=group1)
-    makeLoc(instr, det, "bank2",
-            x=-0.29825225, y=-0.41170625, z=z, rot=-88.2250765278,
-            rot_inner=92.2242357116, rot_innermost=128.605560457)
-    det = instr.makeDetectorElement("one_inch", root=group1)
-    makeLoc(instr, det, "bank3",
-            x=-0.44734875, y=-0.241528, z=z, rot=-87.4360086541,
-            rot_inner=91.2341549097, rot_innermost=154.31324826)
-    det = instr.makeDetectorElement("one_inch", root=group1)
-    makeLoc(instr, det, "bank4",
-            x=-0.507842, y=-0.023511625, z=z, rot=-87.1545655812,
-            rot_inner=90.0, rot_innermost=180.0)
-    det = instr.makeDetectorElement("one_inch", root=group1)
-    makeLoc(instr, det, "bank5",
-            x=-0.4677515, y=0.199161, z=z, rot=-87.4360162435,
-            rot_inner=88.7658487398, rot_innermost=-154.313248163)
-    det = instr.makeDetectorElement("one_inch", root=group1)
-    makeLoc(instr, det, "bank6",
-            x=-0.33501675, y=0.382388, z=z, rot=-88.2250361723,
-            rot_inner=87.7757484484, rot_innermost=-128.605997196)
-    det = instr.makeDetectorElement("one_inch", root=group1)
-    makeLoc(instr, det, "bank7",
-            x=-0.135927725, y=0.4898775, z=z, rot=-89.3663380315,
-            rot_inner=87.2259863472, rot_innermost=-102.872551406)
-    det = instr.makeDetectorElement("one_inch", root=group1)
-    makeLoc(instr, det, "bank8",
-            x=0.0900835227694, y=0.50034125, z=z, rot=-90.6336689203,
-            rot_inner=87.2259458689, rot_innermost=-77.1274935015)
-    det = instr.makeDetectorElement("one_inch", root=group1)
-    makeLoc(instr, det, "bank9",
-            x=0.29825225, y=0.41170625, z=z, rot=-91.7749234722,
-            rot_inner=87.7757642884, rot_innermost=-51.3944395427)
-    det = instr.makeDetectorElement("one_inch", root=group1)
-    makeLoc(instr, det, "bank10",
-            x=0.44734875, y=0.241528, z=z, rot=-92.5639913459,
-            rot_inner=88.7658450903, rot_innermost=-25.686751674)
-    det = instr.makeDetectorElement("one_inch", root=group1)
-    makeLoc(instr, det, "bank11",
-            x=0.507842, y=0.023511625, z=z, rot=-92.8454344188,
-            rot_inner=90.0)
-    det = instr.makeDetectorElement("one_inch", root=group1)
-    makeLoc(instr, det, "bank12",
-            x=0.46775125, y=-0.199161, z=z, rot=-92.5639926177,
-            rot_inner=91.2341401341, rot_innermost=25.6864726524)
-    det = instr.makeDetectorElement("one_inch", root=group1)
-    makeLoc(instr, det, "bank13",
-            x=0.33501675, y=-0.382388, z=z, rot=-91.7749638277,
-            rot_inner=92.2242515516, rot_innermost=51.3940028045)
-    det = instr.makeDetectorElement("one_inch", root=group1)
-    makeLoc(instr, det, "bank14",
-            x=0.1359277, y=-0.4898775, z=z, rot=-90.6336619129,
-            rot_inner=92.774014947, rot_innermost=77.1274554878)
-    """
-
     # ---------- add in group2
     """
 ;;; source idl code
@@ -440,103 +378,6 @@ end
                          )
         det = instr.makeDetectorElement(pack2.namepack, root=group2)
         rect.makeLocation(instr, det, bank)
-
-
-    """
-    z = .5*((5.09/7.06*2.7-0.0095) + (2.45/7.06*2.7+0.0095)) # 1.445654
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank15",
-            x=-0.0915395, y=-0.836427, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=97.8262008026)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank16",
-            x=-0.31381, y=-0.780713, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=113.478192701)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank17",
-            x=-0.512807, y=-0.6670965, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=129.130313954)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank18",
-            x=-0.6737715, y=-0.504005, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=144.78248153)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank19",
-            x=-0.784765, y=-0.303534, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=160.434729108)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank20",
-            x=-0.8375565, y=-0.08055513, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=176.087022238)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank21",
-            x=-0.82823, y=0.14840565, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-168.261070831)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank22",
-            x=-0.757478, y=0.3663565, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-152.608674007)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank23",
-            x=-0.6305465, y=0.557136, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-136.95660485)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank24",
-            x=-0.4568505, y=0.7065955, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-121.304270268)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank25",
-            x=-0.2492725, y=0.8036495, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-105.652349705)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank26",
-            x=-0.0232068, y=0.841101, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-90.0)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank27",
-            x=0.20458, y=0.8161715, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-74.3477339442)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank28",
-            x=0.4171945, y=0.7307105, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-58.695729732)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank29",
-            x=0.598867, y=0.5910565, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-43.0434101201)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank30",
-            x=0.736125, y=0.4075655, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-27.3913259927)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank31",
-            x=0.818787, y=0.1938458, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-11.7389102452)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank32",
-            x=0.8407235, y=-0.0342456, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=3.91299045695)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank33",
-            x=0.800308, y=-0.259801, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=19.5652708918)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank34",
-            x=0.700537, y=-0.466087, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=35.2172651748)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank35",
-            x=0.54881, y=-0.6378065, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=50.8696860457)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank36",
-            x=0.356381, y=-0.7622215, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=66.5215229238)
-    det = instr.makeDetectorElement("one_inch", root=group2)
-    makeLoc(instr, det, "bank37",
-            x=0.1375204, y=-0.830107, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=82.173807641)
-    """
 
     # ---------- add in group3
     """
@@ -630,68 +471,6 @@ end
         det = instr.makeDetectorElement(pack3.namepack, root=group3)
         rect.makeLocation(instr, det, bank)
 
-    """
-    group3 = instr.makeTypeElement("Group3")
-            z((i+n_first+n_second)*8+j,*)=z0_third+dz_third*(1-onehundredtwentyeight/128.)
-    z = .5*((2.59/7.06*2.7-0.0076) + (-0.04/7.06*2.7+.0076)) # 0.48373677
-    det = instr.makeDetectorElement("one_inch", root=group3)
-    makeLoc(instr, det, "bank38",
-            x=-0.7475175, y=-0.6555715, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=139.65505902)
-    det = instr.makeDetectorElement("one_inch", root=group3)
-    makeLoc(instr, det, "bank39",
-            x=-0.87097, y=-0.4795505, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=152.068928854)
-    det = instr.makeDetectorElement("one_inch", root=group3)
-    makeLoc(instr, det, "bank40",
-            x=-0.9536965, y=-0.281106, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=164.482826207)
-    det = instr.makeDetectorElement("one_inch", root=group3)
-    makeLoc(instr, det, "bank41",
-            x=-0.991829, y=-0.0695175, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=176.896821582)
-    det = instr.makeDetectorElement("one_inch", root=group3)
-    makeLoc(instr, det, "bank42",
-            x=-0.9835845, y=0.145322, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-170.68977393)
-    det = instr.makeDetectorElement("one_inch", root=group3)
-    makeLoc(instr, det, "bank43",
-            x=-0.929359, y=0.3533655, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-158.275738743)
-    det = instr.makeDetectorElement("one_inch", root=group3)
-    makeLoc(instr, det, "bank44",
-            x=-0.8316585, y=0.544887, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-145.862002566)
-    det = instr.makeDetectorElement("one_inch", root=group3)
-    makeLoc(instr, det, "bank45",
-            x=0.814016, y=0.570975, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-34.1380800603)
-    det = instr.makeDetectorElement("one_inch", root=group3)
-    makeLoc(instr, det, "bank46",
-            x=0.917713, y=0.3825705, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-21.7242612566)
-    det = instr.makeDetectorElement("one_inch", root=group3)
-    makeLoc(instr, det, "bank47",
-            x=0.9784985, y=0.17634535, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=-9.31026118073)
-    det = instr.makeDetectorElement("one_inch", root=group3)
-    makeLoc(instr, det, "bank48",
-            x=0.993531, y=-0.0381263, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=3.10317170469)
-    det = instr.makeDetectorElement("one_inch", root=group3)
-    makeLoc(instr, det, "bank49",
-            x=0.9621065, y=-0.250814, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=15.5171737927)
-    det = instr.makeDetectorElement("one_inch", root=group3)
-    makeLoc(instr, det, "bank50",
-            x=0.885696, y=-0.451775, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=27.9309259204)
-    det = instr.makeDetectorElement("one_inch", root=group3)
-    makeLoc(instr, det, "bank51",
-            x=0.7678705, y=-0.631611, z=z, rot=-90.0,
-            rot_inner=90.0, rot_innermost=40.3447402631)
-    """
-
     # ---------- add in group4
     """
 ;;; source idl code
@@ -738,8 +517,6 @@ end
     dx_forth=x1_forth-x0_forth
     dz_forth=z1_forth-z0_forth
 
-    #print "dx =", dx_forth, (dx_forth/8.)
-    #print "dz =", dz_forth, (dz_forth/128.)
     section=(2.*pi)/23.
     x=[]
     y=[]
@@ -763,11 +540,6 @@ end
                 x.append(x0j      + xextent *(1.-k/128.))
                 y.append(y0j      + yextent *(1.-k/128.))
                 z.append(z0_forth + dz_forth*(1.-k/128.))
-    #print len(x), len(y), len(z)
-    #print x[0:8*128]
-    #print y[0:8*128]
-    #print z[0:8*128]
-    #####
 
     pack4 = DetPack(tuberadius = .5*.0254,
                     airgap     = AIR_GAP,
@@ -824,66 +596,6 @@ end
         det = instr.makeDetectorElement("half_inch_back", root=group5)
         makeLoc(instr, det, name,
                 x=x, y=y, z=z, rot=rot)
-
-    """
-    group5 = instr.makeTypeElement("Group5")
-    y = 0. # 0.003906
-    z = -1.78/8.45*3.2 # -0.687783
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank64",
-            x=-0.503307, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank65",
-            x=-0.448507, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank66",
-            x=-0.393707, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank67",
-            x=-0.338907, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank68",
-            x=-0.284107, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank69",
-            x=-0.229307, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank70",
-            x=-0.174507, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank71",
-            x=-0.11970685, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank72",
-            x=-0.0649067, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank73",
-            x=0.044693295, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank74",
-            x=0.0994933, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank75",
-            x=0.154293, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank76",
-            x=0.209093, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank77",
-            x=0.263893, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank78",
-            x=0.318693, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank79",
-            x=0.373493, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank80",
-            x=0.428293, y=y, z=z, rot=180.0)
-    det = instr.makeDetectorElement("half_inch_back", root=group5)
-    makeLoc(instr, det, "bank81",
-            x=0.483093, y=y, z=z, rot=180.0)
-    """
 
     # ---------- add in group6 - results match
     """
@@ -982,7 +694,7 @@ end
     ypixels = 128
     ystep = .9/float(ypixels) # 1m tubes
     ystart = -.5*float(ypixels)*ystep+ystep#-.446484#-.5-.5*ystep
-    instr.addComment(" 1m 128 pixel half inch tube ")
+    instr.addComment(" bank 5 and 6 - 1m 128 pixel half inch tube ")
     tube = instr.makeTypeElement("halftube", {"outline":"yes"})
     le.SubElement(tube, "properties")
     tube = instr.addComponent("halfpixel", root=tube, blank_location=False)
@@ -992,21 +704,6 @@ end
         #if i == 0 or i == 127:
         #    print y
         instr.addLocation(tube, 0., y, 0., name=name)
-
-    """
-    ystep = -1./float(ypixels) # pixels go in the other direction
-    ystart = .5+.5*ystep
-    instr.addComment(" 1m 128 pixel inch tube ")
-    tube = instr.makeTypeElement("tube", {"outline":"yes"})
-    le.SubElement(tube, "properties")
-    tube = instr.addComponent("onepixel", root=tube, blank_location=False)
-    for i in range(ypixels):
-        name = "pixel%d" % (i+1)
-        y = float(i)*ystep + ystart
-        #if i == 0 or i == 127:
-        #    print y
-        instr.addLocation(tube, 0., y, 0., name=name)
-    """
 
     # this shape is used for 1 and 4 
     pack1.writeTube(instr, " bank 1 and 4 - 1m 128 pixel inch tube decreasing y")
