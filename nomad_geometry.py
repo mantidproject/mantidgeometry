@@ -220,8 +220,7 @@ if __name__ == "__main__":
     # boiler plate stuff
     instr = MantidGeom(inst_name,
                        comment=" Created by Peter Peterson and Vickie Lynch",
-                       valid_from="2012-07-01 00:00:01",
-                       valid_to="2012-07-31 23:59:59")
+                       valid_from="2012-08-01 00:00:01")
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults()
     instr.addComment("SOURCE")
@@ -244,15 +243,7 @@ if __name__ == "__main__":
     info = instr.addDetectorIds("Group3", makeIds(14, 37888, 8*128))
     info = instr.addDetectorIds("Group4", makeIds(12, 52224, 8*128))
     info = instr.addDetectorIds("Group5", makeIds(18, 64512, 8*128))
-    ids = makeIds(18, 82944, 8*128)
-    #print ids
-    ids_len = len(ids)
-    for i in range(3):
-        ids.insert(0, ids[ids_len-1])
-    del ids[ids_len:]
-    #print ids
-    info = instr.addDetectorIds("Group6", ids)
-    #info = instr.addDetectorIds("Group6", makeIds(18, 82944, 8*128))
+    info = instr.addDetectorIds("Group6", makeIds(18, 82944, 8*128))
 
     # ---------- add in group1
     """
@@ -639,7 +630,7 @@ end
                     xstart = 0.023975, # empirical
                     ysize  =  .9, 
                     ystart = -0.44296875,
-                    debug = True)
+                    debug = False)
     pack5tubes = [2,1,4,3,6,5,8,7] # wacky empiracle numbering
     pack5.setTubeNumbers(pack5tubes)
     pack5z = [-1.* float((tube+1)% 2) * (.0254/2+.001) for tube in pack5tubes]
@@ -686,7 +677,7 @@ end
                     xstart = -0.023975, # empirical
                     ysize  =  .9, 
                     ystart = -0.44296875,
-                    debug = True)
+                    debug = False)
     pack6tubes = [2,1,4,3,6,5,8,7] # wacky empiracle numbering
     pack6.setTubeNumbers(pack6tubes)
     pack6z = [-1.* float(tube% 2) * (.0254/2+.001) for tube in pack6tubes]
