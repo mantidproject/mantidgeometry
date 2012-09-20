@@ -1,6 +1,7 @@
 from lxml import etree as le # python-lxml on rpm based systems
 from string import split,join
 INCH_TO_METRE = 0.0254
+DEG_TO_RAD = 0.0174533 # degrees to radians according to idl
 class MantidGeom:
 
     def __init__(self, instname, comment=None, valid_from=None, valid_to=None):
