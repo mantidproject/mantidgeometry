@@ -19,13 +19,24 @@ def getBankNameAndOffset(label):
     offset = 25000*letter + number*1250
     return ("bank%d" % (offset/1250), offset)
 
-def addGroup(corners, name, labels):
-    group = instr.makeTypeElement(name)
+def addGroup(corners, columns, labels):
+    # setup the relation between labels and columns
+    labels_in_col = {}
+    for column in columns:
+        labels_in_col[column] = []
     for label in labels:
-        (name, offset) = getBankNameAndOffset(label)
-        det = instr.makeDetectorElement("newpanel", root=group,
-                                        extra_attrs={"idstart":offset, 'idfillbyfirst':'y', 'idstepbyrow':7})
-        corners.rectangle(label, .006).makeLocation(instr, det, name, technique="uv")
+        column = label[0]
+        labels_in_col[column].append(label)
+
+    # add the panels
+    for column in columns:
+        letter = "ABCDEFGHIJKL".index(column) + 1
+        col = instr.makeTypeElement("Column%d" % letter)
+        for label in labels_in_col[column]:
+            (name, offset) = getBankNameAndOffset(label)
+            det = instr.makeDetectorElement("panel", root=col,
+                                            extra_attrs={"idstart":offset, 'idfillbyfirst':'y', 'idstepbyrow':7})
+            corners.rectangle(label, .006).makeLocation(instr, det, name, technique="uv")
 
 
 class CornersFile:
@@ -113,21 +124,33 @@ if __name__ == "__main__":
 
     # guides - not even copying the text
 
+    # mapping of groups to column names
+    cols = {4:['B'], 3:['C', 'D'], 2:['E', 'F'], 1:['G', 'H', 'I', 'J', 'K']}
+
     # add the empty components
-    for i in range(1,5):
+    for i in cols.keys():
         name = "Group%d" % i
-        instr.addComponent(name)#, idlist=name)
+        group = instr.addComponent(name)#, idlist=name)
+
+    # add the columns to the group
+    for groupNum in cols.keys():
+        name = "Group%d" % groupNum
+        group = instr.makeTypeElement(name)
+
+        for column in cols[groupNum]:
+            name = "Column%d" % ("ABCDEFGHIJKL".index(column) + 1)
+            instr.addComponent(name, root=group)
 
     # the actual work of adding the detectors
     corners = CornersFile("PG3_geom_2011_txt.csv", abs(L1))
-    addGroup(corners, "Group4", ["B2", "B3", "B4", "B5"])
-    addGroup(corners, "Group3", ['C2', 'C3', 'C4', 'C5', 'D2', 'D3', 'D4'])
-    addGroup(corners, "Group2", ['E2', 'E3', 'E4', 'F2', 'F3', 'F4'])
-    addGroup(corners, "Group1", ['G3', 'G4', 'H3', 'H4', 'I4', 'J4'])
+    addGroup(corners, cols[4], ["B2", "B3", "B4", "B5"])
+    addGroup(corners, cols[3], ['C2', 'C3',  'C4', 'C5', 'D2', 'D3', 'D4'])
+    addGroup(corners, cols[2], ['E2', 'E3', 'E4', 'F2', 'F3', 'F4'])
+    addGroup(corners, cols[1], ['G3', 'G4', 'H3', 'H4', 'I4', 'J4', 'K4'])
 
     # add the panel shape
     instr.addComment(" New Detector Panel (7x154)")
-    det = instr.makeTypeElement("newpanel", extra_attrs={"is":"rectangular_detector", "type":"pixel",
+    det = instr.makeTypeElement("panel", extra_attrs={"is":"rectangular_detector", "type":"pixel",
                                                          "xpixels":154, "xstart":-0.3825, "xstep":0.005,
                                                          "ypixels":7, "ystart":-0.162857142857, "ystep":0.0542857142857
                                                          })
