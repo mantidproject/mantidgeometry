@@ -148,8 +148,7 @@ class MantidGeom:
         
         type_element = le.SubElement(self.__root, "type", name="monitors")
         basecomponent = le.SubElement(type_element, "component",
-                                      **{"type":"monitor",
-                                         "mark-as":"monitor"})
+                                      **{"type":"monitor"})
         
         for i in range(len(distance)):
             #check if float
@@ -480,13 +479,13 @@ class MantidGeom:
         Add a dummy monitor with some-shape.
         """
         type_element = le.SubElement(self.__root, "type", **{"name":"monitor",
-                                                             "is":"detector"})
+                                                             "is":"monitor"})
         cylinder = le.SubElement(type_element, "cylinder", id="cyl-approx")
-        le.SubElement(cylinder, "centre-of-bottom-base", x="0.0", y="0.0",
-                      z="0.0")
+        le.SubElement(cylinder, "centre-of-bottom-base", p="0.0", r="0.0",
+                      t="0.0")
         le.SubElement(cylinder, "axis", x="0.0", y="0.0", z="1.0")
-        le.SubElement(cylinder, "radius", radius=str(radius))
-        le.SubElement(cylinder, "height", height=str(height))
+        le.SubElement(cylinder, "radius", val=str(radius))
+        le.SubElement(cylinder, "height", val=str(height))
         
         le.SubElement(type_element, "algebra", val="cyl-approx")
     
