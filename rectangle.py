@@ -443,9 +443,6 @@ class Rectangle:
             raise RuntimeError("Do not understand technique '%s'" % technique)
 
         rotations.reverse() # may need this
-        print "AAA", rotations
-        for rot in rotations:
-            print "BBB", rot[0], math.sin(rot[0]), math.cos(rot[0])
 
         sub = instr.addLocation(det, x=self.__center[0],
                                 y=self.__center[1], z=self.__center[2],
