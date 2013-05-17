@@ -1,23 +1,55 @@
 #!/usr/bin/env python
 
 from helper import INCH_TO_METRE, DEG_TO_RAD, MantidGeom
-from rectangle import Rectangle, Vector
+from rectangle import Rectangle, Vector, getEuler, makeLocation
 from lxml import etree as le # python-lxml on rpm based systems
 from math import cos, sin, radians, pi
 from sns_ncolumn import readFile
+
+# size of the panels from original pixel sizes
+x_extent = 154*.005
+y_extent = 7*.0543
+
+# number of pixels in each direction
+x_num2 = 154
+y_num2 = 7
+x_num3 = 308
+y_num3 = 16
 
 def toEasier(label):
     letter = "ABCDEFGHIJKL".index(label[0])
     number = int(label[1:])
     side = 0
-    if number > 9:
+    if number > 12:
         side  = 1
     return (side, letter, number)
 
 def getBankNameAndOffset(label):
     (side, letter, number) = toEasier(label)
-    offset = 25000*letter + number*1250
-    return ("bank%d" % (offset/1250), offset)
+    offset = 100000*letter + number*5000
+    return ("bank%d" % (offset/5000), offset)
+
+def addCenterRectangle(instr, det, name, detinfo, index):
+    # get the center
+    center = ['x', 'y', 'z']
+    center = [float(detinfo[item][index])/1000. for item in center]
+
+    # create the two unit vectors
+    u = Vector(detinfo["PUx"][index], detinfo["PUy"][index],
+               detinfo["PUz"][index])
+    v = Vector(detinfo["PVx"][index], detinfo["PVy"][index],
+               detinfo["PVz"][index])
+
+    # turn them into rotations
+    (phi, chi, omega) = getEuler(u, v, degrees=True)
+    rotations = [[phi,   (0., 1., 0.)],
+                 [chi,   (0., 0., 1.)],
+                 [omega, (0., 1., 0.)]]
+    
+    print name, center
+    print "     ", u.normalize(), v.normalize()
+    print "     ", rotations
+    makeLocation(instr, det, name, center, rotations)
 
 def addGroup(corners, columns, labels):
     # setup the relation between labels and columns
@@ -34,10 +66,22 @@ def addGroup(corners, columns, labels):
         col = instr.makeTypeElement("Column%d" % letter)
         for label in labels_in_col[column]:
             (name, offset) = getBankNameAndOffset(label)
-            det = instr.makeDetectorElement("panel", root=col,
-                                            extra_attrs={"idstart":offset, 'idfillbyfirst':'y', 'idstepbyrow':7})
-            corners.rectangle(label, .006).makeLocation(instr, det, name, technique="uv")
+            panel_name="panel_v2"
+            idstepbyrow=x_num2
+            if label in v3_panels:
+                panel_name="panel_v3"
+                idstepbyrow=x_num3
+            extra_attrs={"idstart":offset, 'idfillbyfirst':'y', 'idstepbyrow':idstepbyrow}
+            det = instr.makeDetectorElement(panel_name, root=col, extra_attrs=extra_attrs)
+            try:
+              corners.rectangle(label, .006).makeLocation(instr, det, name, technique="uv")
+            except ValueError, e:
+              print "Failed to generate '" + label \
+                  + "' from corners. Trying from engineered centers."
+              detinfo = readFile("PG3_geom.txt")
+              addCenterRectangle(instr, det, name, detinfo, detinfo["label"].index(label))
 
+v3_panels = ['B2', 'B3', 'B4', 'B5', 'B6', 'K4', 'L4']
 
 class CornersFile:
     def __init__(self, filename, L1=0.):
@@ -81,8 +125,7 @@ if __name__ == "__main__":
     # boiler plate stuff
     instr = MantidGeom(inst_name,
                        comment="Created by " + ", ".join(authors),
-                       valid_from="2013-06-01 00:00:01",
-                       valid_to="2013-07-31 23:59:59")
+                       valid_from="2013-08-01 00:00:01")
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults()
     instr.addComment("SOURCE")
@@ -126,7 +169,7 @@ if __name__ == "__main__":
     # guides - not even copying the text
 
     # mapping of groups to column names
-    cols = {4:['B'], 3:['C', 'D'], 2:['E', 'F'], 1:['G', 'H', 'I', 'J', 'K']}
+    cols = {4:['B'], 3:['C', 'D'], 2:['E', 'F'], 1:['G', 'H', 'I', 'J', 'K', 'L']}
 
     # add the empty components
     for i in cols.keys():
@@ -144,17 +187,33 @@ if __name__ == "__main__":
 
     # the actual work of adding the detectors
     corners = CornersFile("PG3_geom_2011_txt.csv", abs(L1))
-    addGroup(corners, cols[4], ["B2", "B3", "B4", "B5"])
+    addGroup(corners, cols[4], ["B2", "B3", "B4", "B5", "B6"])
     addGroup(corners, cols[3], ['C2', 'C3',  'C4', 'C5', 'D2', 'D3', 'D4'])
     addGroup(corners, cols[2], ['E2', 'E3', 'E4', 'F2', 'F3', 'F4'])
-    addGroup(corners, cols[1], ['G3', 'G4', 'H3', 'H4', 'I4', 'J4', 'K4'])
+    addGroup(corners, cols[1], ['G3', 'G4', 'H3', 'H4', 'I4', 'J4', 'K4', 'L4'])
 
     # add the panel shape
-    instr.addComment(" New Detector Panel (7x154)")
-    det = instr.makeTypeElement("panel", extra_attrs={"is":"rectangular_detector", "type":"pixel",
-                                                         "xpixels":154, "xstart":-0.3825, "xstep":0.005,
-                                                         "ypixels":7, "ystart":-0.162857142857, "ystep":0.0542857142857
-                                                         })
+    instr.addComment(" Version 2 Detector Panel (7x154)")
+    x_delta2 = x_extent/float(x_num2)
+    x_offset2 = x_delta2*(1.-float(x_num2))/2.
+    y_delta2 = y_extent/float(y_num2)
+    y_offset2 = y_delta2*(1.-float(y_num2))/2.
+    det = instr.makeTypeElement("panel_v2",
+                                extra_attrs={"is":"rectangular_detector", "type":"pixel_v2",
+                                             "xpixels":x_num2, "xstart":x_offset2, "xstep":x_delta2,
+                                             "ypixels":y_num2, "ystart":y_offset2, "ystep":y_delta2
+                                             })
+    le.SubElement(det, "properties")
+    instr.addComment(" Version 3 Detector Panel (16x308)")
+    x_delta3 = x_extent/float(x_num3)
+    x_offset3 = x_delta3*(1.-float(x_num3))/2.
+    y_delta3 = y_extent/float(y_num3)
+    y_offset3 = y_delta3*(1.-float(y_num3))/2.
+    det = instr.makeTypeElement("panel_v3", 
+                                extra_attrs={"is":"rectangular_detector", "type":"pixel_v3",
+                                             "xpixels":x_num3, "xstart":x_offset3, "xstep":x_delta3,
+                                             "ypixels":y_num3, "ystart":y_offset3, "ystep":y_delta3
+                                             })
     le.SubElement(det, "properties")
 
     # shape for monitors
@@ -163,12 +222,19 @@ if __name__ == "__main__":
     instr.addDummyMonitor(0.01, .03)
 
     # shape for detector pixels
-    instr.addComment(" Pixel for New Detectors (7x154)")
-    instr.addCuboidPixel("pixel", 
-                         [-0.0025, -0.027143,  0.0],
-                         [-0.0025,  0.027143,  0.0],
-                         [-0.0025, -0.027143, -0.0001],
-                         [ 0.0025, -0.027143,  0.0],
+    instr.addComment(" Pixel for Version 2 Detectors (7x154)")
+    instr.addCuboidPixel("pixel_v2", 
+                         [-.5*x_delta2, -.5*y_delta2,  0.0],
+                         [-.5*x_delta2,  .5*y_delta2,  0.0],
+                         [-.5*x_delta2, -.5*y_delta2, -0.0001],
+                         [ .5*x_delta2, -.5*y_delta2,  0.0],
+                         shape_id="pixel-shape")
+    instr.addComment(" Pixel for Version 3 Detectors (16x308)")
+    instr.addCuboidPixel("pixel_v3", 
+                         [-.5*x_delta3, -.5*y_delta3,  0.0],
+                         [-.5*x_delta3,  .5*y_delta3,  0.0],
+                         [-.5*x_delta3, -.5*y_delta3, -0.0001],
+                         [ .5*x_delta3, -.5*y_delta3,  0.0],
                          shape_id="pixel-shape")
 
     # monitor ids

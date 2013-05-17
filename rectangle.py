@@ -73,14 +73,65 @@ class Vector:
         """
         Set the unit length to one
         """
+        if self.isCardinal(True):
+            return self
+
         length = self.length # cache value
         if abs(length) < TOLERANCE:
             raise RuntimeError("Zero vector of zero length")
-        if abs(length -1.) < TOLERANCE:
-            return self # nothing to do
-        self.__data = [it/length for it in self.__data]
+        if abs(length -1.) > TOLERANCE:
+            self.__data = [it/length for it in self.__data]
+
+        # set near zeros to zero
+        for i in range(len(self.__data)):
+            if abs(self.__data[i]) < TOLERANCE:
+                self.__data[i] = 0.
 
         return self
+
+    def isCardinal(self, resetValues=False):
+        """
+        Returns true iff the vector is (1,0,0), (0,1,0) or (0,0,1).
+        """
+        if abs(self.length-1.) > TOLERANCE:
+            return False
+        x_is_zero = abs(self.__data[0]) <TOLERANCE
+        y_is_zero = abs(self.__data[1]) <TOLERANCE
+        z_is_zero = abs(self.__data[2]) <TOLERANCE
+
+        def sign(number):
+            """
+            Specialized version of sign intended to be used with +/-1 only
+            """
+            return number/abs(number)
+
+        # x = +/-1
+        if abs(abs(self.__data[0])-1.) <TOLERANCE:
+            if y_is_zero and z_is_zero:
+                if resetValues:
+                    self.__data[0] = sign(self.__data[0])
+                    self.__data[1] = 0.
+                    self.__data[2] = 0.
+                return True
+        # y = +/-1
+        if abs(abs(self.__data[1])-1.) <TOLERANCE:
+            if x_is_zero and z_is_zero:
+                if resetValues:
+                    self.__data[0] = 0.
+                    self.__data[1] = sign(self.__data[1])
+                    self.__data[2] = 0.
+                return True
+        # z = +/-1
+        if abs(abs(self.__data[2])-1.) <TOLERANCE:
+            if x_is_zero and y_is_zero:
+                if resetValues:
+                    self.__data[0] = 0.
+                    self.__data[1] = 0.
+                    self.__data[2] = sign(self.__data[2])
+                return True
+
+        # otherwise no
+        return False
 
     def __getitem__(self, key):
         return self.__data[key]
@@ -159,6 +210,7 @@ def getEuler(uVec, vVec, **kwargs):
 
     # normalize the u-vector
     uVec = uVec.normalize()
+
     # determine the perpendicular
     nVec = uVec.cross(vVec)
     nVec = nVec.normalize()
@@ -201,6 +253,34 @@ def getEuler(uVec, vVec, **kwargs):
         if abs(val) == 0.:
             result[i] = 0.
     return tuple(result)
+
+def __genRotationDict(rotation):
+    """
+    Generate the dict used for creating attributes.
+    """
+    (angle, axis) = rotation
+    axis = [str(int(val)) for val in axis]
+
+    result = {}
+    result["val"]    = str(angle)
+    if axis[0] != '0' or axis[1] != '0' or axis[2] != '1':
+        result["axis-x"] = axis[0]
+        result["axis-y"] = axis[1]
+        result["axis-z"] = axis[2]
+    return result
+
+def makeLocation(instr, det, name, center, rotations, tol_ang=TOLERANCE):
+    """
+    Make a location appropriate for an instrument component.
+    """
+    sub = instr.addLocation(det,
+                            x=center[0], y=center[1], z=center[2],
+                            name=name, rot_y=rotations[0][0])
+    if abs(rotations[1][0]) > tol_ang: # second rotation
+        sub = le.SubElement(sub, "rot",
+                            __genRotationDict(rotations[1]))
+        if abs(rotations[2][0]) > tol_ang: # third rotation angle
+            le.SubElement(sub, "rot", __genRotationDict(rotations[2]))
 
 class Rectangle:
     NPOINTS = 4
@@ -403,21 +483,6 @@ class Rectangle:
     points = property(lambda self: self.__points[:],
                       doc="The four corners originally supplied in the constructor")
 
-    def __genRotationDict(self, rotation):
-        """
-        Generate the dict used for creating attributes.
-        """
-        (angle, axis) = rotation
-        axis = [str(int(val)) for val in axis]
-
-        result = {}
-        result["val"]    = str(angle)
-        if axis[0] != '0' or axis[1] != '0' or axis[2] != '1':
-            result["axis-x"] = axis[0]
-            result["axis-y"] = axis[1]
-            result["axis-z"] = axis[2]
-        return result
-
     def makeLocation(self, instr, det, name, technique="orientation"):
         """
         @param instr The root instrument that does most of the work.
@@ -444,14 +509,4 @@ class Rectangle:
 
         rotations.reverse() # may need this
 
-        sub = instr.addLocation(det, x=self.__center[0],
-                                y=self.__center[1], z=self.__center[2],
-                                name=name, rot_y=rotations[0][0])
-        if abs(rotations[1][0]) > self._tol_ang: # second rotation
-            sub = le.SubElement(sub, "rot",
-                                self.__genRotationDict(rotations[1]))
-            if abs(rotations[2][0]) > self._tol_ang: # third rotation angle
-                le.SubElement(sub, "rot", self.__genRotationDict(rotations[2]))
-
-
-
+        makeLocation(instr, det, name, self.__center, rotations, self._tol_ang)
