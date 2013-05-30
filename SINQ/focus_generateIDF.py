@@ -5,7 +5,7 @@ Created on Feb 22, 2013
 
 Run as:
 
-cd  ~/git/mantidgeometry/SINQ/IDF; python focus_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > ~/git/Mantid/Code/Mantid/instrument/FOCUS_Definition.xml; rm  ~/git/Mantid/Code/Mantid/instrument/FOCUS_Definition.vtp 
+cd  ~/git/mantidgeometry/SINQ; python focus_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > ~/git/Mantid/Code/Mantid/instrument/FOCUS_Definition.xml; rm  ~/git/Mantid/Code/Mantid/instrument/FOCUS_Definition.vtp 
 
 '''
 
@@ -28,8 +28,8 @@ numberOfDetectors =  bank1Length + lowerBankLength + upperBankLength
 firstDetectorId = 1
 
 sampleDetectorDistance = 2.5  # meters
-angle = 15  # degrees # vertical detection angle
-sourceSampleDistance = 0.49
+angle = 20  # degrees # vertical detection angle
+sourceSampleDistance = 0.4997
     
 def printHeader():
     print """<?xml version="1.0" encoding="UTF-8"?>
@@ -72,22 +72,15 @@ def printDetectors():
     
     print "<!-- Detector Banks -->"
     print """<type name="detectors">"""
-    print """  <component type="bank1"><location/></component>"""
     print """  <component type="lowerBank"><location/></component>"""
+    print """  <component type="bank1"><location/></component>"""
     print """  <component type="upperBank"><location/></component>"""
+    
     print "</type>"
     
     print "<!-- Definition of every bank -->"
     
     thisId = firstDetectorId
-    
-    print """<type name="bank1">"""
-    print """  <component type="pack">"""
-    for theta in bank1Theta:
-        print """    <location r="%f" t="%f" p="%f" name="det%d"></location>"""  % (sampleDetectorDistance,-theta,0,thisId) #
-        thisId += 1
-    print """  </component>"""
-    print """</type>"""
     
     print """<type name="lowerBank">"""
     print """  <component type="pack">"""
@@ -102,10 +95,6 @@ def printDetectors():
     print """  </component>"""
     print """</type>"""
     
-
-    
-    
-    
     print """<type name="upperBank">"""
     print """  <component type="pack">"""
     for theta in upperBankTheta:
@@ -119,6 +108,21 @@ def printDetectors():
     print """  </component>"""
     print """</type>"""
 
+
+    print """<type name="bank1">"""
+    print """  <component type="pack">"""
+    for theta in bank1Theta:
+        print """    <location r="%f" t="%f" p="%f" name="det%d"></location>"""  % (sampleDetectorDistance,-theta,0,thisId) #
+        thisId += 1
+    print """  </component>"""
+    print """</type>"""
+    
+    
+
+    
+    
+    
+    
 
  
 #def sphericalToCartesian(rho, theta, phi):
