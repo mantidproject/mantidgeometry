@@ -7,9 +7,8 @@ Created on August 2012
 
 Use this to look for nexus files in a directory. E.g. :
 
-cd /net/serdon/illdata/121/in6 
-~/workspace/PyTests/src/print_nexus_sample.py '*.nxs'
-
+cd /net/serdon/illdata/121/in6
+python ~/workspace/PyTests/src/print_nexus_sample.py '*.nxs'
 
 '''
 
@@ -23,34 +22,64 @@ import glob
 '''
 
 def show(filename):
+
     print filename,
     f = nxs.open(filename)
+    # /entry0
     f.opengroup('entry0')
 
+    # /entry0/start_time
     f.opendata('start_time')
     print ';', f.getdata(),
+    # /entry0
     f.closedata()
     
-    # print title
-    f.opendata('title')
+    # /entry0/title
+    try:
+        f.opendata('title')
+    except:
+        f.opendata('experiment_title')
     print ';', f.getdata(),
+    # /entry0
     f.closedata()
     
+    # /entry0/sample
     f.opengroup('sample')
-    f.opendata('chemical_formula')
-    print '; Chem:', f.getdata(),
-    f.closedata()
-    f.closegroup() #sample
+    # /entry0/sample/chemical_formula
+    try :
+        f.opendata('chemical_formula')
+        print '; Chem:', f.getdata(),
+        # /entry0/sample
+        f.closedata()
+    except:
+        pass
+        
     
-    f.opendata('wavelength')
-    print ';', f.getdata(), 'A',
-    f.closedata()
+    # /entry0
+    f.closegroup()
     
-    f.opendata('experiment_identifier')
+    try :
+        # /entry0/walength
+        f.opendata('wavelength')
+        print ';', f.getdata(), 'A',
+        # /entry0
+        f.closedata()
+    except:
+        pass
+    
+    try:
+        # /entry0/experiment_identifier
+        f.opendata('experiment_identifier')
+    except:
+        f.opendata('sample_description')
+        
     print '; Id:', f.getdata(),
+    
+    # /entry0
     f.closedata() 
     
-    f.closegroup() # entry0
+    # /
+    f.closegroup()
     f.close()
     
     print

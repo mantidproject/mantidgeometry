@@ -5,7 +5,7 @@ Created on Feb 22, 2013
 
 Run as:
 
-python ~/workspace/PyTests/src/d33_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > ~/git/Mantid/Code/Mantid/instrument/D33_Definition.xml 
+cd /home/leal/git/mantidgeometry/ILL/IDF; python d33_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > ~/git/Mantid/Code/Mantid/instrument/D33_Definition.xml 
 
 TODO:
 - IDs are not correct!!!
