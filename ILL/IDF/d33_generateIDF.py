@@ -11,6 +11,38 @@ TODO:
 - IDs are not correct!!!
 - Need to know correspondance between front detector position & ID and Nexus file data field 
 
+
+        'D33':   begin                   
+  ;         -------------------------------------- 
+  ;        |             Front 5                  | [256*32]
+  ;        |                                      |
+  ;         --------------------------------------
+  ;  -----  --------------------------------------  -----
+  ; |     ||                                      ||     |             Detector distances
+  ; |     ||                                      ||     |             idx54         ;Sample -> rear     detector (number 1)
+  ; |     ||                                      ||     |             idx55         ;Sample -> bottom   detector (#4)
+  ; |     ||                                      ||     |                           ;sample -> top      detector (#5)
+  ; |     ||                                      ||     |             idx55 + idx56 ;Sample -> right    detector (#2)
+  ; |     ||                                      ||     |                           ;sample -> left detector (#3)
+  ; |     ||                                      ||     |             idx57 *1.e-3  ;Left      shift of detector #3  [in m]
+  ; |     ||                                      ||     |             idx58 *1.e-3  ;Right     shift of detector #2  [in m]
+  ; |     ||                                      ||     |             idx59 *1.e-3  ;Downwards shift of detector #4  [in m]
+  ; | F3  ||             Rear 1 [256*128]         || F2  |             idx60 *1.e-3  ;Upwards   shift of detector #5  [in m]
+  ; |     ||                                      ||     |
+  ; |     ||                                      ||     | [32*256]
+  ; |     ||                                      ||     |
+  ; |     ||                                      ||     |
+  ; |     ||                                      ||     |
+  ; |     ||                                      ||     |
+  ; |     ||                                      ||     |
+  ; |     ||                                      ||     |
+  ; |     ||                                      ||     |
+  ;  -----  --------------------------------------  -----
+  ;         -------------------------------------- 
+  ;        |            Front 4                   | [256*32]
+  ;        |                                      |
+  ;         --------------------------------------
+                  
 '''
 import sys
 import numpy as np
@@ -18,25 +50,37 @@ import time
 
 instrumentName = 'D33'
 
+# detector dims
+detLargeDim = 0.64 #m
+detShortDim = 0.16
+
+
 # Rear Det 1
-numberOfPixelsInCentralDetector = 128 * 128
-# Dront Det 2
-numberOfPixelsInSurroundingDetectors = 32 * 128
-numberOfSurroundingDetectors = 4
-numberOfPixels = numberOfPixelsInCentralDetector * numberOfPixelsInSurroundingDetectors * numberOfSurroundingDetectors
+numberOfPixelsInBackDetectorH = 128
+numberOfPixelsInBackDetectorW = 256
+numberOfPixelsInBackDetector = numberOfPixelsInBackDetectorH * numberOfPixelsInBackDetectorW
+
+# Front Dets Side x2
+numberOfPixelsInFrontSideDetectorsH = 256
+numberOfPixelsInFrontSideDetectorsW = 32
+numberOfPixelsInFrontSideDetectors = numberOfPixelsInFrontSideDetectorsH * numberOfPixelsInFrontSideDetectorsW 
+
+# Front Dets Top Bottom x2
+numberOfPixelsInFrontVerticalDetectorsH = 32
+numberOfPixelsInFrontVerticalDetectorsW = 256
+numberOfPixelsInFrontVerticalDetectors = numberOfPixelsInFrontVerticalDetectorsH * numberOfPixelsInFrontVerticalDetectorsW 
+
+numberOfPixels = numberOfPixelsInBackDetector * 2 * numberOfPixelsInFrontSideDetectors * 2 * numberOfPixelsInFrontVerticalDetectors
 
 firstDetectorId = 1
 numberOfDetectors = numberOfPixels
-
-
-
 
 
 def printHeader():
     print """<?xml version="1.0" encoding="UTF-8"?>
     <!-- For help on the notation used to specify an Instrument Definition File see http://www.mantidproject.org/IDF -->
     <instrument name="%s" valid-from="1900-01-31 23:59:59"
-    valid-to="2100-01-31 23:59:59" last-modified="%s">""" %(instrumentName,time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
+    valid-to="2100-01-31 23:59:59" last-modified="%s">""" % (instrumentName, time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
     print """<!-- Author: ricardo.leal@ill.fr -->"""
     print """<defaults>
       <length unit="meter" />
@@ -77,52 +121,78 @@ def printDetectors():
     
     print "<!-- Detector Panels -->"
     print """<type name="detectors">"""
-    print """ <component type="front_detectors"><location z='1.5'/></component>"""
-    print """ <component type="back_detector" idstart="1" idfillbyfirst="y" idstepbyrow="128">
-    <location z='3'/></component>"""
-    print """</type>"""
+    print """ <component type="back_detector" idstart="%d" idfillbyfirst="y" idstepbyrow="%d"> <location z='3'/>
+    </component>""" % (firstDetectorId, numberOfPixelsInBackDetectorW)
+    acc = firstDetectorId + numberOfPixelsInBackDetector
     
-    print """<type name="front_detectors">"""
-    print """ <component type="front_detector" idstart="100000000" idfillbyfirst="y" idstepbyrow="128">
-    <location x='0.4' y='0' z='0' rot="90.0" axis-x="0.0" axis-y="0.0" axis-z="1.0"/>
-    </component>
-    <component type="front_detector" idstart="200000000" idfillbyfirst="y" idstepbyrow="128">
-    <location x='-0.4' y='0' z='0' rot="-90.0" axis-x="0.0" axis-y="0.0" axis-z="1.0"/>
-    </component>
-    <component type="front_detector" idstart="300000000" idfillbyfirst="y" idstepbyrow="128">
-    <location x='0' y='0.4' z='0'/>
-    </component>
-    <component type="front_detector" idstart="400000000" idfillbyfirst="y" idstepbyrow="128">
-    <location x='0' y='-0.4' z='0'/>
-    </component>"""
-    print """</type>"""
+    print """ <component type="front_detector_right" idstart="%d" idfillbyfirst="y" idstepbyrow="%d"> 
+    <location x='0.4' y='0' z='1' />
+    </component>"""%(acc,numberOfPixelsInFrontSideDetectorsW)
+    acc += numberOfPixelsInFrontSideDetectors
     
+    print """ <component type="front_detector_left" idstart="%d" idfillbyfirst="y" idstepbyrow="%d">
+    <location x='-0.4' y='0' z='1' />
+    </component>"""%(acc,numberOfPixelsInFrontSideDetectorsW)
+    acc += numberOfPixelsInFrontSideDetectors
+    
+    print """ <component type="front_detector_bottom" idstart="%d" idfillbyfirst="y" idstepbyrow="%d">
+    <location x='0' y='-0.4' z='1' />
+    </component>"""%(acc,numberOfPixelsInFrontVerticalDetectorsW)
+    acc += numberOfPixelsInFrontVerticalDetectors
+    
+    print """ <component type="front_detector_top" idstart="%d" idfillbyfirst="y" idstepbyrow="%d">
+    <location x='0' y='0.4' z='1'/>
+    </component>"""%(acc,numberOfPixelsInFrontVerticalDetectorsW)
+    
+    print """</type>"""
     
     print "<!-- Definition of every bank -->"
     
-    print """<!-- Front detector: 160 x 640 mm (32 x 128 pixels) -->"""
-    npixels = 128
-    start =  -0.640/2. 
-    step = 0.640 / npixels
-    print '''<type name="front_detector" is="rectangular_detector" type="pixel"''' 
-    print ''' xpixels="%d" xstart="%f" xstep="%f"'''%(npixels,start,step)
-    npixels = 32
-    start =  -0.160/2. 
-    step = 0.160 / npixels
-    print ''' ypixels="%d" ystart="%f" ystep="%f" >'''%(npixels,start,step)
-    print ''' <properties/>'''
-    print """</type>"""  
-    
-    
     print """<!-- Back detector: 640 x 640 mm -->"""
-    npixels = 128
-    start =  -0.640/2. 
-    step = 0.640 / npixels
+    
+    xstep = detLargeDim / numberOfPixelsInBackDetectorW
+    xstart = - detLargeDim /2 + xstep /2 
+    ystep = detLargeDim / numberOfPixelsInBackDetectorH
+    ystart = - detLargeDim /2 + ystep /2
     print '''<type name="back_detector" is="rectangular_detector" type="pixel"''' 
-    print ''' xpixels="%d" xstart="%f" xstep="%f"'''%(npixels,start,step)
-    print ''' ypixels="%d" ystart="%f" ystep="%f" >'''%(npixels,start,step)
+    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInBackDetectorW, xstart, xstep)
+    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInBackDetectorH, ystart, ystep)
     print ''' <properties/>'''
-    print """</type>"""  
+    print '''</type>'''  
+    
+    print """<!-- Front detector: side pannels -->"""
+    
+    xstep = detShortDim / numberOfPixelsInFrontSideDetectorsW
+    xstart = - detShortDim /2 + xstep /2 
+    ystep = detLargeDim / numberOfPixelsInFrontSideDetectorsH
+    ystart = - detLargeDim /2 + ystep /2
+    print '''<type name="front_detector_right" is="rectangular_detector" type="pixel"''' 
+    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontSideDetectorsW, xstart, xstep)
+    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontSideDetectorsH, ystart, ystep)
+    print ''' <properties/>'''
+    print '''</type>'''  
+    print '''<type name="front_detector_left" is="rectangular_detector" type="pixel"''' 
+    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontSideDetectorsW, xstart, xstep)
+    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontSideDetectorsH, ystart, ystep)
+    print ''' <properties/>'''
+    print '''</type>''' 
+    
+    print """<!-- Front detector: top / buttom pannels -->"""
+    
+    xstep = detLargeDim / numberOfPixelsInFrontVerticalDetectorsW
+    xstart = - detLargeDim /2 + xstep /2 
+    ystep = detShortDim / numberOfPixelsInFrontVerticalDetectorsH
+    ystart = - detShortDim /2 + ystep /2
+    print '''<type name="front_detector_bottom" is="rectangular_detector" type="pixel"''' 
+    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontVerticalDetectorsW, xstart, xstep)
+    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontVerticalDetectorsH, ystart, ystep)
+    print ''' <properties/>'''
+    print '''</type>'''  
+    print '''<type name="front_detector_top" is="rectangular_detector" type="pixel"''' 
+    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontVerticalDetectorsW, xstart, xstep)
+    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontVerticalDetectorsH, ystart, ystep)
+    print ''' <properties/>'''
+    print '''</type>''' 
     
  
 

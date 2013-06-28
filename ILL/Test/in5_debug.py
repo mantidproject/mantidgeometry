@@ -2,6 +2,14 @@
 
 '''
 @author: Ricardo Leal
+
+This will parse a nexus file and will make several plots of the tof fitting
+
+
+Run as:
+cd ~/git/mantidgeometry/ILL/Test
+python in5_debug.py -f /home/leal/Documents/Mantid/IN5/2013-02-08/102297.nxs
+
 '''
 
 import nxs
@@ -22,7 +30,7 @@ wavelength = 5
 eiIn = 3.27148
 channelWidth = 14.6349  # microsec
 #pixelSize = 0.011479 # meters
-pixelSize =  0.0122 # meters
+pixelSize =  0.012289
 
 
 
