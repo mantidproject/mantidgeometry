@@ -60,20 +60,13 @@ numberOfPixelsInBackDetectorH = 128
 numberOfPixelsInBackDetectorW = 256
 numberOfPixelsInBackDetector = numberOfPixelsInBackDetectorH * numberOfPixelsInBackDetectorW
 
-# Front Dets Side x2
-numberOfPixelsInFrontSideDetectorsH = 256
-numberOfPixelsInFrontSideDetectorsW = 32
-numberOfPixelsInFrontSideDetectors = numberOfPixelsInFrontSideDetectorsH * numberOfPixelsInFrontSideDetectorsW 
-
-# Front Dets Top Bottom x2
-numberOfPixelsInFrontVerticalDetectorsH = 32
-numberOfPixelsInFrontVerticalDetectorsW = 256
-numberOfPixelsInFrontVerticalDetectors = numberOfPixelsInFrontVerticalDetectorsH * numberOfPixelsInFrontVerticalDetectorsW 
-
-numberOfPixels = numberOfPixelsInBackDetector * 2 * numberOfPixelsInFrontSideDetectors * 2 * numberOfPixelsInFrontVerticalDetectors
+# Front Dets Side x2 and Dets Top Bottom x2
+numberOfPixelsInFrontDetectorsH = 32
+numberOfPixelsInFrontDetectorsW = 256
+numberOfPixelsInFrontDetectors = numberOfPixelsInFrontDetectorsH * numberOfPixelsInFrontDetectorsW 
 
 firstDetectorId = 1
-numberOfDetectors = numberOfPixels
+numberOfDetectors = numberOfPixelsInBackDetector + 4 * numberOfPixelsInFrontDetectors
 
 
 def printHeader():
@@ -106,43 +99,46 @@ def printHeader():
     <type name="sample-position" is="SamplePos" />"""
 
 def printDetectors():
-#    print """<idlist idname="detectors">
-#        <id start="%d" end="%d" />
-#    </idlist>""" % (firstDetectorId, numberOfDetectors)
-#    
-#    print """<!-- Detector list def -->
-#    <component type="detectors" idlist="detectors">
-#        <location />
-#    </component>"""
+    
+#     print """<idlist idname="detectors">
+#         <id start="%d" end="%d" />
+#     </idlist>""" % (firstDetectorId, numberOfDetectors)
+#     
+#     print """<!-- Detector list def -->
+#     <component type="detectors" idlist="detectors">
+#         <location />
+#     </component>"""
     
     print """<component type="detectors">
-    <location/>
-  </component>"""
+     <location/>
+    </component>"""
     
     print "<!-- Detector Panels -->"
     print """<type name="detectors">"""
-    print """ <component type="back_detector" idstart="%d" idfillbyfirst="y" idstepbyrow="%d"> <location z='3'/>
+    print """ <component type="back_detector" idstart="%d" idfillbyfirst="y" idstep="%d" idstepbyrow="1"> 
+    <location z='3'/>
     </component>""" % (firstDetectorId, numberOfPixelsInBackDetectorW)
     acc = firstDetectorId + numberOfPixelsInBackDetector
     
-    print """ <component type="front_detector_right" idstart="%d" idfillbyfirst="y" idstepbyrow="%d"> 
-    <location x='0.4' y='0' z='1' />
-    </component>"""%(acc,numberOfPixelsInFrontSideDetectorsW)
-    acc += numberOfPixelsInFrontSideDetectors
+    print """ <component type="front_detector_right" idstart="%d" idfillbyfirst="y" idstep="%d" idstepbyrow="1"> 
+    <location x='0.4' y='0' z='1' rot="90.0" axis-x="0.0" axis-y="0.0" axis-z="1.0"/>
+    </component>"""%(acc,numberOfPixelsInFrontDetectorsW)
+    acc += numberOfPixelsInFrontDetectors
     
-    print """ <component type="front_detector_left" idstart="%d" idfillbyfirst="y" idstepbyrow="%d">
-    <location x='-0.4' y='0' z='1' />
-    </component>"""%(acc,numberOfPixelsInFrontSideDetectorsW)
-    acc += numberOfPixelsInFrontSideDetectors
+    print """ <component type="front_detector_left" idstart="%d" idfillbyfirst="y" idstep="%d" idstepbyrow="1">
+    <location x='-0.4' y='0' z='1' rot="90.0" axis-x="0.0" axis-y="0.0" axis-z="1.0"/>
+    </component>"""%(acc,numberOfPixelsInFrontDetectorsW)
+    acc += numberOfPixelsInFrontDetectors
     
-    print """ <component type="front_detector_bottom" idstart="%d" idfillbyfirst="y" idstepbyrow="%d">
+    
+    print """ <component type="front_detector_bottom" idstart="%d" idfillbyfirst="y" idstep="%d" idstepbyrow="1">
     <location x='0' y='-0.4' z='1' />
-    </component>"""%(acc,numberOfPixelsInFrontVerticalDetectorsW)
-    acc += numberOfPixelsInFrontVerticalDetectors
+    </component>"""%(acc,numberOfPixelsInFrontDetectorsW)
+    acc += numberOfPixelsInFrontDetectors
     
-    print """ <component type="front_detector_top" idstart="%d" idfillbyfirst="y" idstepbyrow="%d">
+    print """ <component type="front_detector_top" idstart="%d" idfillbyfirst="y" idstep="%d" idstepbyrow="1">
     <location x='0' y='0.4' z='1'/>
-    </component>"""%(acc,numberOfPixelsInFrontVerticalDetectorsW)
+    </component>"""%(acc,numberOfPixelsInFrontDetectorsW)
     
     print """</type>"""
     
@@ -155,42 +151,35 @@ def printDetectors():
     ystep = detLargeDim / numberOfPixelsInBackDetectorH
     ystart = - detLargeDim /2 + ystep /2
     print '''<type name="back_detector" is="rectangular_detector" type="pixel"''' 
-    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInBackDetectorW, xstart, xstep)
+    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInBackDetectorW, -xstart, -xstep)
     print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInBackDetectorH, ystart, ystep)
     print ''' <properties/>'''
     print '''</type>'''  
     
-    print """<!-- Front detector: side pannels -->"""
+    print """<!-- Front detectors -->"""
     
-    xstep = detShortDim / numberOfPixelsInFrontSideDetectorsW
-    xstart = - detShortDim /2 + xstep /2 
-    ystep = detLargeDim / numberOfPixelsInFrontSideDetectorsH
-    ystart = - detLargeDim /2 + ystep /2
+    xstep = detLargeDim / numberOfPixelsInFrontDetectorsW
+    xstart = - detLargeDim /2 + xstep /2 
+    ystep =  detShortDim / numberOfPixelsInFrontDetectorsH
+    ystart = - detShortDim /2 + ystep /2
     print '''<type name="front_detector_right" is="rectangular_detector" type="pixel"''' 
-    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontSideDetectorsW, xstart, xstep)
-    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontSideDetectorsH, ystart, ystep)
+    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontDetectorsW, xstart, xstep)
+    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontDetectorsH, ystart, ystep)
     print ''' <properties/>'''
     print '''</type>'''  
     print '''<type name="front_detector_left" is="rectangular_detector" type="pixel"''' 
-    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontSideDetectorsW, xstart, xstep)
-    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontSideDetectorsH, ystart, ystep)
+    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontDetectorsW, xstart, xstep)
+    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontDetectorsH, ystart, ystep)
     print ''' <properties/>'''
     print '''</type>''' 
-    
-    print """<!-- Front detector: top / buttom pannels -->"""
-    
-    xstep = detLargeDim / numberOfPixelsInFrontVerticalDetectorsW
-    xstart = - detLargeDim /2 + xstep /2 
-    ystep = detShortDim / numberOfPixelsInFrontVerticalDetectorsH
-    ystart = - detShortDim /2 + ystep /2
     print '''<type name="front_detector_bottom" is="rectangular_detector" type="pixel"''' 
-    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontVerticalDetectorsW, xstart, xstep)
-    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontVerticalDetectorsH, ystart, ystep)
+    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontDetectorsW, -xstart, -xstep)
+    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontDetectorsH, ystart, ystep)
     print ''' <properties/>'''
     print '''</type>'''  
     print '''<type name="front_detector_top" is="rectangular_detector" type="pixel"''' 
-    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontVerticalDetectorsW, xstart, xstep)
-    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontVerticalDetectorsH, ystart, ystep)
+    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontDetectorsW, -xstart, -xstep)
+    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontDetectorsH, ystart, ystep)
     print ''' <properties/>'''
     print '''</type>''' 
     
@@ -201,10 +190,10 @@ def printPixels():
     print """<!-- Pixel for Detectors: 5x5 mm -->
     <type is="detector" name="pixel">
     <cuboid id="pixel-shape">
-      <left-front-bottom-point y="-0.0025" x="-0.0025" z="0.0"/>
-      <left-front-top-point y="0.0025" x="-0.0025" z="0.0"/>
-      <left-back-bottom-point y="-0.0025" x="-0.0025" z="-0.0001"/>
-      <right-front-bottom-point y="-0.0025" x="0.0025" z="0.0"/>
+      <left-front-bottom-point y="-0.0025" x="-0.00125" z="0.0"/>
+      <left-front-top-point y="0.0025" x="-0.00125" z="0.0"/>
+      <left-back-bottom-point y="-0.0025" x="-0.00125" z="-0.0001"/>
+      <right-front-bottom-point y="-0.0025" x="0.00125" z="0.0"/>
     </cuboid>
     <algebra val="pixel-shape"/>
     </type>"""
