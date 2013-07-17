@@ -118,11 +118,18 @@ def maskLastPanel():
     global maskedPixels
     maskedPixels = maskedPixels + range(90113,numberOfTubes * numberOfPixelsPerTube + 1)
 
+def maskAllPanelsExceptLast():
+    global maskedPixels
+    maskedPixels = maskedPixels + range(firstPixelDetectorID,90113)
+
 
 if __name__ == "__main__":
     maskTopAndBottom()
     maskFixedMask()
     maskBeamStop()
+    
+    maskAllPanelsExceptLast();
+    
     # maskLastPanel()
     
     f= open(outputMaskFile,'w')
