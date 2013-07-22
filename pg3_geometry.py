@@ -16,6 +16,9 @@ y_num2 = 7
 x_num3 = 308
 y_num3 = 16
 
+# primary flight path - negative b/c it is upstream
+L1 = -60.0
+
 def toEasier(label):
     letter = "ABCDEFGHIJKL".index(label[0])
     number = int(label[1:])
@@ -120,7 +123,6 @@ if __name__ == "__main__":
                "Vickie Lynch",
                "Peter Peterson",
                "Janik Zikovsky"]
-    L1 = -60.0
 
     # boiler plate stuff
     instr = MantidGeom(inst_name,
