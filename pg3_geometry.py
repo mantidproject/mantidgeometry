@@ -77,14 +77,15 @@ def addGroup(corners, columns, labels):
             extra_attrs={"idstart":offset, 'idfillbyfirst':'y', 'idstepbyrow':idstepbyrow}
             det = instr.makeDetectorElement(panel_name, root=col, extra_attrs=extra_attrs)
             try:
-              corners.rectangle(label, .006).makeLocation(instr, det, name, technique="uv")
+              corners.rectangle(label, .014).makeLocation(instr, det, name, technique="uv")
             except ValueError, e:
               print "Failed to generate '" + label \
                   + "' from corners. Trying from engineered centers."
               detinfo = readFile("PG3_geom.txt")
               addCenterRectangle(instr, det, name, detinfo, detinfo["label"].index(label))
 
-v3_panels = ['B2', 'B3', 'B4', 'B5', 'B6', 'K4', 'L4']
+# for the next cycle they will all be low resolution
+v3_panels = []#'B2', 'B3', 'B4', 'B5', 'B6', 'K4', 'L4']
 
 class CornersFile:
     def __init__(self, filename, L1=0.):
@@ -188,10 +189,10 @@ if __name__ == "__main__":
             instr.addComponent(name, root=group)
 
     # the actual work of adding the detectors
-    corners = CornersFile("PG3_geom_2011_txt.csv", abs(L1))
+    corners = CornersFile("PG3_geom_2013_txt.csv", abs(L1))
     addGroup(corners, cols[4], ["B2", "B3", "B4", "B5", "B6"])
-    addGroup(corners, cols[3], ['C2', 'C3',  'C4', 'C5', 'D2', 'D3', 'D4'])
-    addGroup(corners, cols[2], ['E2', 'E3', 'E4', 'F2', 'F3', 'F4'])
+    addGroup(corners, cols[3], ['C2', 'C3',  'C4', 'C5', 'D2', 'D3', 'D4', 'D5', 'D6'])
+    addGroup(corners, cols[2], ['E2', 'E3', 'E4', 'E5', 'F2', 'F3', 'F4', 'F5'])
     addGroup(corners, cols[1], ['G3', 'G4', 'H3', 'H4', 'I4', 'J4', 'K4', 'L4'])
 
     # add the panel shape
@@ -206,17 +207,18 @@ if __name__ == "__main__":
                                              "ypixels":y_num2, "ystart":y_offset2, "ystep":y_delta2
                                              })
     le.SubElement(det, "properties")
-    instr.addComment(" Version 3 Detector Panel (16x308)")
-    x_delta3 = x_extent/float(x_num3)
-    x_offset3 = x_delta3*(1.-float(x_num3))/2.
-    y_delta3 = y_extent/float(y_num3)
-    y_offset3 = y_delta3*(1.-float(y_num3))/2.
-    det = instr.makeTypeElement("panel_v3", 
-                                extra_attrs={"is":"rectangular_detector", "type":"pixel_v3",
-                                             "xpixels":x_num3, "xstart":x_offset3, "xstep":x_delta3,
-                                             "ypixels":y_num3, "ystart":y_offset3, "ystep":y_delta3
-                                             })
-    le.SubElement(det, "properties")
+    if len(v3_panels) > 0:
+        instr.addComment(" Version 3 Detector Panel (16x308)")
+        x_delta3 = x_extent/float(x_num3)
+        x_offset3 = x_delta3*(1.-float(x_num3))/2.
+        y_delta3 = y_extent/float(y_num3)
+        y_offset3 = y_delta3*(1.-float(y_num3))/2.
+        det = instr.makeTypeElement("panel_v3", 
+                                    extra_attrs={"is":"rectangular_detector", "type":"pixel_v3",
+                                                 "xpixels":x_num3, "xstart":x_offset3, "xstep":x_delta3,
+                                                 "ypixels":y_num3, "ystart":y_offset3, "ystep":y_delta3
+                                                 })
+        le.SubElement(det, "properties")
 
     # shape for monitors
     instr.addComment(" Shape for Monitors")
@@ -231,13 +233,14 @@ if __name__ == "__main__":
                          [-.5*x_delta2, -.5*y_delta2, -0.0001],
                          [ .5*x_delta2, -.5*y_delta2,  0.0],
                          shape_id="pixel-shape")
-    instr.addComment(" Pixel for Version 3 Detectors (16x308)")
-    instr.addCuboidPixel("pixel_v3", 
-                         [-.5*x_delta3, -.5*y_delta3,  0.0],
-                         [-.5*x_delta3,  .5*y_delta3,  0.0],
-                         [-.5*x_delta3, -.5*y_delta3, -0.0001],
-                         [ .5*x_delta3, -.5*y_delta3,  0.0],
-                         shape_id="pixel-shape")
+    if len(v3_panels) > 0:
+        instr.addComment(" Pixel for Version 3 Detectors (16x308)")
+        instr.addCuboidPixel("pixel_v3", 
+                             [-.5*x_delta3, -.5*y_delta3,  0.0],
+                             [-.5*x_delta3,  .5*y_delta3,  0.0],
+                             [-.5*x_delta3, -.5*y_delta3, -0.0001],
+                             [ .5*x_delta3, -.5*y_delta3,  0.0],
+                             shape_id="pixel-shape")
 
     # monitor ids
     instr.addComment("MONITOR IDs")
