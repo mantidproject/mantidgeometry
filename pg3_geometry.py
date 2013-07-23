@@ -191,7 +191,7 @@ if __name__ == "__main__":
     # the actual work of adding the detectors
     corners = CornersFile("PG3_geom_2013_txt.csv", abs(L1))
     addGroup(corners, cols[4], ["B2", "B3", "B4", "B5", "B6"])
-    addGroup(corners, cols[3], ['C2', 'C3',  'C4', 'C5', 'D2', 'D3', 'D4', 'D5', 'D6'])
+    addGroup(corners, cols[3], ['C2', 'C3',  'C4', 'C5', 'C6', 'D2', 'D3', 'D4', 'D5', 'D6'])
     addGroup(corners, cols[2], ['E2', 'E3', 'E4', 'E5', 'F2', 'F3', 'F4', 'F5'])
     addGroup(corners, cols[1], ['G3', 'G4', 'H3', 'H4', 'I4', 'J4', 'K4', 'L4'])
 
