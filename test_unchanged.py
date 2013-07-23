@@ -194,9 +194,11 @@ if __name__ == "__main__":
         for key in outfiles.keys():
             runGeom(key, outfiles[key][1], outfiles[key][0], options.setup)
 
+    # exit early if we are in setup
+    if options.setup:
+        sys.exit(0)
+
+    # calculate and display the differences
     for key in outfiles.keys():
         (golden, output) = outfiles[key]
         compareGeom(golden, output, len(filenames)>1)
-#    key = outfiles.keys()[1]
-#    (golden, output) = outfiles[key]
-#    compareGeom(golden, output)
