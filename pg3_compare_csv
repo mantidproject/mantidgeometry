@@ -1,0 +1,85 @@
+#!/usr/bin/env python
+
+import logging
+from pg3_geometry import CornersFile, L1
+from rectangle import Rectangle, Vector
+
+LOGLEVEL = "WARNING"
+
+def diffRect(left, right, order, tolerance):
+    left  = left.points
+    right = createRect(right, order, tolerance).points
+    diff = 0.
+    for i in range(4):
+        diff += (left[i] - right[i]).length
+    return diff
+
+def createRect(points, order, tolerance):
+    mypoints = [ points[i] for i in order]
+    return Rectangle(mypoints[0], mypoints[1], mypoints[2], mypoints[3],
+                     tolerance)
+
+if __name__ == "__main__":
+    logging.basicConfig(format='%(levelname)s:%(message)s',
+                        level=LOGLEVEL)
+    import sys
+    if len(sys.argv) != 3:
+        print "usage: %s <left> <right>"
+
+    left  = sys.argv[1]
+    right = sys.argv[2]
+
+    left  = CornersFile(left, L1)
+    right = CornersFile(right, L1)
+
+    banks = [
+        "B2", "B3", "B4", "B5",# "B6",
+        "C2", "C3", "C4", #"C5", "C6"
+        "D2", "D3", "D4", #"D5", "D6",
+        "E2", "E3", #"E4", "E5",
+        "F2", "F3", "F4", "F5",
+        "G3", "G4",
+        "H3", "H4",
+        "I4",
+        "J4",
+        "K4"
+             ]
+    tol = .006
+    orders = [[0,1,2,3], [1,2,3,0], [2,3,0,1], [3,0,1,2], # keep order
+              [3,2,1,0], [2,1,0,3], [1,0,3,2], [0,3,2,1]] # reverse order
+
+    totalToReorder = 0
+
+    # go through all banks
+    for bank in banks:
+        # stupid starting values
+        minDiff = 100000.
+        orderBest = []
+
+        # generate the starting rectangles
+        logging.info("***** %s" % bank)
+        lftRect = left.rectangle(bank, tol)
+        rgtRect = right.rectangle(bank, tol)
+    
+        # go through all orders
+        for order in orders:
+            diff = diffRect(lftRect, rgtRect.points, order, tol)
+            logging.debug("%s %f" % (str(order), diff))
+            if diff < minDiff:
+                minDiff = diff
+                orderBest = order
+
+        if orderBest == [0,1,2,3]:
+            logging.info("%s current order is the best" % bank)
+            continue
+        else:
+            totalToReorder += 1
+
+        # easier to understand 1-indexed arrays
+        orderBest = [ i+1 for i in orderBest]
+        # print out the best
+        print "%3s %s - diff=%.3f centerDiff=%.3f" % (bank, \
+                str(orderBest), minDiff, \
+                (lftRect.center - rgtRect.center).length)
+    if totalToReorder == 0:
+        print "No banks need to be reordered"
