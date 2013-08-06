@@ -475,7 +475,7 @@ class Rectangle:
 
     width = property(__width, doc="Width of the rectangle")
     height = property(__height, doc="Height of the rectangle")
-    center = property(lambda self: self.__center[:],
+    center = property(lambda self: Vector(self.__center[:]),
                       doc="Center of the rectangle")
     orientation = property(lambda self: self.__orient[:],
                            doc="Orientation as a set of three basis vectors")

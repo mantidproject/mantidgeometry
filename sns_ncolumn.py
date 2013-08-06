@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 
+import os
+
 def readFile(filename, hasLabels=True):
     """This loads in a n-column ascii file and converts it into a dictionary
     where the column headings are the keys, and the columns are as a list in
     the value. If the "hasLabels" variable is False then the keys are the
     column numbers."""
+
+    if not os.path.exists(filename):
+        raise RuntimeError("File '%s' does not exist" % filename)
 
     # load the file
     datafile = open(filename, "r")
