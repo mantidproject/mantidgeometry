@@ -70,10 +70,10 @@ def addGroup(corners, columns, labels):
         for label in labels_in_col[column]:
             (name, offset) = getBankNameAndOffset(label)
             panel_name="panel_v2"
-            idstepbyrow=x_num2
+            idstepbyrow=y_num2
             if label in v3_panels:
                 panel_name="panel_v3"
-                idstepbyrow=x_num3
+                idstepbyrow=y_num3
             extra_attrs={"idstart":offset, 'idfillbyfirst':'y', 'idstepbyrow':idstepbyrow}
             det = instr.makeDetectorElement(panel_name, root=col, extra_attrs=extra_attrs)
             try:
