@@ -7,43 +7,22 @@ TUBE_WIDTH = 0.0254 #meter
 AIR_GAP_WIDTH = 0.002032 #meter
 PIXELS_PER_BANK = NUM_TUBES_PER_BANK * NUM_PIXELS_PER_TUBE
 CONVERT_TO_METERS = 1.0 #x,y,z are in meters
+BANKFMT = "bank%d"
+ROTX = None # no X rotation
+ROTZ = None # no z rotation
+FLIPY = 180.0 # flip y orientation
 # Detector Parameters
 TUBE_PRESSURE = ("tube_pressure", 6.0, "atm")
 TUBE_THICKNESS = ("tube_thickness", 0.0008, "metre")
 TUBE_TEMPERATURE = ("tube_temperature", 290.0, "K")
 
-def read_file(filename):
-    fh = open(filename)
-    lines = fh.readlines()
-    fh.close()
-    di = {}
-    di["name"] = []
-    di["id"] = []
-    di["X"] = []
-    di["Y"] = []
-    di["Z"] = []
-    di["RotX"] = []
-    di["RotY"] = []
-    di["RotZ"] = []
-    counter = 0
-    for line in lines[1:]:
-        values = line.split()
-        counter += 1
-
-        di["name"].append("bank%d" % counter)
-        di["id"].append(counter)
-        di["X"].append(str(float(values[2])/CONVERT_TO_METERS))
-        di["Y"].append(str(float(values[1])/CONVERT_TO_METERS))
-        di["Z"].append(str(float(values[0])/CONVERT_TO_METERS))
-        di["RotX"].append(None)
-        di["RotY"].append(str(float(values[3])+180.0))
-        di["RotZ"].append(None)
-        
-    return di
+def convert(value):
+    return float(value) / CONVERT_TO_METERS
 
 if __name__ == "__main__":
     import sys
     from helper import MantidGeom
+    from sns_ncolumn import readFile
 
     try:
         geom_input_file = sys.argv[1]
@@ -57,7 +36,7 @@ if __name__ == "__main__":
 
     # Get geometry information file
     inst_name = "CNCS"
-    detinfo = read_file(geom_input_file)
+    detinfo = readFile(geom_input_file)
     num_dets = len(detinfo.values()[0])
     xml_outfile = inst_name+"_Definition.xml"
  
@@ -74,11 +53,13 @@ if __name__ == "__main__":
     det.addComponent(label, label)
     doc_handle = det.makeTypeElement(label)
     for i in range(num_dets):
-        det.addComponent(detinfo["name"][i], root=doc_handle)
-        det.addDetector(detinfo["X"][i], detinfo["Y"][i],
-                        detinfo["Z"][i], detinfo["RotX"][i],
-                        detinfo["RotY"][i], detinfo["RotZ"][i],
-                        detinfo["name"][i], "eightpack")
+        detname = BANKFMT % (i+1)
+        roty = float(detinfo["BankAngle"][i]) + FLIPY
+        xpos = convert(detinfo["Bank_xpos"][i])
+        ypos = convert(detinfo["Bank_ypos"][i])
+        zpos = convert(detinfo["Bank_zpos"][i])
+        det.addComponent(detname, root=doc_handle)
+        det.addDetector(xpos, ypos, zpos, ROTX, roty, ROTZ, detname, "eightpack")
 
     det.addComment("STANDARD 8-PACK")
     det.addNPack("eightpack", NUM_TUBES_PER_BANK, TUBE_WIDTH, AIR_GAP_WIDTH)
