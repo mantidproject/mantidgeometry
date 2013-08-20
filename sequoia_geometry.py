@@ -28,8 +28,8 @@ if __name__ == "__main__":
     
     try:
         geom_input_file = sys.argv[1]
-    except KeyError:
-        geom_input_file = INST_NAME+"_geom.txt"
+    except IndexError:
+        geom_input_file = "SNS/SEQ/SEQ_geom_19890-.txt"
         
     # Set header information
     comment = "Created by Michael Reuter"

@@ -26,8 +26,8 @@ if __name__ == "__main__":
 
     try:
         geom_input_file = sys.argv[1]
-    except KeyError:
-        geom_input_file = inst_name+"_geom.txt"
+    except IndexError:
+        geom_input_file = "SNS/CNCS/CNCS_geom_67317-.txt"
         
     # Set header information
     comment = "Created by Michael Reuter"
