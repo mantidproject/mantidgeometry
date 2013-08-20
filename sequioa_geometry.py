@@ -10,44 +10,22 @@ TUBE_WIDTH = 0.0254 #meter
 AIR_GAP_WIDTH = 0.002032 #meter
 PIXELS_PER_BANK = NUM_TUBES_PER_BANK * NUM_PIXELS_PER_TUBE
 CONVERT_TO_METERS = 1.0/0.0254 #x,y,z are in inches
+ROTX = None # no x rotation
+ROTZ = None # no z rotation
+FLIPY = 180.0 # flip y orientation
 # Detector Parameters
 TUBE_PRESSURE = ("tube_pressure", 10.0, "atm")
 TUBE_THICKNESS = ("tube_thickness", 0.0008, "metre")
 TUBE_TEMPERATURE = ("tube_temperature", 290.0, "K")
-
-def read_file(filename):
-    fh = open(filename)
-    lines = fh.readlines()
-    fh.close()
-    di = {}
-    di["name"] = []
-    di["id"] = []
-    di["X"] = []
-    di["Y"] = []
-    di["Z"] = []
-    di["RotX"] = []
-    di["RotY"] = []
-    di["RotZ"] = []
-    counter = 0
-    for line in lines[1:]:
-        values = line.split()
-        counter += 1
-
-        di["name"].append(values[0])
-        di["id"].append(counter)
-        di["X"].append(str(float(values[1])/CONVERT_TO_METERS))
-        di["Y"].append(str(float(values[2])/CONVERT_TO_METERS))
-        di["Z"].append(str(float(values[3])/CONVERT_TO_METERS))
-        di["RotX"].append(None)
-        di["RotY"].append(str(float(values[4])+180.0))
-        di["RotZ"].append(None)
-        
-    return di
-
+    
+def convert(value):
+    return float(value) / CONVERT_TO_METERS
+    
 if __name__ == "__main__":
     import sys
     from helper import MantidGeom
-
+    from sns_ncolumn import readFile
+    
     try:
         geom_input_file = sys.argv[1]
     except KeyError:
@@ -60,7 +38,7 @@ if __name__ == "__main__":
 
     # Get geometry information file
 
-    detinfo = read_file(geom_input_file)
+    detinfo = readFile(geom_input_file)
     num_dets = len(detinfo.values()[0])
     xml_outfile = INST_NAME+"_Definition.xml"
     
@@ -77,41 +55,34 @@ if __name__ == "__main__":
     row_id_list = []
     doc_handle = None
     for i in range(num_dets):
+        location = detinfo["Location"][i]
         # REMOVE ME: when A and E rows are filled
-        if detinfo["name"][i].startswith("A") or \
-               detinfo["name"][i].startswith("E"):
+        if location.startswith("A") or \
+               location.startswith("E"):
             continue
         
-        if row_id != detinfo["name"][i][0]:
-            row_id = detinfo["name"][i][0]
+        if row_id != location[0]:
+            row_id = location[0]
             row_id_list.append(row_id)
             row_id_str = row_id + " row"
             det.addComponent(row_id_str, row_id_str)
             doc_handle = det.makeTypeElement(row_id_str)
 
-        det.addComponent(detinfo["name"][i], root=doc_handle)
+        det.addComponent(location, root=doc_handle)
         
-        if detinfo["name"][i].startswith("C"):
-            if detinfo["name"][i].endswith("T"):
-                det.addDetector(detinfo["X"][i], detinfo["Y"][i],
-                                detinfo["Z"][i], detinfo["RotX"][i],
-                                detinfo["RotY"][i], detinfo["RotZ"][i],
-                                detinfo["name"][i], "eightpack-top")
-            elif detinfo["name"][i].endswith("B"):
-                det.addDetector(detinfo["X"][i], detinfo["Y"][i],
-                                detinfo["Z"][i], detinfo["RotX"][i],
-                                detinfo["RotY"][i], detinfo["RotZ"][i],
-                                detinfo["name"][i], "eightpack-bottom")
-            else:
-                det.addDetector(detinfo["X"][i], detinfo["Y"][i],
-                                detinfo["Z"][i], detinfo["RotX"][i],
-                                detinfo["RotY"][i], detinfo["RotZ"][i],
-                                detinfo["name"][i], "eightpack")
-        else:
-            det.addDetector(detinfo["X"][i], detinfo["Y"][i],
-                            detinfo["Z"][i], detinfo["RotX"][i],
-                            detinfo["RotY"][i], detinfo["RotZ"][i],
-                            detinfo["name"][i], "eightpack")
+        xpos = convert(detinfo["X"][i])
+        ypos = convert(detinfo["Y"][i])
+        zpos = convert(detinfo["Z"][i])
+        roty = float(detinfo["Angle"][i]) + FLIPY
+        det_type = "eightpack"
+        
+        if location.startswith("C"):
+            if location.endswith("T"):
+                det_type = "eightpack-top"
+            elif location.endswith("B"):
+                det_type = "eightpack-bottom"
+
+        det.addDetector(xpos, ypos, zpos, ROTX, roty, ROTZ, location, det_type)
 
     det.addComment("STANDARD 8-PACK")
     det.addNPack("eightpack", NUM_TUBES_PER_BANK, TUBE_WIDTH, AIR_GAP_WIDTH)
@@ -153,7 +124,7 @@ if __name__ == "__main__":
     offset = 37888
     for i in range(len(row_id_list)):
         row_id_str = row_id_list[i] + " row"
-        det_names = [x for x in detinfo["name"] if x.startswith(row_id_list[i])]
+        det_names = [x for x in detinfo["Location"] if x.startswith(row_id_list[i])]
         id_list = []
         for j in range(len(det_names)):
             id_list.append(j * PIXELS_PER_BANK + offset)
