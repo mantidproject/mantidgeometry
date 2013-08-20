@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     try:
         geom_input_file = sys.argv[1]
-    except KeyError:
+    except IndexError:
         geom_input_file = INST_NAME+"_geom.txt"
 
     # Set header information
