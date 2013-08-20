@@ -15,38 +15,13 @@ TUBE_PRESSURE = ("tube_pressure", 10.0, "atm")
 TUBE_THICKNESS = ("tube_thickness", 0.0008, "metre")
 TUBE_TEMPERATURE = ("tube_temperature", 290.0, "K")
 
-def read_file(filename):
-    fh = open(filename)
-    lines = fh.readlines()
-    fh.close()
-    di = {}
-    di["name"] = []
-    di["id"] = []
-    di["X"] = []
-    di["Y"] = []
-    di["Z"] = []
-    di["RotX"] = []
-    di["RotY"] = []
-    di["RotZ"] = []
-    counter = 0
-    for line in lines[1:]:
-        values = line.split()
-        counter += 1
-
-        di["name"].append(values[0])
-        di["id"].append(counter)
-        di["X"].append(str(float(values[1])/CONVERT_TO_METERS))
-        di["Y"].append(str(float(values[2])/CONVERT_TO_METERS))
-        di["Z"].append(str(float(values[3])/CONVERT_TO_METERS))
-        di["RotX"].append(values[9])
-        di["RotY"].append(values[8])
-        di["RotZ"].append(values[7])
-        
-    return di
+def convert(value):
+    return float(value) / CONVERT_TO_METERS
 
 if __name__ == "__main__":
     import sys
     from helper import MantidGeom
+    from sns_ncolumn import readFile
 
     try:
         geom_input_file = sys.argv[1]
@@ -59,7 +34,7 @@ if __name__ == "__main__":
     valid_from = "2012-10-11 12:54:01"
 
     # Get geometry information file
-    detinfo = read_file(geom_input_file)
+    detinfo = readFile(geom_input_file)
     num_dets = len(detinfo.values()[0])
     xml_outfile = INST_NAME+"_Definition.xml"
     
@@ -76,36 +51,31 @@ if __name__ == "__main__":
     row_id_list = []
     doc_handle = None
     for i in range(num_dets):
-        if row_id != detinfo["name"][i][0]:
-            row_id = detinfo["name"][i][0]
+        location = detinfo["Location"][i]
+    
+        if row_id != location[0]:
+            row_id = location[0]
             row_id_list.append(row_id)
             row_id_str = row_id + " row"
             det.addComponent(row_id_str, row_id_str)
             doc_handle = det.makeTypeElement(row_id_str)
 
-        det.addComponent(detinfo["name"][i], root=doc_handle)
+        det.addComponent(location, root=doc_handle)
         
-        if detinfo["name"][i].startswith("M"):
-            if detinfo["name"][i].endswith("A"):
-                det.addDetector(detinfo["X"][i], detinfo["Y"][i],
-                                detinfo["Z"][i], detinfo["RotX"][i],
-                                detinfo["RotY"][i], detinfo["RotZ"][i],
-                                detinfo["name"][i], "eightpack-top")
-            elif detinfo["name"][i].endswith("B"):
-                det.addDetector(detinfo["X"][i], detinfo["Y"][i],
-                                detinfo["Z"][i], detinfo["RotX"][i],
-                                detinfo["RotY"][i], detinfo["RotZ"][i],
-                                detinfo["name"][i], "eightpack-bottom")
-            else:
-                det.addDetector(detinfo["X"][i], detinfo["Y"][i],
-                                detinfo["Z"][i], detinfo["RotX"][i],
-                                detinfo["RotY"][i], detinfo["RotZ"][i],
-                                detinfo["name"][i], "eightpack")
-        else:
-            det.addDetector(detinfo["X"][i], detinfo["Y"][i],
-                            detinfo["Z"][i], detinfo["RotX"][i],
-                            detinfo["RotY"][i], detinfo["RotZ"][i],
-                            detinfo["name"][i], "eightpack")
+        xpos = convert(detinfo["Xsci"][i])
+        ypos = convert(detinfo["Ysci"][i])
+        zpos = convert(detinfo["Zsci"][i])
+        det_type = "eightpack"
+        
+        if location.startswith("M"):
+            if location.endswith("A"):
+                det_type = "eightpack-top"
+            elif location.endswith("B"):
+                det_type = "eightpack-bottom"
+
+        det.addDetector(xpos, ypos, zpos, 
+                        detinfo["Xrot_sci"][i], detinfo["Yrot_sci"][i], detinfo["Zrot_sci"][i],
+                        location, det_type)
 
     det.addComment("STANDARD 8-PACK")
     det.addNPack("eightpack", NUM_TUBES_PER_BANK, TUBE_WIDTH, AIR_GAP_WIDTH)
@@ -146,7 +116,7 @@ if __name__ == "__main__":
     offset = 0
     for i in range(len(row_id_list)):
         row_id_str = row_id_list[i] + " row"
-        det_names = [x for x in detinfo["name"] if x.startswith(row_id_list[i])]
+        det_names = [x for x in detinfo["Location"] if x.startswith(row_id_list[i])]
         id_list = []
         for j in range(len(det_names)):
             id_list.append(j * PIXELS_PER_BANK + offset)
