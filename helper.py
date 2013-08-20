@@ -51,7 +51,7 @@ class MantidGeom:
         reference_element = le.SubElement(defaults_element, "reference-frame")
         le.SubElement(reference_element, "along-beam", axis="z")
         le.SubElement(reference_element, "pointing-up", axis="y")
-        le.SubElement(reference_element, "handedness", axis="right")
+        le.SubElement(reference_element, "handedness", val="right")
 
 
     def addComment(self, comment):
