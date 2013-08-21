@@ -38,7 +38,7 @@ class MantidGeom:
         print le.tostring(self.__root, pretty_print=True,
                              xml_declaration=True)
 
-    def addSnsDefaults(self, indirect=False):
+    def addSnsDefaults(self, indirect=False, default_view=None):
         """
         Set the default properties for SNS geometries
         """
@@ -52,7 +52,8 @@ class MantidGeom:
         le.SubElement(reference_element, "along-beam", axis="z")
         le.SubElement(reference_element, "pointing-up", axis="y")
         le.SubElement(reference_element, "handedness", val="right")
-
+        if default_view is not None:
+            le.SubElement(defaults_element, "default-view", view=default_view)
 
     def addComment(self, comment):
         """
