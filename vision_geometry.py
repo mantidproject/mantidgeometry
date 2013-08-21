@@ -52,7 +52,10 @@ def main():
     
     xml_outfile = inst_name+"_Definition.xml"
     
-    det = MantidGeom(inst_name, comment=" Created by Stuart Campbell ")
+    comment = " Created by Stuart Campbell "
+    valid_from = "2012-01-01 00:00:01"
+    
+    det = MantidGeom(inst_name, comment=comment, valid_from=valid_from)
     det.addSnsDefaults(indirect=True)
     det.addComment("SOURCE AND SAMPLE POSITION")
     det.addModerator(-16.0)
