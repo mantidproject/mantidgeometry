@@ -81,7 +81,7 @@ def addGroup(corners, columns, labels):
             except ValueError, e:
               print "Failed to generate '" + label \
                   + "' from corners. Trying from engineered centers."
-              detinfo = readFile("PG3_geom.txt")
+              detinfo = readFile("SNS/POWGEN/PG3_geom.txt")
               addCenterRectangle(instr, det, name, detinfo, detinfo["label"].index(label))
 
 # for the next cycle they will all be low resolution
@@ -189,7 +189,7 @@ if __name__ == "__main__":
             instr.addComponent(name, root=group)
 
     # the actual work of adding the detectors
-    corners = CornersFile("PG3_geom_2013_txt.csv", abs(L1))
+    corners = CornersFile("SNS/POWGEN/PG3_geom_2013_txt.csv", abs(L1))
     addGroup(corners, cols[4], ["B2", "B3", "B4", "B5", "B6"])
     addGroup(corners, cols[3], ['C2', 'C3',  'C4', 'C5', 'C6', 'D2', 'D3', 'D4', 'D5', 'D6'])
     addGroup(corners, cols[2], ['E2', 'E3', 'E4', 'E5', 'F2', 'F3', 'F4', 'F5'])
