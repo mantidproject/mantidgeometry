@@ -240,17 +240,19 @@ def main():
 
 
     det.addComment(" ##### MONITORS ##### ")
-    det.addMonitors(names=["monitor1"], distance=["-6.71625"], neutronic=True)
+    det.addMonitors(names=["monitor1","monitor4"], distance=["-6.71625","0.287"], neutronic=True)
+
 
     # MONITORS
 
     det.addComment("MONITOR SHAPE")
-    det.addComment("FIXME: Do something real here.")
-    det.addDummyMonitor(0.01, 0.03)
+    det.addComment("FIXME: All monitors share the dimensions of monitor4.")
+
+    det.addCuboidMonitor(0.051,0.054,0.013)
 
     det.addComment("MONITOR IDs")
     det.addMonitorIds(["-1"])
-
+    det.addMonitorIds(["-4"])
 
     det.showGeom()
     det.writeGeom(xml_outfile)
