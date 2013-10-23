@@ -61,52 +61,64 @@ def main():
     det.addModerator(-16.0)
     det.addSamplePosition()
 
+
+
+
+
     # Backscattering Banks are 21-100
 
     BACKSCATTERING_NTUBES = 80
+    BACKSCATTERING_SECTORS = 10
+    TUBES_PER_SECTOR = BACKSCATTERING_NTUBES / BACKSCATTERING_SECTORS
 
     det.addComponent("elastic-backscattering", "elastic-backscattering")
     handle = det.makeTypeElement("elastic-backscattering")
 
     idlist = []
 
-    for k in range(BACKSCATTERING_NTUBES):
-        id_start = 26624+(256*k)
-        id_end = 26624 + (256*k) + 255
-        angle = -(2.25 + 4.5*k)
-        bankid = 21 + k
-        bank_name = "bank%d" % bankid
+    for k in range(BACKSCATTERING_SECTORS):
+	bankid = 15 + k
+	bank_name = "bank%d" % bankid
+	det.addComponent(bank_name, root=handle)
+	
+	z_coord = -0.998
+	
+	for l in range(TUBES_PER_SECTOR):
+		tube_index = (k*TUBES_PER_SECTOR) + l
+		id_start = 14336+(256*tube_index)
+		id_end = 14336 + (256*tube_index) + 255
 
-        det.addComponent(bank_name, root=handle)
+	        angle = -(2.25 + 4.5*tube_index)
+        		
+        
 
-        z_coord = -0.998
+        	if tube_index%2 == 0:
+            		# Even tube number (long)
+            		centre_offset = BS_ELASTIC_LONG_TUBE_INNER_RADIUS + (BS_ELASTIC_LONG_TUBE_LENGTH/2.0)
+            		#centre_offset = BS_ELASTIC_LONG_TUBE_INNER_RADIUS
+            		component_name = "tube-long-bs-elastic"
+        	else:
+            		# Odd tube number (short)
+            		centre_offset = BS_ELASTIC_SHORT_TUBE_INNER_RADIUS + (BS_ELASTIC_SHORT_TUBE_LENGTH/2.0)
+        		component_name = "tube-short-bs-elastic"
 
-        if k%2 == 0:
-            # Even tube number (long)
-            centre_offset = BS_ELASTIC_LONG_TUBE_INNER_RADIUS + (BS_ELASTIC_LONG_TUBE_LENGTH/2.0)
-            #centre_offset = BS_ELASTIC_LONG_TUBE_INNER_RADIUS
-            component_name = "tube-long-bs-elastic"
-        else:
-            # Odd tube number (short)
-            centre_offset = BS_ELASTIC_SHORT_TUBE_INNER_RADIUS + (BS_ELASTIC_SHORT_TUBE_LENGTH/2.0)
-            component_name = "tube-short-bs-elastic"
+        	x_coord = centre_offset * math.cos(math.radians(90-angle))
+        	y_coord = centre_offset * math.sin(math.radians(90-angle))
 
-        x_coord = centre_offset * math.cos(math.radians(90-angle))
-        y_coord = centre_offset * math.sin(math.radians(90-angle))
+		if (l == 0):
+			det.addDetector(x_coord, y_coord, z_coord, 0, 0, -angle, bank_name, component_name)
 
-        det.addDetector(x_coord, y_coord, z_coord, 0, 0, -angle, bank_name, component_name)
-
-        idlist.append(id_start)
-        idlist.append(id_end)
-        idlist.append(None)
+        		idlist.append(id_start)
+        		idlist.append(id_end)
+        		idlist.append(None)
 
     det.addDetectorIds("elastic-backscattering", idlist)
 
 
     # 90 elastic banks
 
-    elastic_banklist = [3,6,9,12,15,18]
-    elastic_bank_start = [2048,6144,10240,14336,18432,22528]
+    elastic_banklist = [25,26,27,28,29,30]
+    elastic_bank_start = [34816,36864,38912,40960,43008,45056]
     elastic_angle = [22.5,-22.5,-67.5,-112.5,-157.5,157.5]
 
     sample_elastic_distance = 0.635
@@ -139,8 +151,8 @@ def main():
     # Inelastic
     inelastic_banklist = [1,2,3,4,5,6,7,8,9,10,11,12,13,14]
     inelastic_bank_start=[0,1024,2048,3072,4096,5120,6144,7168,8192,9216,10240,11264,12288,13312]
-    inelastic_angle = [45.0,45.0,0.0,0.0,-45.0,-45.0,-90.0,-90.0,-135.0,-135.0,180.0,180.0,135.0,135.0]
-    inelastic_angle_for_rotation = [-45.0,-45.0,180.0,180.0,-135.0,-135.0,-90.0,-90.0,-225.0,-225.0,0.0,0.0,45.0,45.0]
+    inelastic_angle = [45.0,0.0,-45.0,-90.0,-135.0,-180.0,135.0,45.0,0.0,-45.0,-90.0,-135.0,-180.0,135.0]
+    inelastic_angle_for_rotation = [-45.0,180.0,-135.0,-90.0,-225.0,0.0,45.0,-45.0,180.0,-135.0,-90.0,-225.0,0.0,45.0]
 
     sample_inelastic_distance = 0.5174
 
@@ -160,7 +172,7 @@ def main():
         # Neutronic Positions
         z_coord_neutronic = sample_inelastic_distance * math.tan(math.radians(45.0))
 
-        if inelastic_index % 2 == 0:
+        if inelastic_index > 7:
             # Facing Downstream
             z_coord = 0.01
         else:
