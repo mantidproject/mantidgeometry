@@ -39,7 +39,7 @@ if __name__ == "__main__":
     xml_outfile = INST_NAME+"_Definition.xml"
     
     det = MantidGeom(INST_NAME, comment=comment, valid_from=valid_from)
-    det.addSnsDefaults()
+    det.addSnsDefaults(default_view="cylindrical_y")
     det.addComment("SOURCE AND SAMPLE POSITION")
     det.addModerator(-13.60)
     det.addSamplePosition()
