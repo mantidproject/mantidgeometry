@@ -107,7 +107,7 @@ def main():
 
     elastic_banklist = [3,6,9,12,15,18]
     elastic_bank_start = [2048,6144,10240,14336,18432,22528]
-    elastic_angle = [22.5,-22.5,-67.5,-112.5,-157.5,157.5]
+    elastic_angle = [157.5,-157.5,-67.5,-112.5,-22.5,22.5]
 
     sample_elastic_distance = 0.635
 
@@ -125,7 +125,7 @@ def main():
         x_coord = sample_elastic_distance * math.cos(math.radians(elastic_angle[elastic_index]))
         y_coord = sample_elastic_distance * math.sin(math.radians(elastic_angle[elastic_index]))
 
-        det.addDetector(x_coord, y_coord, z_coord, -90.0, 0, 0., bank_name, "eightpack-elastic", facingSample=True)
+        det.addDetector(x_coord, y_coord, z_coord, -90.0, 180, 0., bank_name, "eightpack-elastic", facingSample=True)
 
         idlist.append(elastic_bank_start[elastic_index])
         idlist.append(elastic_bank_start[elastic_index]+2047)
@@ -251,8 +251,7 @@ def main():
     det.addCuboidMonitor(0.051,0.054,0.013)
 
     det.addComment("MONITOR IDs")
-    det.addMonitorIds(["-1"])
-    det.addMonitorIds(["-4"])
+    det.addMonitorIds(["-1","-4"])
 
     det.showGeom()
     det.writeGeom(xml_outfile)
