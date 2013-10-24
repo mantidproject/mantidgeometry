@@ -77,41 +77,41 @@ def main():
     idlist = []
 
     for k in range(BACKSCATTERING_SECTORS):
-	bankid = 15 + k
-	bank_name = "bank%d" % bankid
+    bankid = 15 + k
+    bank_name = "bank%d" % bankid
 
-	doc_handle = det.makeDetectorElement(bank_name, root=handle)
-	
-	z_coord = -0.998
+    doc_handle = det.makeDetectorElement(bank_name, root=handle)
+    
+    z_coord = -0.998
 
-	id_start = 14336 + (PIXELS_PER_SECTOR * k)
-	id_end = 14336 + (PIXELS_PER_SECTOR * k) + PIXELS_PER_SECTOR - 1
-
-
-	for l in range(TUBES_PER_SECTOR):
+    id_start = 14336 + (PIXELS_PER_SECTOR * k)
+    id_end = 14336 + (PIXELS_PER_SECTOR * k) + PIXELS_PER_SECTOR - 1
 
 
-		tube_index = (k*TUBES_PER_SECTOR) + l
-		tube_name = bank_name + "-tube" + str(tube_index+1)		
+    for l in range(TUBES_PER_SECTOR):
 
-		det.addComponent(tube_name, root=doc_handle)
 
-	        angle = -(2.25 + 4.5*tube_index)
-        		
-        	if tube_index%2 == 0:
-            		# Even tube number (long)
-            		centre_offset = BS_ELASTIC_LONG_TUBE_INNER_RADIUS + (BS_ELASTIC_LONG_TUBE_LENGTH/2.0)
-            		#centre_offset = BS_ELASTIC_LONG_TUBE_INNER_RADIUS
-            		component_name = "tube-long-bs-elastic"
-        	else:
-            		# Odd tube number (short)
-            		centre_offset = BS_ELASTIC_SHORT_TUBE_INNER_RADIUS + (BS_ELASTIC_SHORT_TUBE_LENGTH/2.0)
-        		component_name = "tube-short-bs-elastic"
+        tube_index = (k*TUBES_PER_SECTOR) + l
+        tube_name = bank_name + "-tube" + str(tube_index+1)     
 
-        	x_coord = centre_offset * math.cos(math.radians(90-angle))
-        	y_coord = centre_offset * math.sin(math.radians(90-angle))
+        det.addComponent(tube_name, root=doc_handle)
 
-		det.addDetector( x_coord, y_coord, z_coord, 0, 0, -angle, tube_name, component_name)
+            angle = -(2.25 + 4.5*tube_index)
+                
+            if tube_index%2 == 0:
+                    # Even tube number (long)
+                    centre_offset = BS_ELASTIC_LONG_TUBE_INNER_RADIUS + (BS_ELASTIC_LONG_TUBE_LENGTH/2.0)
+                    #centre_offset = BS_ELASTIC_LONG_TUBE_INNER_RADIUS
+                    component_name = "tube-long-bs-elastic"
+            else:
+                    # Odd tube number (short)
+                    centre_offset = BS_ELASTIC_SHORT_TUBE_INNER_RADIUS + (BS_ELASTIC_SHORT_TUBE_LENGTH/2.0)
+                component_name = "tube-short-bs-elastic"
+
+            x_coord = centre_offset * math.cos(math.radians(90-angle))
+            y_coord = centre_offset * math.sin(math.radians(90-angle))
+
+        det.addDetector( x_coord, y_coord, z_coord, 0, 0, -angle, tube_name, component_name)
 
 
         idlist.append(id_start)
@@ -239,8 +239,8 @@ def main():
     
     det.addComment("PIXEL FOR INELASTIC TUBES")
     det.addCylinderPixel("pixel-inelastic-tube", (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
-                         (INELASTIC_TUBE_WIDTH/2.0), 
-                         (INELASTIC_TUBE_LENGTH/INELASTIC_TUBE_NPIXELS))
+                        (INELASTIC_TUBE_WIDTH/2.0),
+                        (INELASTIC_TUBE_LENGTH/INELASTIC_TUBE_NPIXELS))
     
     det.addComment("PIXEL FOR BACKSCATTERING ELASTIC TUBES (LONG)")
     det.addCylinderPixel("pixel-bs-elastic-long-tube", (0.0, 0.0, 0.0), (0.0, 1.0, 0.0), 
@@ -267,15 +267,13 @@ def main():
 
     det.addCuboidMonitor(0.051,0.054,0.013)
 
-#    det.addDummyMonitor(0.01, 0.03)
-
     det.addComment("MONITOR IDs")
-	
+    
     det.addMonitorIds(["-1","-4"])
 
     #det.showGeom()
     det.writeGeom(xml_outfile)
 
 if __name__ == '__main__':
-	main()
+    main()
     
