@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
     # monitors
     instr.addComment("MONITORS")
-    instr.addMonitors([-1.], ["monitor1"])
+    instr.addMonitors(distance=[-1.5077], names=["monitor1"])
     #instr.addMonitors([L1+59., L1+62.5, L1+64], ["monitor1", "monitor2", "monitor3"])
 
     # choppers - copied verbatium from TS-geometry
