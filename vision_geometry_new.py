@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+# Updated Geometry 
+
 import math
 
 INCH_TO_METRE = 0.0254
@@ -53,7 +55,7 @@ def main():
     xml_outfile = inst_name+"_Definition.xml"
     
     comment = " Created by Stuart Campbell "
-    valid_from = "2012-01-01 00:00:01"
+    valid_from = "2013-10-21 00:00:01"
     
     det = MantidGeom(inst_name, comment=comment, valid_from=valid_from)
     det.addSnsDefaults(indirect=True)
@@ -62,14 +64,12 @@ def main():
     det.addSamplePosition()
 
 
-
-
-
     # Backscattering Banks are 21-100
 
     BACKSCATTERING_NTUBES = 80
     BACKSCATTERING_SECTORS = 10
     TUBES_PER_SECTOR = BACKSCATTERING_NTUBES / BACKSCATTERING_SECTORS
+    PIXELS_PER_SECTOR = TUBES_PER_SECTOR * 256
 
     det.addComponent("elastic-backscattering", "elastic-backscattering")
     handle = det.makeTypeElement("elastic-backscattering")
@@ -79,19 +79,25 @@ def main():
     for k in range(BACKSCATTERING_SECTORS):
 	bankid = 15 + k
 	bank_name = "bank%d" % bankid
-	det.addComponent(bank_name, root=handle)
+
+	doc_handle = det.makeDetectorElement(bank_name, root=handle)
 	
 	z_coord = -0.998
-	
+
+	id_start = 14336 + (PIXELS_PER_SECTOR * k)
+	id_end = 14336 + (PIXELS_PER_SECTOR * k) + PIXELS_PER_SECTOR - 1
+
+
 	for l in range(TUBES_PER_SECTOR):
+
+
 		tube_index = (k*TUBES_PER_SECTOR) + l
-		id_start = 14336+(256*tube_index)
-		id_end = 14336 + (256*tube_index) + 255
+		tube_name = bank_name + "-tube" + str(tube_index+1)		
+
+		det.addComponent(tube_name, root=doc_handle)
 
 	        angle = -(2.25 + 4.5*tube_index)
         		
-        
-
         	if tube_index%2 == 0:
             		# Even tube number (long)
             		centre_offset = BS_ELASTIC_LONG_TUBE_INNER_RADIUS + (BS_ELASTIC_LONG_TUBE_LENGTH/2.0)
@@ -105,12 +111,12 @@ def main():
         	x_coord = centre_offset * math.cos(math.radians(90-angle))
         	y_coord = centre_offset * math.sin(math.radians(90-angle))
 
-		if (l == 0):
-			det.addDetector(x_coord, y_coord, z_coord, 0, 0, -angle, bank_name, component_name)
+		det.addDetector( x_coord, y_coord, z_coord, 0, 0, -angle, tube_name, component_name)
 
-        		idlist.append(id_start)
-        		idlist.append(id_end)
-        		idlist.append(None)
+
+        idlist.append(id_start)
+        idlist.append(id_end)
+        idlist.append(None)
 
     det.addDetectorIds("elastic-backscattering", idlist)
 
@@ -119,7 +125,8 @@ def main():
 
     elastic_banklist = [25,26,27,28,29,30]
     elastic_bank_start = [34816,36864,38912,40960,43008,45056]
-    elastic_angle = [22.5,-22.5,-67.5,-112.5,-157.5,157.5]
+    elastic_angle = [157.5,-157.5,-67.5,-112.5,-22.5,22.5]
+
 
     sample_elastic_distance = 0.635
 
@@ -137,7 +144,7 @@ def main():
         x_coord = sample_elastic_distance * math.cos(math.radians(elastic_angle[elastic_index]))
         y_coord = sample_elastic_distance * math.sin(math.radians(elastic_angle[elastic_index]))
 
-        det.addDetector(x_coord, y_coord, z_coord, -90.0, 0, 0., bank_name, "eightpack-elastic", facingSample=True)
+        det.addDetector(x_coord, y_coord, z_coord, -90.0, 180, 0., bank_name, "eightpack-elastic", facingSample=True)
 
         idlist.append(elastic_bank_start[elastic_index])
         idlist.append(elastic_bank_start[elastic_index]+2047)
@@ -172,12 +179,12 @@ def main():
         # Neutronic Positions
         z_coord_neutronic = sample_inelastic_distance * math.tan(math.radians(45.0))
 
-        if inelastic_index > 7:
+        if inelastic_index+1 > 7:
             # Facing Downstream
-            z_coord = 0.01
+            z_coord = -0.01
         else:
             # Facing to Moderator
-            z_coord = -0.01
+            z_coord = 0.01
             z_coord_neutronic = -z_coord_neutronic
 
             # Physical Positions
@@ -250,10 +257,8 @@ def main():
                          (ELASTIC_TUBE_WIDTH/2.0), 
                          (ELASTIC_TUBE_LENGTH/ELASTIC_TUBE_NPIXELS))
 
-
     det.addComment(" ##### MONITORS ##### ")
     det.addMonitors(names=["monitor1","monitor4"], distance=["-6.71625","0.287"], neutronic=True)
-    #det.addMonitors(names=["monitor1"], distance=["-6.71625"], neutronic=True)
 
     # MONITORS
 
@@ -267,13 +272,9 @@ def main():
     det.addComment("MONITOR IDs")
 	
     det.addMonitorIds(["-1","-4"])
-#    det.addMonitorIds(["-1"])
 
-    det.showGeom()
+    #det.showGeom()
     det.writeGeom(xml_outfile)
-
-
-
 
 if __name__ == '__main__':
 	main()
