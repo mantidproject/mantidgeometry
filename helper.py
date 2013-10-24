@@ -156,7 +156,8 @@ class MantidGeom:
                 zi=float(distance[i]) # check if float
                 zi=str(zi) # convert it to a string for lxml
                 location = le.SubElement(basecomponent, "location", z=zi, name=names[i])
-                le.SubElement(location, "neutronic", z=zi)
+                if neutronic:
+                    le.SubElement(location, "neutronic", z=zi)
             except:
                 pos_loc=le.SubElement(basecomponent, "location",name=names[i])
                 processed=split(str(distance[i]))
