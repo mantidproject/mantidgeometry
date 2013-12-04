@@ -8,6 +8,8 @@ import sys
 
 __version__ = "0.1.0"
 LOGLEVELS = ["DEBUG", "INFO", "WARNING"]
+# mapping of instrument names here into what is in mantid
+INSTR_MAP = {"PG3":"POWGEN"}
 
 def findGeoms(direc):
     logging.info("Searching for files in " + direc)
@@ -35,7 +37,11 @@ def toOutputNames(filename):
     golden = os.path.join(direc, golden)
     result = os.path.join(direc, result)
 
-    return (golden, result)
+    # fix up the instrument name to match what is in mantid
+    if instr in INSTR_MAP.keys():
+        instr = INSTR_MAP[instr]
+
+    return (golden, result, instr)
     
 
 def findSourceDirec():
@@ -46,6 +52,44 @@ def findSourceDirec():
     direc = os.path.abspath(direc)
     logging.debug("findSourceDirec 2:" + direc)
     return direc
+
+def findMantidInstrFile(mantiddir, instr):
+    # get all files in the directory
+    all_files = os.listdir(mantiddir)
+    if len(all_files) <= 0:
+        raise RuntimeError("Failed to find any files in '%s'" % mantiddir)
+
+    # reduce to just the ones that are IDFs for this instrument
+    candidates=[]
+    for filename in all_files:
+        if filename.startswith(instr) and filename.endswith(".xml") and \
+                "Definition" in filename:
+            candidates.append(os.path.join(mantiddir, filename))
+
+    # pop them open and look for the valid-to information
+    VALID_TO='valid-to'
+    datemap={}
+    for filename in candidates:
+        handle = open(filename, 'r')
+        for line in handle:
+            if VALID_TO in line:
+                break
+        if not VALID_TO in line:
+            raise RuntimeError("Failed to find 'valid-to' tag in '%s'" % filename)
+        line = line[line.index(VALID_TO)+len(VALID_TO):].strip()
+        line = line[line.index('=') + 1:].strip()
+        line = line[1:].strip()
+        line = line.split()[0]
+        datemap[line] = filename
+
+    # return the one that has the latest valid-to date
+    dates = datemap.keys()
+    dates.sort()
+    return datemap[dates[-1]]
+
+def copyFromMantid(mantiddir, instr, goldenfile):
+    mantidfile = findMantidInstrFile(mantiddir, instr)
+    shutil.copy(mantidfile, goldenfile)
 
 def runGeom(pyscript, outfile, goldenfile, generateGolden):
     logging.info("*****"+pyscript+"*****")
@@ -71,6 +115,8 @@ def runGeom(pyscript, outfile, goldenfile, generateGolden):
     finalfile = outfile
     if generateGolden:
         logging.info("Renaming '%s' to '%s'" % (outfile, goldenfile))
+        if not os.path.exists(outfile):
+            raise RuntimeError("Failed to find file '%s'" % outfile)
         os.rename(outfile, goldenfile)
         finalfile=goldenfile
 
@@ -104,14 +150,14 @@ def compareGeom(golden, outfile, headerDecoration):
     for line in diff:
         if line.startswith('-') or line.startswith('+'):
             if not (line.startswith('---') or line.startswith('+++')):
-                if "<instrument " in line:
+                if 'last-modified' in line:
                     modified = getModified(line)
                     newline = line.replace(modified, "")
                     if line.startswith('-'):
                         oldModified = (modified, newline[1:])
                     else:
                         newModified = (modified, newline[1:])
-                        if oldModified[1] != newModified[1]:
+                        if oldModified is None or oldModified[1] != newModified[1]:
                             leftDiff += 1
                             rightDiff += 1
                 else:
@@ -121,7 +167,10 @@ def compareGeom(golden, outfile, headerDecoration):
                         rightDiff += 1
 
     # log the modified dates according to the file
-    logging.info(golden+" "+oldModified[0])
+    if oldModified is not None:
+        logging.info(golden+" "+oldModified[0])
+    else:
+        logging.info(golden+" oldModified is None")
     logging.info(outfile+" "+newModified[0])
 
     # only print diff if there is a meaningful one
@@ -146,6 +195,8 @@ if __name__ == "__main__":
                     help="Specify the log level (" + ", ".join(LOGLEVELS)+ ")")
     parser.add_option("-v", "--version", dest="version", action="store_true",
                       help="Print the version information and exit")
+    parser.add_option("", "--copy-from-mantid", dest="mantidloc", default=None,
+                      help="Copy the most recent geometry files from mantid instrument directory")
     parser.add_option("", "--setup", dest="setup", action="store_true",
                       help="Run all of the geometries from the unchanged repository")
     parser.add_option("", "--diffonly", dest="diffonly", action="store_true",
@@ -189,6 +240,18 @@ if __name__ == "__main__":
     for filename in filenames:
         outfiles[filename] = toOutputNames(filename)
 
+    # copy the files from a mantid source tree if specified
+    if options.mantidloc is not None:
+        mantidloc = os.path.abspath(options.mantidloc)
+        if not os.path.exists(mantidloc):
+            raise RuntimeError("Specified non-existent instrument directory '%s'" % mantidloc)
+        if not os.path.isdir(mantidloc):
+            raise RuntimeError("'%s' is not a directory" % mantidloc)
+        import shutil
+        for key in outfiles.keys():
+            copyFromMantid(mantidloc, outfiles[key][2], outfiles[key][0])
+        sys.exit(0)
+
     # run each one
     if not options.diffonly:
         for key in outfiles.keys():
@@ -200,5 +263,5 @@ if __name__ == "__main__":
 
     # calculate and display the differences
     for key in outfiles.keys():
-        (golden, output) = outfiles[key]
+        (golden, output, instr) = outfiles[key]
         compareGeom(golden, output, len(filenames)>1)
