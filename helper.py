@@ -1,7 +1,12 @@
 from lxml import etree as le # python-lxml on rpm based systems
 from string import split,join
+
 INCH_TO_METRE = 0.0254
 DEG_TO_RAD = 0.0174533 # degrees to radians according to idl
+XMLNS = "http://www.mantidproject.org/IDF/1.0"
+XSI = "http://www.w3.org/2001/XMLSchema-instance"
+SCHEMA_LOC = "http://www.mantidproject.org/IDF/1.0 Schema/IDFSchema.xsd"
+
 class MantidGeom:
 
     def __init__(self, instname, comment=None, valid_from=None, valid_to=None):
@@ -11,10 +16,15 @@ class MantidGeom:
         last_modified = str(datetime.now())
         if valid_from is None:
             valid_from = last_modified
-        self.__root = le.Element("instrument", **{"name": instname,
-                                 "valid-from": valid_from,
-                                 "valid-to": valid_to,
-                                 "last-modified": last_modified})
+        self.__root = le.Element("instrument",
+                                 attrib={"name": instname,
+                                    "valid-from": valid_from,
+                                    "valid-to": valid_to,
+                                    "last-modified": last_modified
+                                    },
+                                 nsmap={None: XMLNS, "xsi": XSI}
+                                 )
+        self.__root.attrib['{{{pre}}}schemaLocation'.format(pre=XSI)] = SCHEMA_LOC 
         if comment is not None:
             if type(comment) == list or type(comment) == tuple:
                 for bit in comment:
