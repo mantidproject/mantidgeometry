@@ -506,7 +506,7 @@ class MantidGeom:
         Add a cuboid monitor
         """
         type_element = le.SubElement(self.__root, "type", **{"name":"monitor",
-                                                             "is":"detector"})
+                                                             "is":"monitor"})
         cuboid = le.SubElement(type_element, "cuboid", id="shape")
         le.SubElement(cuboid, "left-front-bottom-point", x=str(-width/2), y=str(-height/2),z=str(-depth/2))
         le.SubElement(cuboid, "left-front-top-point", x=str(-width/2), y=str(height/2),z=str(-depth/2))
