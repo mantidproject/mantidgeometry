@@ -1,2 +1,4 @@
 *.pyc
 *.py~
+*_Definition*.xml
+*.vtp

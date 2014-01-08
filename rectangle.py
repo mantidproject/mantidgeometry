@@ -73,14 +73,65 @@ class Vector:
         """
         Set the unit length to one
         """
+        if self.isCardinal(True):
+            return self
+
         length = self.length # cache value
         if abs(length) < TOLERANCE:
             raise RuntimeError("Zero vector of zero length")
-        if abs(length -1.) < TOLERANCE:
-            return self # nothing to do
-        self.__data = [it/length for it in self.__data]
+        if abs(length -1.) > TOLERANCE:
+            self.__data = [it/length for it in self.__data]
+
+        # set near zeros to zero
+        for i in range(len(self.__data)):
+            if abs(self.__data[i]) < TOLERANCE:
+                self.__data[i] = 0.
 
         return self
+
+    def isCardinal(self, resetValues=False):
+        """
+        Returns true iff the vector is (1,0,0), (0,1,0) or (0,0,1).
+        """
+        if abs(self.length-1.) > TOLERANCE:
+            return False
+        x_is_zero = abs(self.__data[0]) <TOLERANCE
+        y_is_zero = abs(self.__data[1]) <TOLERANCE
+        z_is_zero = abs(self.__data[2]) <TOLERANCE
+
+        def sign(number):
+            """
+            Specialized version of sign intended to be used with +/-1 only
+            """
+            return number/abs(number)
+
+        # x = +/-1
+        if abs(abs(self.__data[0])-1.) <TOLERANCE:
+            if y_is_zero and z_is_zero:
+                if resetValues:
+                    self.__data[0] = sign(self.__data[0])
+                    self.__data[1] = 0.
+                    self.__data[2] = 0.
+                return True
+        # y = +/-1
+        if abs(abs(self.__data[1])-1.) <TOLERANCE:
+            if x_is_zero and z_is_zero:
+                if resetValues:
+                    self.__data[0] = 0.
+                    self.__data[1] = sign(self.__data[1])
+                    self.__data[2] = 0.
+                return True
+        # z = +/-1
+        if abs(abs(self.__data[2])-1.) <TOLERANCE:
+            if x_is_zero and y_is_zero:
+                if resetValues:
+                    self.__data[0] = 0.
+                    self.__data[1] = 0.
+                    self.__data[2] = sign(self.__data[2])
+                return True
+
+        # otherwise no
+        return False
 
     def __getitem__(self, key):
         return self.__data[key]
@@ -150,6 +201,87 @@ def getAngle(y, x, debug=False):
         print math.degrees(angle)
     return angle
 
+def getEuler(uVec, vVec, **kwargs):
+    """This is taken from the Goiniometer.getEulerAngles() function that is
+    in the package gov.ornl.sns.translation.geometry.calc.jython"""
+
+    degrees = kwargs.get("degrees", False)
+    verbose = kwargs.get("verbose", 0)
+
+    # normalize the u-vector
+    uVec = uVec.normalize()
+
+    # determine the perpendicular
+    nVec = uVec.cross(vVec)
+    nVec = nVec.normalize()
+    # make sure that u,v are perpendicular
+    vVec = nVec.cross(uVec)
+    vVec = vVec.normalize()
+
+    if verbose:
+        print "orthonormal:", uVec, vVec, nVec
+
+    # calculate the angles
+    import math
+
+    if vVec.y == 1.: # chi rotation is 0, just rotate about z-axis
+        if verbose > 1:
+            print "chi rotation is 0"
+        phi = math.atan2(nVec.x, nVec.z)
+        chi = 0.
+        omega = 0.
+    elif vVec.y == -1.:# chi rotation is 180 degrees
+        if verbose > 1:
+            print "chi rotation is 180 degrees"
+        phi = -1. * math.atan2(nVec.x, nVec.z)
+        if phi == -1.* math.pi:
+            phi = math.pi
+        chi = math.pi
+        omega = 0.
+    else:
+        if verbose > 1:
+            print "using generic version"
+        phi = math.atan2(nVec.y, uVec.y)
+        chi = math.acos(vVec.y)
+        omega = math.atan2(vVec.z, -1. * vVec.x)
+
+    # put together the result
+    result = [phi, chi, omega]
+    if degrees:
+        result = [math.degrees(val) for val in result]
+    for (i, val) in enumerate(result):
+        if abs(val) == 0.:
+            result[i] = 0.
+    return tuple(result)
+
+def __genRotationDict(rotation):
+    """
+    Generate the dict used for creating attributes.
+    """
+    (angle, axis) = rotation
+    axis = [str(int(val)) for val in axis]
+
+    result = {}
+    result["val"]    = str(angle)
+    if axis[0] != '0' or axis[1] != '0' or axis[2] != '1':
+        result["axis-x"] = axis[0]
+        result["axis-y"] = axis[1]
+        result["axis-z"] = axis[2]
+    return result
+
+def makeLocation(instr, det, name, center, rotations, tol_ang=TOLERANCE):
+    """
+    Make a location appropriate for an instrument component.
+    """
+    sub = instr.addLocation(det,
+                            x=center[0], y=center[1], z=center[2],
+                            name=name, rot_y=rotations[0][0])
+    if abs(rotations[1][0]) > tol_ang: # second rotation
+        sub = le.SubElement(sub, "rot",
+                            __genRotationDict(rotations[1]))
+        if abs(rotations[2][0]) > tol_ang: # third rotation angle
+            le.SubElement(sub, "rot", __genRotationDict(rotations[2]))
+
 class Rectangle:
     NPOINTS = 4
     BOTTOMLEFT = 1
@@ -157,7 +289,7 @@ class Rectangle:
     TOPRIGHT = 3
     BOTTOMRIGHT = 4
 
-    def __init__(self, p1, p2, p3, p4):
+    def __init__(self, p1, p2, p3, p4, tolerance_len=TOLERANCE, tolerance_ang=TOLERANCE):
         """
         The points should be specified as lower-left (p1) in a clockwise order.
         """
@@ -165,6 +297,8 @@ class Rectangle:
         p2 = Vector(p2)
         p3 = Vector(p3)
         p4 = Vector(p4)
+        self._tol_len = tolerance_len
+        self._tol_ang = tolerance_ang
 
         # Are they 4 edges of a 2D plane arrange so consecutive
         # points with wrap are edges
@@ -183,7 +317,7 @@ class Rectangle:
         # equal lengths.
         left = p2-p1
         right = p4-p3
-        if abs(left.length - right.length) > TOLERANCE:
+        if abs(left.length - right.length) > self._tol_len:
             msg = "Left and right sides are not equal length: " \
                 + "left=%f != right=%f (diff=%f)" \
                 % (left.length, right.length, abs(left.length-right.length))
@@ -191,7 +325,7 @@ class Rectangle:
 
         top = p2-p3
         bottom = p4-p1
-        if abs(top.length - bottom.length) > TOLERANCE:
+        if abs(top.length - bottom.length) > self._tol_len:
             msg = "Top and bottom sides are not equal length: "\
                 + "top=%f != bottom=%f (diff=%f)" \
                 % (top.length, bottom.length, abs(top.length-bottom.length))
@@ -199,17 +333,17 @@ class Rectangle:
 
         # opposite sides should add up to zero length vector
         for (i,num) in zip(('x', 'y', 'z'), left+right):
-            if abs(num) > TOLERANCE:
+            if abs(num) > self._tol_len:
                 msg = "Points not rectangle corners (num[%s]=%f > %f)" \
-                                       % (i,num, TOLERANCE)
+                                       % (i,num, self._tol_len)
                 raise RuntimeError(msg)
 
         # Make sure the points are at right angles. Eliminates collinear
         # case too
         dotProd = left.dot(bottom)
-        if abs(dotProd) > TOLERANCE:
+        if abs(dotProd) > self._tol_len:
             msg = " This is not a rectangle (p2-p1)dot(p4-p1) = %f > %f" \
-                % (dotProd, TOLERANCE)
+                % (dotProd, self._tol_len)
             raise RuntimeError(msg)
 
         self.__center = (p1 + p2 + p3 + p4) / float(Rectangle.NPOINTS)
@@ -266,7 +400,7 @@ class Rectangle:
         beta = getAngle(UNIT_Z.cross(self.__orient[2]).length,
                         UNIT_Z.dot(self.__orient[2]))
 
-        if abs(math.sin(beta)) < TOLERANCE: # special case for numerics
+        if abs(math.sin(beta)) < self._tol_ang: # special case for numerics
             # since alpha and gamma are coincident, just force gamma to be zero
             gamma = 0.
 
@@ -308,7 +442,8 @@ class Rectangle:
         beta = getAngle(UNIT_Y.cross(rotated_y).length,
                         UNIT_Y.dot(rotated_y))
 
-        if abs(math.sin(beta)) < TOLERANCE: # special case for numerics
+        if abs(math.sin(beta)) < self._tol_ang: # special case for numerics
+            print "small beta:", beta, math.sin(beta)
             # since alpha and gamma are coincident, just force gamma to be zero
             gamma = 0.
 
@@ -340,7 +475,7 @@ class Rectangle:
 
     width = property(__width, doc="Width of the rectangle")
     height = property(__height, doc="Height of the rectangle")
-    center = property(lambda self: self.__center[:],
+    center = property(lambda self: Vector(self.__center[:]),
                       doc="Center of the rectangle")
     orientation = property(lambda self: self.__orient[:],
                            doc="Orientation as a set of three basis vectors")
@@ -348,22 +483,7 @@ class Rectangle:
     points = property(lambda self: self.__points[:],
                       doc="The four corners originally supplied in the constructor")
 
-    def __genRotationDict(self, rotation):
-        """
-        Generate the dict used for creating attributes.
-        """
-        (angle, axis) = rotation
-        axis = [str(int(val)) for val in axis]
-
-        result = {}
-        result["val"]    = str(angle)
-        if axis[0] != '0' or axis[1] != '0' or axis[2] != '1':
-            result["axis-x"] = axis[0]
-            result["axis-y"] = axis[1]
-            result["axis-z"] = axis[2]
-        return result
-
-    def makeLocation(self, instr, det, name):
+    def makeLocation(self, instr, det, name, technique="orientation"):
         """
         @param instr The root instrument that does most of the work.
         @param det   The detector component.
@@ -373,17 +493,20 @@ class Rectangle:
             raise RuntimeError("lxml is not loaded")
 
         # cache within the function
-        rotations = list(self.__euler_rotations_yzy())
+        technique = technique.upper()
+        if technique == "ORIENTATION":
+            rotations = list(self.__euler_rotations_yzy())
+        elif technique == "UV":
+            # 'simple' euler rotation calculation
+            u = self.__points[3]-self.__points[0] # lower right - lower left
+            v = self.__points[1]-self.__points[0] #  upper left - lower left
+            rotations = list(getEuler(u, v, degrees=True))
+            rotations[0] = [rotations[0], (0., 1., 0.)]
+            rotations[1] = [rotations[1], (0., 0., 1.)]
+            rotations[2] = [rotations[2], (0., 1., 0.)]
+        else:
+            raise RuntimeError("Do not understand technique '%s'" % technique)
+
         rotations.reverse() # may need this
 
-        sub = instr.addLocation(det, x=self.__center[0],
-                                y=self.__center[1], z=self.__center[2],
-                                name=name, rot_y=rotations[0][0])
-        if abs(rotations[1][0]) > TOLERANCE: # second rotation
-            sub = le.SubElement(sub, "rot",
-                                self.__genRotationDict(rotations[1]))
-            if abs(rotations[2][0]) > TOLERANCE: # third rotation angle
-                le.SubElement(sub, "rot", self.__genRotationDict(rotations[2]))
-
-
-
+        makeLocation(instr, det, name, self.__center, rotations, self._tol_ang)

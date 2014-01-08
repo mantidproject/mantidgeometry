@@ -1,7 +1,12 @@
 from lxml import etree as le # python-lxml on rpm based systems
 from string import split,join
+
 INCH_TO_METRE = 0.0254
 DEG_TO_RAD = 0.0174533 # degrees to radians according to idl
+XMLNS = "http://www.mantidproject.org/IDF/1.0"
+XSI = "http://www.w3.org/2001/XMLSchema-instance"
+SCHEMA_LOC = "http://www.mantidproject.org/IDF/1.0 Schema/IDFSchema.xsd"
+
 class MantidGeom:
 
     def __init__(self, instname, comment=None, valid_from=None, valid_to=None):
@@ -11,10 +16,15 @@ class MantidGeom:
         last_modified = str(datetime.now())
         if valid_from is None:
             valid_from = last_modified
-        self.__root = le.Element("instrument", **{"name": instname,
-                                 "valid-from": valid_from,
-                                 "valid-to": valid_to,
-                                 "last-modified": last_modified})
+        self.__root = le.Element("instrument",
+                                 attrib={"name": instname,
+                                    "valid-from": valid_from,
+                                    "valid-to": valid_to,
+                                    "last-modified": last_modified
+                                    },
+                                 nsmap={None: XMLNS, "xsi": XSI}
+                                 )
+        self.__root.attrib['{{{pre}}}schemaLocation'.format(pre=XSI)] = SCHEMA_LOC 
         if comment is not None:
             if type(comment) == list or type(comment) == tuple:
                 for bit in comment:
@@ -38,7 +48,7 @@ class MantidGeom:
         print le.tostring(self.__root, pretty_print=True,
                              xml_declaration=True)
 
-    def addSnsDefaults(self, indirect=False):
+    def addSnsDefaults(self, indirect=False, default_view=None):
         """
         Set the default properties for SNS geometries
         """
@@ -51,8 +61,9 @@ class MantidGeom:
         reference_element = le.SubElement(defaults_element, "reference-frame")
         le.SubElement(reference_element, "along-beam", axis="z")
         le.SubElement(reference_element, "pointing-up", axis="y")
-        le.SubElement(reference_element, "handedness", axis="right")
-
+        le.SubElement(reference_element, "handedness", val="right")
+        if default_view is not None:
+            le.SubElement(defaults_element, "default-view", view=default_view)
 
     def addComment(self, comment):
         """
@@ -148,15 +159,15 @@ class MantidGeom:
         
         type_element = le.SubElement(self.__root, "type", name="monitors")
         basecomponent = le.SubElement(type_element, "component",
-                                      **{"type":"monitor",
-                                         "mark-as":"monitor"})
+                                      **{"type":"monitor"})
         
         for i in range(len(distance)):
-            #check if float
             try:
-                zi=float(distance[i])
-                location = le.SubElement(basecomponent, "location", z=distance[i],name=names[i])
-                le.SubElement(location, "neutronic", z=distance[i])
+                zi=float(distance[i]) # check if float
+                zi=str(zi) # convert it to a string for lxml
+                location = le.SubElement(basecomponent, "location", z=zi, name=names[i])
+                if neutronic:
+                    le.SubElement(location, "neutronic", z=zi)
             except:
                 pos_loc=le.SubElement(basecomponent, "location",name=names[i])
                 processed=split(str(distance[i]))
@@ -480,13 +491,13 @@ class MantidGeom:
         Add a dummy monitor with some-shape.
         """
         type_element = le.SubElement(self.__root, "type", **{"name":"monitor",
-                                                             "is":"detector"})
+                                                             "is":"monitor"})
         cylinder = le.SubElement(type_element, "cylinder", id="cyl-approx")
-        le.SubElement(cylinder, "centre-of-bottom-base", x="0.0", y="0.0",
-                      z="0.0")
+        le.SubElement(cylinder, "centre-of-bottom-base", p="0.0", r="0.0",
+                      t="0.0")
         le.SubElement(cylinder, "axis", x="0.0", y="0.0", z="1.0")
-        le.SubElement(cylinder, "radius", radius=str(radius))
-        le.SubElement(cylinder, "height", height=str(height))
+        le.SubElement(cylinder, "radius", val=str(radius))
+        le.SubElement(cylinder, "height", val=str(height))
         
         le.SubElement(type_element, "algebra", val="cyl-approx")
     
@@ -495,7 +506,7 @@ class MantidGeom:
         Add a cuboid monitor
         """
         type_element = le.SubElement(self.__root, "type", **{"name":"monitor",
-                                                             "is":"detector"})
+                                                             "is":"monitor"})
         cuboid = le.SubElement(type_element, "cuboid", id="shape")
         le.SubElement(cuboid, "left-front-bottom-point", x=str(-width/2), y=str(-height/2),z=str(-depth/2))
         le.SubElement(cuboid, "left-front-top-point", x=str(-width/2), y=str(height/2),z=str(-depth/2))
