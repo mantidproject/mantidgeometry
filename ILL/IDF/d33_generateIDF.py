@@ -87,10 +87,22 @@ def printHeader():
       </reference-frame>
     </defaults>
 
+    <!--Moderator -->
     <component type="moderator">
-      <location z="-2" />
+      <location z="-22" />
     </component>
     <type name="moderator" is="Source"></type>
+
+    <!--MONITORS-->
+    <component type="monitors" idlist="monitors">
+      <location/>
+    </component>
+    <type name="monitors">
+      <component type="monitor">
+        <location z="-16.700" name="monitor1"/>
+        <location z="-1.200" name="monitor2"/>
+      </component>
+    </type>
 
     <!-- Sample position -->
     <component type="sample-position">
@@ -150,7 +162,7 @@ def printDetectors():
     xstart = - detLargeDim /2 + xstep /2 
     ystep = detLargeDim / numberOfPixelsInBackDetectorH
     ystart = - detLargeDim /2 + ystep /2
-    print '''<type name="back_detector" is="rectangular_detector" type="pixel"''' 
+    print '''<type name="back_detector" is="rectangular_detector" type="pixel_rectangular_horizontal"''' 
     print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInBackDetectorW, -xstart, -xstep)
     print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInBackDetectorH, ystart, ystep)
     print ''' <properties/>'''
@@ -162,33 +174,53 @@ def printDetectors():
     xstart = - detLargeDim /2 + xstep /2 
     ystep =  detShortDim / numberOfPixelsInFrontDetectorsH
     ystart = - detShortDim /2 + ystep /2
-    print '''<type name="front_detector_right" is="rectangular_detector" type="pixel"''' 
+    print '''<type name="front_detector_right" is="rectangular_detector" type="pixel_rectangular_horizontal"''' 
     print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontDetectorsW, xstart, xstep)
     print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontDetectorsH, ystart, ystep)
     print ''' <properties/>'''
     print '''</type>'''  
-    print '''<type name="front_detector_left" is="rectangular_detector" type="pixel"''' 
+    print '''<type name="front_detector_left" is="rectangular_detector" type="pixel_rectangular_horizontal"''' 
     print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontDetectorsW, xstart, xstep)
     print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontDetectorsH, ystart, ystep)
     print ''' <properties/>'''
     print '''</type>''' 
-    print '''<type name="front_detector_bottom" is="rectangular_detector" type="pixel"''' 
+    print '''<type name="front_detector_bottom" is="rectangular_detector" type="pixel_rectangular_vertical"''' 
     print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontDetectorsW, -xstart, -xstep)
     print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontDetectorsH, ystart, ystep)
     print ''' <properties/>'''
     print '''</type>'''  
-    print '''<type name="front_detector_top" is="rectangular_detector" type="pixel"''' 
+    print '''<type name="front_detector_top" is="rectangular_detector" type="pixel_rectangular_vertical"''' 
     print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontDetectorsW, -xstart, -xstep)
     print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontDetectorsH, ystart, ystep)
     print ''' <properties/>'''
     print '''</type>''' 
     
- 
+
+def printMonitors():
+  print """<!--MONITOR SHAPE-->
+  <!--FIXME: Do something real here.-->
+  <type is="monitor" name="monitor">
+    <cylinder id="cyl-approx">
+      <centre-of-bottom-base y="0.0" x="0.0" z="0.0"/>
+      <axis y="0.0" x="0.0" z="1.0"/>
+      <radius val="0.01"/>
+      <height val="0.03"/>
+    </cylinder>
+    <algebra val="cyl-approx"/>
+  </type>
+
+  <!--MONITOR IDs-->
+  <idlist idname="monitors">
+    <id val="-1"/>
+    <id val="0"/>
+  </idlist>
+  """ 
 
 def printPixels():  
 
-    print """<!-- Pixel for Detectors: 5x5 mm -->
-    <type is="detector" name="pixel">
+    ## TODO correct pixel shape for top and side detectors.
+    print """<!-- Pixel for Detectors: 2.5x5 mm -->
+    <type is="detector" name="pixel_rectangular_horizontal">
     <cuboid id="pixel-shape">
       <left-front-bottom-point y="-0.0025" x="-0.00125" z="0.0"/>
       <left-front-top-point y="0.0025" x="-0.00125" z="0.0"/>
@@ -196,7 +228,18 @@ def printPixels():
       <right-front-bottom-point y="-0.0025" x="0.00125" z="0.0"/>
     </cuboid>
     <algebra val="pixel-shape"/>
-    </type>"""
+    </type>
+    <!-- Pixel for Detectors: 5x2.5 mm -->
+    <type is="detector" name="pixel_rectangular_vertical">
+    <cuboid id="pixel-shape">
+      <left-front-bottom-point y="-0.00125" x="-0.0025" z="0.0"/>
+      <left-front-top-point y="0.00125" x="-0.0025" z="0.0"/>
+      <left-back-bottom-point y="-0.00125" x="-0.0025" z="-0.0001"/>
+      <right-front-bottom-point y="-0.00125" x="0.0025" z="0.0"/>
+    </cuboid>
+    <algebra val="pixel-shape"/>
+    </type>
+    """
     
 
 def printEnd():
@@ -205,10 +248,11 @@ def printEnd():
     
 
 if __name__ == '__main__':
-    printHeader();
-    printDetectors();
-    printPixels();
-    printEnd();
+    printHeader()
+    printDetectors()
+    printMonitors()
+    printPixels()
+    printEnd()
     
     
      
