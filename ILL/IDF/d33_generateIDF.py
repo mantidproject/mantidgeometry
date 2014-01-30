@@ -72,7 +72,9 @@ numberOfDetectors = numberOfPixelsInBackDetector + 4 * numberOfPixelsInFrontDete
 def printHeader():
     print """<?xml version="1.0" encoding="UTF-8"?>
     <!-- For help on the notation used to specify an Instrument Definition File see http://www.mantidproject.org/IDF -->
-    <instrument name="%s" valid-from="1900-01-31 23:59:59"
+    <instrument xmlns="http://www.mantidproject.org/IDF/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://www.mantidproject.org/IDF/1.0 Schema/IDFSchema.xsd" 
+    name="%s" valid-from="1900-01-31 23:59:59"
     valid-to="2100-01-31 23:59:59" last-modified="%s">""" % (instrumentName, time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
     print """<!-- Author: ricardo.leal@ill.fr -->"""
     print """<defaults>
@@ -162,7 +164,7 @@ def printDetectors():
     xstart = - detLargeDim /2 + xstep /2 
     ystep = detLargeDim / numberOfPixelsInBackDetectorH
     ystart = - detLargeDim /2 + ystep /2
-    print '''<type name="back_detector" is="rectangular_detector" type="pixel_rectangular_horizontal"''' 
+    print '''<type name="back_detector" is="rectangular_detector" type="pixel_rectangular_vertical"''' 
     print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInBackDetectorW, -xstart, -xstep)
     print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInBackDetectorH, ystart, ystep)
     print ''' <properties/>'''
@@ -174,12 +176,12 @@ def printDetectors():
     xstart = - detLargeDim /2 + xstep /2 
     ystep =  detShortDim / numberOfPixelsInFrontDetectorsH
     ystart = - detShortDim /2 + ystep /2
-    print '''<type name="front_detector_right" is="rectangular_detector" type="pixel_rectangular_horizontal"''' 
+    print '''<type name="front_detector_right" is="rectangular_detector" type="pixel_rectangular_vertical"''' 
     print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontDetectorsW, xstart, xstep)
     print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontDetectorsH, ystart, ystep)
     print ''' <properties/>'''
     print '''</type>'''  
-    print '''<type name="front_detector_left" is="rectangular_detector" type="pixel_rectangular_horizontal"''' 
+    print '''<type name="front_detector_left" is="rectangular_detector" type="pixel_rectangular_vertical"''' 
     print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsInFrontDetectorsW, xstart, xstep)
     print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsInFrontDetectorsH, ystart, ystep)
     print ''' <properties/>'''
