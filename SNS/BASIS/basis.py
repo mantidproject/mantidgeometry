@@ -43,7 +43,7 @@ if __name__ == "__main__":
         azimuthal_angle *= (180.0/math.pi)
         
         analyser_wavelength = file["/entry/instrument/analyzer%d/wavelength" % (i+1)].value
-        analyser_energy = 81.787/analyser_wavelength**2
+        analyser_energy = 81.8042051/analyser_wavelength**2
 
         bank_id = "bank%d" % (i+1)
         det.addComponent(bank_id, bank_id)
