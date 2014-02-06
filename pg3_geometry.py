@@ -128,7 +128,7 @@ if __name__ == "__main__":
     # boiler plate stuff
     instr = MantidGeom(inst_name,
                        comment="Created by " + ", ".join(authors),
-                       valid_from="2013-08-01 00:00:01")
+                       valid_from="2014-02-01 00:00:01")
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults()
     instr.addComment("SOURCE")
@@ -189,11 +189,11 @@ if __name__ == "__main__":
             instr.addComponent(name, root=group)
 
     # the actual work of adding the detectors
-    corners = CornersFile("SNS/POWGEN/PG3_geom_2013_txt.csv", abs(L1))
+    corners = CornersFile("SNS/POWGEN/PG3_geom_2014_txt.csv", abs(L1))
     addGroup(corners, cols[4], ["B2", "B3", "B4", "B5", "B6"])
     addGroup(corners, cols[3], ['C2', 'C3',  'C4', 'C5', 'C6', 'D2', 'D3', 'D4', 'D5', 'D6'])
     addGroup(corners, cols[2], ['E2', 'E3', 'E4', 'E5', 'F2', 'F3', 'F4', 'F5'])
-    addGroup(corners, cols[1], ['G3', 'G4', 'H3', 'H4', 'I4', 'J4', 'K4', 'L4'])
+    addGroup(corners, cols[1], ['G3', 'G4', 'H3', 'H4', 'I4', 'J4', 'K4'])
 
     # add the panel shape
     instr.addComment(" Version 2 Detector Panel (7x154)")
