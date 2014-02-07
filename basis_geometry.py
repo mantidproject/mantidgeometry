@@ -40,7 +40,7 @@ if __name__ == "__main__":
     nfile = h5py.File(nexusfile, 'r')
 
     det = MantidGeom(inst_name, comment=comment, valid_from=valid_from)
-    det.addSnsDefaults(indirect=True)
+    det.addSnsDefaults()
     det.addComment("SOURCE AND SAMPLE POSITION")
     det.addModerator(-84.0)
     det.addSamplePosition()
