@@ -4,7 +4,7 @@ from helper import MantidGeom
 import h5py
 import math
 
-nexusfile = "/SNS/BSS/shared/NeXusFiles/BSS/IPTS-8135/0/23741/NeXus/BSS_23741_event.nxs"
+nexusfile = "/SNS/BSS/IPTS-5908/0/32264/NeXus/BSS_32264_event.nxs"
 banks = 4
 
 INCH_TO_METRE = 0.0254
