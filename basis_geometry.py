@@ -48,15 +48,19 @@ if __name__ == "__main__":
     det.addMonitors(names=["monitor1"], distance=["-0.23368"])
 
     # Create the inelastic banks information
+    # Slicer for removing ghosts. Due to the mapping, the ghost tubes sit 
+    # on the same sides of the arrays for all banks.
+    remove_ghosts = slice(-8)    
+    
     for i in range(banks):
-        pixel_id = nfile["/entry/instrument/bank%d/pixel_id" % (i+1)].value
-        distance = nfile["/entry/instrument/bank%d/distance" % (i+1)].value
-        polar_angle = nfile["/entry/instrument/bank%d/polar_angle" % (i+1)].value
+        pixel_id = nfile["/entry/instrument/bank%d/pixel_id" % (i+1)].value[remove_ghosts]
+        distance = nfile["/entry/instrument/bank%d/distance" % (i+1)].value[remove_ghosts]
+        polar_angle = nfile["/entry/instrument/bank%d/polar_angle" % (i+1)].value[remove_ghosts]
         polar_angle *= (180.0/math.pi)
-        azimuthal_angle = nfile["/entry/instrument/bank%d/azimuthal_angle" % (i+1)].value
+        azimuthal_angle = nfile["/entry/instrument/bank%d/azimuthal_angle" % (i+1)].value[remove_ghosts]
         azimuthal_angle *= (180.0/math.pi)
         
-        analyser_wavelength = nfile["/entry/instrument/analyzer%d/wavelength" % (i+1)].value
+        analyser_wavelength = nfile["/entry/instrument/analyzer%d/wavelength" % (i+1)].value[remove_ghosts]
         analyser_energy = 81.8042051/analyser_wavelength**2
 
         bank_id = "bank%d" % (i+1)
@@ -144,5 +148,5 @@ if __name__ == "__main__":
     det.addComment("MONITOR IDs")
     det.addMonitorIds(["-1"])
 
-    det.showGeom()
+    #det.showGeom()
     det.writeGeom(xml_outfile)
