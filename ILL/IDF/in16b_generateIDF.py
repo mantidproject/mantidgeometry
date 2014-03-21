@@ -1,7 +1,7 @@
 '''
 Created on 12/03/2014
 
-@author: leal
+@author: leal/raoul
 
 Run as:
 
@@ -16,15 +16,19 @@ import time
 instrumentName='IN16B'
 numberOfPixelsPerTube=128
 firstDetectorId = 1
-radius = 4 # meters
+radius = 2 * 2.0 -0.0644 # meters
 
 tubeHeight = 0.30
 tubePixelStep =  tubeHeight / numberOfPixelsPerTube
 totalTubeHeight = tubePixelStep * numberOfPixelsPerTube
 numberOfTubes= 16
-azimuthalAngle = np.linspace(34,12,16)
-numberOfDetectors = numberOfPixelsPerTube * numberOfTubes
 
+numberOfDetectors = numberOfPixelsPerTube * numberOfTubes
+numberOfSingleDetectors = 8
+
+azimuthalAngle = np.linspace(128,-13.7,numberOfTubes)
+azimuthalSingleAngle = np.linspace(10,120,numberOfSingleDetectors)
+singleDetectorRadius = 4.10
 
 def printHeader():
     print """<?xml version="1.0" encoding="UTF-8"?>
@@ -33,7 +37,7 @@ def printHeader():
     xsi:schemaLocation="http://www.mantidproject.org/IDF/1.0 Schema/IDFSchema.xsd" 
     name="%s" valid-from="1900-01-31 23:59:59"
     valid-to="2100-01-31 23:59:59" last-modified="%s">""" % (instrumentName, time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
-    print """<!-- Author: ricardo.leal@ill.fr -->"""
+    print """<!-- Author: raoul@ill.fr -->"""
     print """<defaults>
       <length unit="meter" />
       <angle unit="degree" />
@@ -48,7 +52,7 @@ def printHeader():
 
     <!--Moderator -->
     <component type="moderator">
-      <location z="-22" />
+      <location z="-36.41" />
     </component>
     <type name="moderator" is="Source"></type>
 
@@ -58,7 +62,7 @@ def printHeader():
     </component>
     <type name="monitors">
       <component type="monitor">
-        <location z="-1.200" name="monitor1"/>
+        <location z="0.0181" name="monitor1"/>
       </component>
     </type>
 
@@ -101,6 +105,46 @@ def printDetectors():
     print """</component> </type>"""
     
 
+
+    
+    
+    
+def printSimpleSingleDetectors():
+    print """<idlist idname="single_detectors">
+        <id start="%d" end="%d" />
+    </idlist>""" % (numberOfDetectors+1, numberOfDetectors+numberOfSingleDetectors)
+
+    print """<!-- Detector list def -->
+    <component type="single_detectors" idlist="single_detectors">
+        <location />
+        <!--location x="0.0" y="0.0" z="0.0" rot="0.0" axis-x="1.0" axis-y="0.0" axis-z="0.0"/-->
+    </component>"""
+    
+    print "<!-- Detector Banks -->"
+    print """<type name="single_detectors">"""
+    print """  <component type="bank_single_detectors"><location/></component>"""
+    print "</type>"
+
+    print "<!-- Definition of the bank_single_detectors -->"
+    print """<type name="bank_single_detectors">"""
+    
+    print """  <component type="single_tube">"""
+    
+    
+    for idx,angle in enumerate(azimuthalSingleAngle):
+        print """<location r="%f" t="%f" p="0.0" rot="%f" axis-x="0.0" axis-y="1.0" axis-z="0.0" name="single_tube_%d" />"""%(singleDetectorRadius,angle,angle+90.0,idx+1)
+    
+    print """  </component>"""
+    print """</type>"""
+
+    print """<!-- Definition of single_tube -->"""
+    print """<type name="single_tube" outline="yes">
+             <component type="single_pixel">"""
+    print """<location />"""
+    print """</component> </type>"""
+
+      
+      
 def printMonitors():
     print """<!--MONITOR SHAPE-->
     <!--FIXME: Do something real here.-->
@@ -131,16 +175,24 @@ def printPixels():
 #    <algebra val="pack-pixel-shape" />     
 #    </type>"""
     print """<type name="standard_pixel" is="detector">
-        <cylinder id="shape">
+        <cylinder id="cyl1">
             <centre-of-bottom-base x="0.0" y="-0.006144" z="0.0" />
             <axis x="0.0" y="1.0" z="0.0" />
             <radius val="0.0127" />
             <height val=".0114341328125" />
         </cylinder>
-        <algebra val="shape" />
+        <algebra val="cyl1" />
     </type>"""
         
-
+    print """<type name="single_pixel" is="detector">
+        <cylinder id="cyl2">
+            <centre-of-bottom-base x="0.0" y="0.0" z="0.0" />
+            <axis x="1.0" y="0.0" z="0.0" />
+            <radius val="0.027" />
+            <height val=".10" />
+        </cylinder>
+    </type>"""
+    
 def printEnd():
     print "</instrument>"
 
@@ -149,6 +201,7 @@ def printEnd():
 if __name__ == '__main__':
     printHeader();
     printDetectors();
+    printSimpleSingleDetectors();
     printMonitors()
     printPixels();
     printEnd();
