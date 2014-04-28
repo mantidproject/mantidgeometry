@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 '''
 Created on Feb 22, 2013
 
@@ -5,7 +7,8 @@ Created on Feb 22, 2013
 
 Run as:
 
-cd  ~/git/mantidgeometry/ILL/IDF; python in5_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > ~/git/Mantid/Code/Mantid/instrument/IN5_Definition.xml; rm  ~/git/Mantid/Code/Mantid/instrument/IN5_Definition.vtp 
+cd ~/git/mantidgeometry/ILL/IDF
+python in5_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > ~/git/mantid/Code/Mantid/instrument/IN5_Definition.xml 
 
 '''
 import numpy as np
@@ -33,7 +36,8 @@ numberOfDetectors = numberOfPixelsPerTube * numberOfTubes
 def printHeader():
     print """<?xml version="1.0" encoding="UTF-8"?>
     <!-- For help on the notation used to specify an Instrument Definition File see http://www.mantidproject.org/IDF -->
-    <instrument name="%s" valid-from="1900-01-31 23:59:59"
+    <instrument xmlns="http://www.mantidproject.org/IDF/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://www.mantidproject.org/IDF/1.0 Schema/IDFSchema.xsd" name="%s" valid-from="1900-01-31 23:59:59"
     valid-to="2100-01-31 23:59:59" last-modified="%s">""" % (instrumentName,strftime("%Y-%m-%d %H:%M:%S", gmtime()))
     print """<!-- Author: ricardo.leal@ill.fr -->"""
     print """<defaults>
@@ -52,6 +56,16 @@ def printHeader():
       <location z="-2" />
     </component>
     <type name="moderator" is="Source"></type>
+
+    <!--MONITORS-->
+    <component type="monitors" idlist="monitors">
+      <location/>
+    </component>
+    <type name="monitors">
+      <component type="monitor">
+        <location z="-0.5" name="monitor1"/>
+      </component>
+    </type>
 
     <!-- Sample position -->
     <component type="sample-position">
@@ -92,6 +106,24 @@ def printDetectors():
     print """</component> </type>"""
     
 
+def printMonitors():
+    print """<!--MONITOR SHAPE-->
+    <!--FIXME: Do something real here.-->
+    <type is="monitor" name="monitor">
+    <cylinder id="cyl-approx">
+    <centre-of-bottom-base y="0.0" x="0.0" z="0.0"/>
+    <axis y="0.0" x="0.0" z="1.0"/>
+    <radius val="0.01"/>
+    <height val="0.03"/>
+    </cylinder>
+    <algebra val="cyl-approx"/>
+    </type>
+
+    <!--MONITOR IDs-->
+    <idlist idname="monitors">
+    <id val="0"/>
+    </idlist>
+    """ 
  
 
 def printPixels():  
@@ -121,10 +153,11 @@ def printEnd():
     
 
 if __name__ == '__main__':
-    printHeader();
-    printDetectors();
-    printPixels();
-    printEnd();
+    printHeader()
+    printDetectors()
+    printMonitors()
+    printPixels()
+    printEnd()
     
     
      
