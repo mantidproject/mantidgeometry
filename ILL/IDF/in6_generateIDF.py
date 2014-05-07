@@ -107,17 +107,16 @@ def printDetectors():
         if detsPerBank == 1:
             print """<location r="%.3f" t="%.3f" p="%.3f" name="det%d"></location>"""  % (radius,-theta,0,thisId) #
         elif detsPerBank == 3:
-            thetaRadians = -theta * np.pi / 180 - np.pi;
-            angleRadians = -angle * np.pi / 180 - np.pi/2;
-            z = radius * np.sin(angleRadians) * np.cos(thetaRadians)
-            x = radius * np.sin(angleRadians) * np.sin(thetaRadians)
-            y = radius * np.cos(angleRadians)
-            print """<location x="%.3f" y="%.3f" z="%.3f" name="det%d"></location>"""  % (x,y,z,thisId) #
+            #
+            # TODO:
+            # 2theta is correct but the positions in space are wrong! Correct this!
+            print """<location r="%.3f" t="%.3f" p="%.3f" name="det%d" />"""  % (radius,-theta,-angle,thisId) #
             thisId += 1
             print """<location r="%.3f" t="%.3f" p="%.3f" name="det%d" />"""  % (radius,-theta,0,thisId) #
             thisId += 1
-            print """<location x="%.3f" y="%.3f" z="%.3f" name="det%d"></location>"""  % (x,-y,z,thisId) #
-            
+            print """<location r="%.3f" t="%.3f" p="%.3f" name="det%d" />"""  % (radius,-theta,angle,thisId) #
+            thisId += 1
+
         else :
             sys.stderr.write("Number of detectors per bank is invalid: " + str(detsPerBank))
         thisId += 1
