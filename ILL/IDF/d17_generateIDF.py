@@ -6,28 +6,32 @@
 
 Run as:
 
-python ~/git/mantidgeometry/ILL/IDF/d17_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > ~/git/mantid/Code/Mantid/instrument/D17_Definition.xml \
-rm  ~/git/mantid/Code/Mantid/instrument/D17_Definition.vtp 
+python ~/git/mantidgeometry/ILL/IDF/d17_generateIDF.py | \
+tidy -utf8 -xml -w 255 -i -c -q -asxml > ~/git/mantid/Code/Mantid/instrument/D17_Definition.xml;
+rm  ~/git/mantid/Code/Mantid/instrument/D17_Definition.vtp
+
+
+Going to assume a rectangular detector like in SANS 
 
 '''
-import numpy as np
-from collections import Counter
 import time
 
 # # Global variables
 instrumentName='D17'
 
-firstMonitorId = 1
-firstDetectorId = 1
-radius = 3 # meters
+# 2 monitors
+firstMonitorId = 0
+firstDetectorId = 2
+radius = 3.1 # meters #
 
+# Tubes are horizontal!
 numberOfPixelsPerTube=256
-numberOfTubes = 1
-tubeHeight = 0.30
+numberOfTubes = 64
+tubePixelSize = 0.0012
+tubeWidth = 0.0067
 
-tubePixelStep =  tubeHeight / numberOfPixelsPerTube
-
-numberOfDetectors = numberOfPixelsPerTube * numberOfTubes
+numberOfPixels = numberOfPixelsPerTube * numberOfTubes
+ 
 
     
 def printHeader():
@@ -48,20 +52,21 @@ def printHeader():
         <pointing-up axis="y" />
         <handedness val="right" />
       </reference-frame>
-    </defaults>
+    </defaults>"""
 
-    <component type="moderator">
-      <location z="-2" />
+    print """<!-- Source -->"""
+    print """<component type="chopper1">
+      <location z="-4.16610003" />
     </component>
-    <type name="moderator" is="Source"></type>
+    <type name="chopper1" is="Source"></type>"""
 
-    <!-- Sample position -->
-    <component type="sample-position">
+    print """<!-- Sample position -->"""
+    print """<component type="sample-position">
       <location y="0.0" x="0.0" z="0.0" />
     </component>
     <type name="sample-position" is="SamplePos" />"""
 
-def printMonitor():
+def printMonitors():
     print """<!--MONITORS-->
     <component type="monitors" idlist="monitors">
       <location/>
@@ -69,10 +74,11 @@ def printMonitor():
     <type name="monitors">
       <component type="monitor">
         <location z="0.0181" name="monitor1"/>
+        <location z="-0.5" name="monitor2" />
       </component>
-    </type>
+    </type>"""
 
-    <!--MONITOR SHAPE-->
+    print """<!--MONITOR SHAPE-->
     <!--FIXME: Do something real here.-->
     <type is="monitor" name="monitor">
     <cylinder id="cyl-approx">
@@ -82,66 +88,53 @@ def printMonitor():
     <height val="0.03"/>
     </cylinder>
     <algebra val="cyl-approx"/>
-    </type>
+    </type>"""
 
-    <!--MONITOR IDs-->
-    <idlist idname="monitors">
-    <id val="%d"/>
-    </idlist>
-    """%(firstMonitorId)
+    print """<!--MONITOR IDs-->
+      <idlist idname="monitors">
+        <id start="%d" end="%d" />
+      </idlist>
+    """%(firstMonitorId, firstDetectorId -1 )
 
 def printDetectors():
-    print """<idlist idname="detectors">
-        <id start="%d" end="%d" />
-    </idlist>""" % (firstDetectorId, numberOfDetectors)
-    
-    print """<!-- Detector list def -->
-    <component type="detectors" idlist="detectors">
-        <location />
+    print """<component type="detectors">
+     <location/>
     </component>"""
     
-    print "<!-- Detector Banks -->"
+    print "<!-- Detector Panels -->"
     print """<type name="detectors">"""
-    print """  <component type="bank_uniq"><location/></component>"""
-    print "</type>"
+    print """ <component type="back_detector" idstart="%d" idfillbyfirst="y" idstep="1" idstepbyrow="1"> 
+    <location z='%f'/>
+    </component>
+    </type>""" % (firstDetectorId, radius)
     
-    print "<!-- Definition of the unique existent bank (made of tubes) -->"
+    print "<!-- Definition of every bank -->"
+    print """<!-- Back detector: 640 x 640 mm -->"""
     
-    print """<type name="bank_uniq">"""
-    print """  <component type="standard_tube">"""
-    print """    <location r="%f" t="%f" name="tube_uniq" />"""%(radius,0)
-    print """  </component>"""
-    print """</type>"""
     
-    print """<!-- Definition of standard_tube -->"""
-    print """<type name="standard_tube" outline="yes">
-        <component type="standard_pixel">"""
-    pixelPositions = np.linspace(0,tubeHeight,numberOfPixelsPerTube)
-    for  pos in pixelPositions :
-        print """<location y="%f" />"""%(pos)
-    print """</component> </type>"""
+    ystart = - ( tubePixelSize * numberOfPixelsPerTube ) /2
+    print '''<type name="back_detector" is="rectangular_detector" type="pixel"''' 
+    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfTubes, 0 , tubeWidth)
+    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsPerTube, ystart, tubePixelSize)
+    print ''' <properties/>'''
+    print '''</type>''' 
     
 
  
 
 def printPixels():  
-#    print """ <type name="pack" is="detector">  
-#    <cuboid id="pack-pixel-shape">
-#      <left-front-bottom-point x="0.0" y="-0.020" z="-0.0015"  />
-#      <left-front-top-point  x="0.0" y="0.020" z="-0.0015"  />
-#      <left-back-bottom-point  x="0.005" y="-0.020" z="-0.0015"  />
-#      <right-front-bottom-point  x="0.0" y="-0.020" z="0.0015"  />
-#    </cuboid>
-#    <algebra val="pack-pixel-shape" />     
-#    </type>"""
-    print """<type name="standard_pixel" is="detector">
-        <cylinder id="shape">
-            <centre-of-bottom-base x="0.0" y="-0.006144" z="0.0" />
-            <axis x="0.0" y="1.0" z="0.0" />
-            <radius val="0.0127" />
-            <height val=".0114341328125" />
-        </cylinder>
-        <algebra val="shape" />
+    
+    stepY = tubeWidth/2 - 0.001
+    stepX = tubePixelSize/2 -00003
+    print """<!-- Pixel size = tubePixelSize * tubeWidth-->
+    <type is="detector" name="pixel">
+    <cuboid id="pixel-shape">"""
+    print """<left-front-bottom-point y="%f" x="%f" z="0.0"/>""" % (-stepY, -stepX)
+    print """<left-front-top-point y="%f" x="%f" z="0.0"/>""" %(stepY, -stepX)
+    print """<left-back-bottom-point y="%f" x="%f" z="-0.0001"/>""" %(-stepY,-stepX)
+    print """<right-front-bottom-point y="%f" x="%f" z="0.0"/>""" %(-stepY,stepX)
+    print """</cuboid>
+    <algebra val="pixel-shape"/>
     </type>"""
         
 
@@ -152,7 +145,7 @@ def printEnd():
 
 if __name__ == '__main__':
     printHeader();
-    printMonitor()
+    printMonitors()
     printDetectors();
     printPixels();
     printEnd();
