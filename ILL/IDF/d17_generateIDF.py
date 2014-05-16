@@ -26,7 +26,7 @@ radius = 3.1 # meters #
 
 # Tubes are horizontal!
 numberOfPixelsPerTube=256
-numberOfTubes = 64
+numberOfTubes = 1
 tubePixelSize = 0.0012
 tubeWidth = 0.0067
 
@@ -103,29 +103,37 @@ def printDetectors():
     
     print "<!-- Detector Panels -->"
     print """<type name="detectors">"""
-    print """ <component type="back_detector" idstart="%d" idfillbyfirst="y" idstep="1" idstepbyrow="1"> 
+    print """ <component type="uniq_detector" idstart="%d" idfillbyfirst="x" idstep="1" idstepbyrow="%d"> 
     <location z='%f'/>
     </component>
-    </type>""" % (firstDetectorId, radius)
+    </type>""" % (firstDetectorId, numberOfPixelsPerTube, radius)
     
-    print "<!-- Definition of every bank -->"
-    print """<!-- Back detector: 640 x 640 mm -->"""
+    print "<!-- Definition of the detector -->"
+    print "<!-- Back detector: 30.7 x 42.9 mm -->"
     
     
-    ystart = - ( tubePixelSize * numberOfPixelsPerTube ) /2
-    print '''<type name="back_detector" is="rectangular_detector" type="pixel"''' 
-    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfTubes, 0 , tubeWidth)
-    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsPerTube, ystart, tubePixelSize)
+#     ystart = - ( tubePixelSize * numberOfPixelsPerTube ) /2
+#     print '''<type name="uniq_detector" is="rectangular_detector" type="pixel"''' 
+#     print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfTubes, 0 , tubeWidth)
+#     print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfPixelsPerTube, ystart, tubePixelSize)
+#     print ''' <properties/>'''
+#     print '''</type>''' 
+#     
+    xstart = 0
+    ystart = - ( tubeWidth * numberOfTubes ) / 2
+    
+    print '''<type name="uniq_detector" is="rectangular_detector" type="pixel"''' 
+    print ''' xpixels="%d" xstart="%f" xstep="%f"''' % (numberOfPixelsPerTube, xstart , tubePixelSize)
+    print ''' ypixels="%d" ystart="%f" ystep="%f" >''' % (numberOfTubes, ystart, tubeWidth)
     print ''' <properties/>'''
     print '''</type>''' 
     
-
  
 
 def printPixels():  
     
-    stepY = tubeWidth/2 - 0.001
-    stepX = tubePixelSize/2 -00003
+    stepY = tubeWidth - 0.001
+    stepX = tubePixelSize -0.0003
     print """<!-- Pixel size = tubePixelSize * tubeWidth-->
     <type is="detector" name="pixel">
     <cuboid id="pixel-shape">"""
