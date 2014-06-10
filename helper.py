@@ -736,8 +736,8 @@ class MantidGeom:
         le.SubElement(hex_1, "left-back-bottom-point",
                       x=str(-x0_o),y=str(y0),z=str(-radius))
         le.SubElement(hex_1, "left-back-top-point",
-                      x=str(-x0_i),y=str(-y0),z=str(-radius))
-        le.SubElement(hex_1, "right-front-bottom-point",
+                      x=str(-x0_o),y=str(-y0),z=str(-radius))
+        le.SubElement(hex_1, "riight-front-bottom-point",
                       x=str(x0_i),y=str(y0),z=str(0))
         le.SubElement(hex_1, "right-front-top-point",
                       x=str(x0_i),y=str(-y0),z=str(0))
