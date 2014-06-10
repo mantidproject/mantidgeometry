@@ -29,8 +29,7 @@ if __name__ == "__main__":
     try:
         geom_input_file = sys.argv[1]
     except IndexError:
-        #geom_input_file = "SNS/SEQ/SEQ_geom_19890-.txt"
-        geom_input_file = "/Users/19g/mantidporject/mantidproject/mantidgeometry/SNS/SEQ/SEQ_geom_19890-.txt"
+        geom_input_file = "SNS/SEQ/SEQ_geom_19890-.txt"
         
     # Set header information
     comment = "Created by Michael Reuter"
