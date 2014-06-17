@@ -692,6 +692,77 @@ class MantidGeom:
         le.SubElement(cuboid2, "right-front-bottom-point",
                       x=str(hole[0]),y=str(hole[1]),z=str(height+separation))
         le.SubElement(type_element, "algebra", val="body1 (# hole1) : body2 (# hole2)")
+    
+    def addFermiChopper(self, name, radius=0.05, height=0.065,width=0.061,is_type="chopper"):
+        """
+         Add a Fermi chopper 
+        """
+        y0=-height/2.0
+        x0=-width/2.0
+        type_element = le.SubElement(self.__root, "type",
+                                     **{"name":name, "is":is_type})
+        cylinder = le.SubElement(type_element, "cylinder", id="body")
+        le.SubElement(cylinder, "centre-of-bottom-base",x="0.0",y=str(y0),z="0.0")
+        le.SubElement(cylinder, "axis", x="0.0", y="1.0", z="0.0")
+        le.SubElement(cylinder, "radius", val=str(radius))
+        le.SubElement(cylinder, "height", val=str(height))
+        cuboid = le.SubElement(type_element, "cuboid", id="hole")
+        le.SubElement(cuboid, "left-front-bottom-point", x=str(x0),y=str(y0),z=str(-radius))
+        le.SubElement(cuboid, "left-front-top-point", x=str(x0),y=str(-y0),z=str(-radius))
+        le.SubElement(cuboid, "left-back-bottom-point", x=str(-x0),y=str(y0),z=str(-radius))
+        le.SubElement(cuboid, "right-front-bottom-point",x=str(x0),y=str(y0),z=str(radius))
+        le.SubElement(type_element, "algebra", val="body (# hole)")
+        
+    def addVerticalAxisT0Chopper(self, name, radius=0.175, height=0.090,width_out=0.095,width_in=0.085,is_type="chopper"):
+        """
+         Add a Vertical Axis T0 chopper 
+        """
+        y0=-height/2.0
+        #x0=-width/2.0
+        x0_o=-width_out/2.0
+        x0_i=-width_in/2.0
+        type_element = le.SubElement(self.__root, "type",
+                                     **{"name":name, "is":is_type})
+        cylinder = le.SubElement(type_element, "cylinder", id="body")
+        le.SubElement(cylinder, "centre-of-bottom-base",x="0.0",y=str(y0),z="0.0")
+        le.SubElement(cylinder, "axis", x="0.0", y="1.0", z="0.0")
+        le.SubElement(cylinder, "radius", val=str(radius))
+        le.SubElement(cylinder, "height", val=str(height))
+        hex_1 = le.SubElement(type_element, "hexahedron", id="hole1")
+        le.SubElement(hex_1, "left-front-bottom-point",
+                      x=str(x0_o),y=str(y0),z=str(-radius))
+        le.SubElement(hex_1, "left-front-top-point",
+                     x=str(x0_o),y=str(-y0),z=str(-radius))
+        le.SubElement(hex_1, "left-back-bottom-point",
+                      x=str(-x0_o),y=str(y0),z=str(-radius))
+        le.SubElement(hex_1, "left-back-top-point",
+                      x=str(-x0_o),y=str(-y0),z=str(-radius))
+        le.SubElement(hex_1, "right-front-bottom-point",
+                      x=str(x0_i),y=str(y0),z=str(0))
+        le.SubElement(hex_1, "right-front-top-point",
+                      x=str(x0_i),y=str(-y0),z=str(0))
+        le.SubElement(hex_1, "right-back-bottom-point",
+                      x=str(-x0_i),y=str(y0),z=str(0))
+        le.SubElement(hex_1, "right-back-top-point",
+                      x=str(-x0_i),y=str(-y0),z=str(0))
+        hex_2 = le.SubElement(type_element, "hexahedron", id="hole2")
+        le.SubElement(hex_2, "right-front-bottom-point",
+                     x=str(x0_o),y=str(y0),z=str(radius))
+        le.SubElement(hex_2, "right-front-top-point",
+                      x=str(x0_o),y=str(-y0),z=str(radius))
+        le.SubElement(hex_2, "right-back-bottom-point",
+                      x=str(-x0_o),y=str(y0),z=str(radius))
+        le.SubElement(hex_2, "right-back-top-point",
+                      x=str(-x0_o),y=str(-y0),z=str(radius))
+        le.SubElement(hex_2, "left-front-bottom-point",
+                      x=str(x0_i),y=str(y0),z=str(0))
+        le.SubElement(hex_2, "left-front-top-point",
+                      x=str(x0_i),y=str(-y0),z=str(0))
+        le.SubElement(hex_2, "left-back-bottom-point",
+                      x=str(-x0_i),y=str(y0),z=str(0))
+        le.SubElement(hex_2, "left-back-top-point",
+                      x=str(-x0_i),y=str(-y0),z=str(0))              
+        le.SubElement(type_element, "algebra", val="body (# hole1) (# hole2)")
 
     def addCorrelationChopper(self, name, center=(-0.28, 0.0),
                               radius=0.3, height=0.02,
