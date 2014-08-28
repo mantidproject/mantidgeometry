@@ -13,6 +13,7 @@ python in6_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > ~/git/manti
 '''
 
 import sys
+import math
 import numpy as np
 from collections import Counter
 from time import gmtime, strftime
@@ -61,7 +62,8 @@ def printHeader():
 
     <!--MONITORS-->
     <component type="monitors" idlist="monitors">
-      <location/>
+      <location/>        thisId += 1
+
     </component>
     <type name="monitors">
       <component type="monitor">
@@ -78,7 +80,8 @@ def printHeader():
     <!-- Sample position -->
     <component type="sample-position">
       <location y="0.0" x="0.0" z="0.0" />
-    </component>
+    </component>        thisId += 1
+
     <type name="sample-position" is="SamplePos" />"""
 
 def printDetectors():
@@ -104,22 +107,31 @@ def printDetectors():
     for bankId, theta, detsPerBank in zip(bankIDs, uniqueAngles, numberOfDetsPerBank):
         print """<type name="bank_%d">""" % (bankId)
         print """  <component type="pack">"""
+        middle_x = radius * math.sin(math.radians(theta))
+        middle_y = 0
+        middle_z = radius * math.cos(math.radians(theta))
         if detsPerBank == 1:
-            print """<location r="%.3f" t="%.3f" p="%.3f" name="det%d"></location>"""  % (radius,-theta,0,thisId) #
+            print """<location x="%.3f" y="%.3f" z="%.3f" name="det%d"></location>"""  % (-middle_x, middle_y, middle_z,thisId) # to the right, so minus on x axis
+            thisId += 1
         elif detsPerBank == 3:
             #
-            # TODO:
-            # 2theta is correct but the positions in space are wrong! Correct this!
-            print """<location r="%.3f" t="%.3f" p="%.3f" name="det%d" />"""  % (radius,-theta,-angle,thisId) #
+            up_z = middle_z
+            up_y = radius * math.sin(math.radians(angle))
+            up_x_square =  middle_x**2 - up_y**2
+            if (up_x_square >= 0.0):
+                up_x = math.sqrt(up_x_square)
+            else:
+                up_x = 0
+                print "BOUH"
+            print """<location x="%.3f" y="%.3f" z="%.3f" name="det%d" />"""  % (-up_x, up_y, up_z,thisId) # to the right, so minus on x axis
             thisId += 1
-            print """<location r="%.3f" t="%.3f" p="%.3f" name="det%d" />"""  % (radius,-theta,0,thisId) #
+            print """<location x="%.3f" y="%.3f" z="%.3f" name="det%d" />"""  % (-middle_x, middle_y, middle_z, thisId)
             thisId += 1
-            print """<location r="%.3f" t="%.3f" p="%.3f" name="det%d" />"""  % (radius,-theta,angle,thisId) #
+            print """<location x="%.3f" y="%.3f" z="%.3f" name="det%d" />"""  % (-up_x,-up_y, up_z,thisId)
             thisId += 1
 
         else :
             sys.stderr.write("Number of detectors per bank is invalid: " + str(detsPerBank))
-        thisId += 1
         print """  </component>"""
         print """</type>"""
 
