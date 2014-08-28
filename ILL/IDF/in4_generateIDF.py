@@ -38,7 +38,7 @@ numberOfDetectors = len(azimuthalAngle)
 numberOfSimpleDets = len(simpleDetAngle)
 firstDetectorId = 1
 radius = 2.0  # meters
-angle = 16  # degrees # vertical detection angle
+angle = 12.6  # degrees # vertical detection angle
 # Don't touch!
 uniqueDic = Counter(azimuthalAngle)
 numberOfBanks = len(uniqueDic)
@@ -106,7 +106,7 @@ def printDetectors():
     print """ <component type="rosace"><location/></component>"""
     print """</type>"""
     
-    print "<!-- Definition of every bank -->"
+    print "<!-- Definition of the simple tubes -->"
     
     print """<type name="simple_detectors">"""
     print """  <component type="pack">"""
@@ -124,16 +124,29 @@ def printDetectors():
             sys.stderr.write("Invalid Loc: " + str(loc)) 
             sys.exit(0)
         #print """<location r="%f" t="%f" p="%f" name="det%d"></location>"""  % (radius,theta,p,detId)
-        thetaRadians = theta * np.pi / 180 - np.pi;
-        angleRadians = p * np.pi / 180 - np.pi / 2;
-        z = radius * np.sin(angleRadians) * np.cos(thetaRadians)
-        x = radius * np.sin(angleRadians) * np.sin(thetaRadians)
-        y = radius * np.cos(angleRadians)
-        print """<location x="%f" y="%f" z="%f" name="det%d"></location>""" % (x, y, z, detId)  #
+        
+        
+        thetaRadians = theta * np.pi / 180
+        phiRadians = p * np.pi / 180
+        
+        #plane equation
+        z = np.cos(thetaRadians) * radius
+        y = np.sin(phiRadians) * radius
+        
+        xsq =  - ((y**2) + (z**2)) + (radius**2)
+        x = np.sqrt(xsq)
+        
+        if thetaRadians > 0:
+            print """<location x="%f" y="%f" z="%f" name="det%d"></location>""" % (x, y, z, detId)  #
+        else :
+            print """<location x="%f" y="%f" z="%f" name="det%d"></location>""" % (-x, y, z, detId)  #
         detId+=1
+        
     print """  </component>"""
     print """</type>"""
     
+    
+    print "<!-- Rosace -->"
     
     print """<type name="rosace">"""
     print """  <component type="point">"""
