@@ -126,7 +126,7 @@ def printDetectors():
             up_angle = - math.degrees(math.atan2(up_y, up_x))
             detector_angle = - theta
             # Three step rotation, also using <facing> feature  
-            print """<location x="%.3f" y="%.3f" z="%.3f" rot="%.3f" axis-x="0.0" axis-y="1.0" axis-z="0.0" fname="det%d" >"""  % (-up_x, up_y, up_z, detector_angle,thisId) # to the right, so minus on x axis
+            print """<location x="%.3f" y="%.3f" z="%.3f" rot="%.3f" axis-x="0.0" axis-y="1.0" axis-z="0.0" name="det%d" >"""  % (-up_x, up_y, up_z, detector_angle,thisId) # to the right, so minus on x axis
             print """<facing x="0" y="0" z="0"/>"""
             print """<rot val="%.3f" axis-x="%.3f" axis-y="%.3f" axis-z="%.3f" /> """ % (up_angle, -up_x, up_y, up_z)
             print """</location>"""
