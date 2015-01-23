@@ -260,6 +260,7 @@ class MantidGeom:
     def makeIdListElement(self, name):
         return le.SubElement(self.__root, "idlist", idname=name)
 
+    
     def addDetector(self, x, y, z, rot_x, rot_y, rot_z, name, comp_type, usepolar=None, facingSample=False,
                     neutronic=False, nx=None,  ny=None, nz=None):
         """
@@ -354,7 +355,8 @@ class MantidGeom:
             try:
               rf=float(r)               
               le.SubElement(log, "value", **{"val":r})    
-            except:  
+            except Exception as e:
+              print "Excpetion: ", str(e)
               processed=split(str(r))
               if len(processed)==1:
                 le.SubElement(log, "logfile", **{"id":r})
@@ -483,14 +485,15 @@ class MantidGeom:
                     le.SubElement(location_element, "neutronic", y="0.0")
 
     def addCylinderPixel(self, name, center_bottom_base, axis, pixel_radius,
-                         pixel_height, is_type="detector"):
+                         pixel_height, is_type="detector", algebra="cyl-approx"):
         """
         Add a cylindrical pixel. The center_bottom_base is a 3-tuple of radius,
         theta, phi. The axis is a 3-tuple of x, y, z.
         """
         type_element = le.SubElement(self.__root, "type",
                                      **{"name":name, "is":is_type})
-        cylinder = le.SubElement(type_element, "cylinder", id="cyl-approx")
+        #cylinder = le.SubElement(type_element, "cylinder", id="cyl-approx")
+        cylinder = le.SubElement(type_element, "cylinder", id=algebra)
         le.SubElement(cylinder, "centre-of-bottom-base",
                       r=str(center_bottom_base[0]),
                       t=str(center_bottom_base[1]),
@@ -499,7 +502,11 @@ class MantidGeom:
                       z=str(axis[2]))
         le.SubElement(cylinder, "radius", val=str(pixel_radius))
         le.SubElement(cylinder, "height", val=str(pixel_height))
-        le.SubElement(type_element, "algebra", val="cyl-approx")
+        #le.SubElement(type_element, "algebra", val="cyl-approx")
+        le.SubElement(type_element, "algebra", val=algebra)
+
+        return
+
 
     def addCuboidPixel(self, name, lfb_pt, lft_pt, lbb_pt, rfb_pt,
                       is_type="detector", shape_id="shape"):
