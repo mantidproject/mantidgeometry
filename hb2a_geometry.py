@@ -17,8 +17,7 @@ HB2AParam = {
     }
 
 NUM_HB2A_DETS = 44
-            
-
+INST_NAME = 'HB2A'
 
 def importGapFile(gapfilename):
     """ Import detector gap file from a file
@@ -65,13 +64,17 @@ def importGapFile(gapfilename):
 def main(argv):
     """ Main
     """
-    if len(argv) < 3:
+    if len(argv) != 1 and len(argv) != 3:
         print "Create HB2A IDF.  Run as: %s [IDF file name] [Gap file name]" % (
             argv[0])
         exit(2)
-    
-    outidfname = argv[1]
-    gapfilename = argv[2]
+
+    if len(argv) == 3:
+        outidfname = argv[1]
+        gapfilename = argv[2]
+    else:
+        outidfname = INST_NAME+"_Definition.xml"
+        gapfilename = 'HFIR/HB2A_exp0379__gaps.txt'
     
     # import detector gap (delta-2theta) file
     gapdict = importGapFile(gapfilename)
