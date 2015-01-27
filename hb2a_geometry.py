@@ -31,7 +31,7 @@ def importGapFile(gapfilename):
     # import file
     try:
         gfile = open(gapfilename, "r")
-        lines = gfile.close()
+        lines = gfile.readlines()
         gfile.close()
     except IOError as e:
         print "Unable to open or read file %s." % (gapfilename)
@@ -39,7 +39,7 @@ def importGapFile(gapfilename):
 
     # parse file
     gapdict = {}
-    idetpgap = 1
+    idetgap = 1
     for line in lines:
         line = line.strip()
         if len(line) == 0:
@@ -145,7 +145,6 @@ def main(argv):
     hb2a.makeCylinderPixel(root=el_pixel, center_bottom_base=[0.0,0.0,0.0], axis=[0.,0.,0.],
         pixel_radius=0.00127, pixel_height=0.0114341328125, algebra='shape')
     """
-    
     
     # write geometry
     hb2a.showGeom()
