@@ -15,14 +15,51 @@ HB2AParam = {
     "moderator_distance": 2.0,
     "sample_position": [0., 0., 0.],
     }
+
+NUM_HB2A_DETS = 44
             
 
 
 def importGapFile(gapfilename):
+    """ Import detector gap file from a file
+
+    The gap file is a column file.  
+    A new column is added as a new calibration is made on detectors' gaps.
+
+    The right most column is always taken as the detectors' gaps to import. 
     """
-    """
-    
-    return {}
+    # import file
+    try:
+        gfile = open(gapfilename, "r")
+        lines = gfile.close()
+        gfile.close()
+    except IOError as e:
+        print "Unable to open or read file %s." % (gapfilename)
+        raise e
+
+    # parse file
+    gapdict = {}
+    idetpgap = 1
+    for line in lines:
+        line = line.strip()
+        if len(line) == 0:
+            continue
+
+        terms = line.split()
+        try: 
+            tmpgap = float(terms[-1])
+            tmpdetname = 'anode%d' % (idetgap)
+            gapdict[tmpdetname] = tmpgap
+            idetgap += 1
+        except ValueError as e:
+            print e
+    # ENDFOR (line)
+
+    if len(gapdict.keys()) != NUM_HB2A_DETS:
+        raise NotImplementedError("The number of gaps is %d. It is not correct for HB2A which has %d detectors."
+                % (len(gapdict.keys()), NUM_HB2A_DETS))
+
+    return gapdict
 
 
 def main(argv):
@@ -83,9 +120,11 @@ def main(argv):
     
     el_dets = hb2a.makeTypeElement(name="bank_uniq") #, extra_attrs=bankattrib)
     el_tube = hb2a.makeDetectorElement(name="standard_tube", root=el_dets)
-    
+   
+    twotheta = 0.0
     for i in xrange(1, 45):
-        twotheta = 0.0 + float(i)*2.6
+        pixel_id = "anode%d" % (i)
+        twotheta += gapdict[pixel_id]
         hb2a.addLocationPolar(el_tube, r='2.00', theta=str(twotheta), phi='0.0', name='tube_%d'%(i))
         
     # add single detector/pixel information
@@ -106,7 +145,6 @@ def main(argv):
     hb2a.makeCylinderPixel(root=el_pixel, center_bottom_base=[0.0,0.0,0.0], axis=[0.,0.,0.],
         pixel_radius=0.00127, pixel_height=0.0114341328125, algebra='shape')
     """
-    
     
     
     # write geometry
