@@ -47,6 +47,11 @@ if __name__ == "__main__":
     det.addComment("SOURCE AND SAMPLE POSITION")
     det.addModerator(-20.0114)
     det.addSamplePosition()
+    det.addComment("CHOPPERS")
+    det.addChopper("t0-chopper",-10.51)
+    det.addVerticalAxisT0Chopper("t0-chopper")
+    det.addChopper("fermi-chopper",-2.00180)
+    det.addFermiChopper("fermi-chopper")
     det.addComment("MONITORS")
     det.addMonitors(names=["monitor1", "monitor2"],
                     distance=["-1.77808", "8.99184"])

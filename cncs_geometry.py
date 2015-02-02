@@ -27,12 +27,12 @@ if __name__ == "__main__":
     try:
         geom_input_file = sys.argv[1]
     except IndexError:
-        geom_input_file = "SNS/CNCS/CNCS_geom_67317-.txt"
+        geom_input_file = "SNS/CNCS/CNCS_geom_92688-.txt"
         
     # Set header information
     comment = "Created by Michael Reuter"
     # Time needs to be in UTC?
-    valid_from = "2013-08-14 18:30:00"
+    valid_from = "2014-08-08 00:00:00"
 
     # Get geometry information file
     inst_name = "CNCS"

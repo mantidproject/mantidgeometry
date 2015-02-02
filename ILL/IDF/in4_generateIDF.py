@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 '''
 Created on Feb 22, 2013
 
@@ -5,7 +7,8 @@ Created on Feb 22, 2013
 
 Run as:
 
-python ~/workspace/PyTests/src/in4_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > ~/git/Mantid/Code/Mantid/instrument/IN4_Definition.xml 
+cd ~/git/mantidgeometry/ILL/IDF
+python in4_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > ~/git/mantid/Code/Mantid/instrument/IN4_Definition.xml 
 
 IN4
 300 simple  dets 
@@ -35,7 +38,7 @@ numberOfDetectors = len(azimuthalAngle)
 numberOfSimpleDets = len(simpleDetAngle)
 firstDetectorId = 1
 radius = 2.0  # meters
-angle = 16  # degrees # vertical detection angle
+angle = 12.6  # degrees # vertical detection angle
 # Don't touch!
 uniqueDic = Counter(azimuthalAngle)
 numberOfBanks = len(uniqueDic)
@@ -50,7 +53,8 @@ numberOfDetsPerBank = numberOfDetsPerBank[ ::-1 ]
 def printHeader():
     print """<?xml version="1.0" encoding="UTF-8"?>
     <!-- For help on the notation used to specify an Instrument Definition File see http://www.mantidproject.org/IDF -->
-    <instrument name="IN4" valid-from="1900-01-31 23:59:59"
+    <instrument xmlns="http://www.mantidproject.org/IDF/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://www.mantidproject.org/IDF/1.0 Schema/IDFSchema.xsd" name="IN4" valid-from="1900-01-31 23:59:59"
     valid-to="2100-01-31 23:59:59" last-modified="%s">""" % strftime("%Y-%m-%d %H:%M:%S", gmtime())
     print """<!-- Author: ricardo.leal@ill.fr -->"""
     print """<defaults>
@@ -69,6 +73,16 @@ def printHeader():
       <location z="-2" />
     </component>
     <type name="moderator" is="Source"></type>
+
+    <!--MONITORS-->
+    <component type="monitors" idlist="monitors">
+      <location/>
+    </component>
+    <type name="monitors">
+      <component type="monitor">
+        <location z="-0.5" name="monitor1"/>
+      </component>
+    </type>
 
     <!-- Sample position -->
     <component type="sample-position">
@@ -92,7 +106,7 @@ def printDetectors():
     print """ <component type="rosace"><location/></component>"""
     print """</type>"""
     
-    print "<!-- Definition of every bank -->"
+    print "<!-- Definition of the simple tubes -->"
     
     print """<type name="simple_detectors">"""
     print """  <component type="pack">"""
@@ -110,16 +124,29 @@ def printDetectors():
             sys.stderr.write("Invalid Loc: " + str(loc)) 
             sys.exit(0)
         #print """<location r="%f" t="%f" p="%f" name="det%d"></location>"""  % (radius,theta,p,detId)
-        thetaRadians = theta * np.pi / 180 - np.pi;
-        angleRadians = p * np.pi / 180 - np.pi / 2;
-        z = radius * np.sin(angleRadians) * np.cos(thetaRadians)
-        x = radius * np.sin(angleRadians) * np.sin(thetaRadians)
-        y = radius * np.cos(angleRadians)
-        print """<location x="%f" y="%f" z="%f" name="det%d"></location>""" % (x, y, z, detId)  #
+        
+        
+        thetaRadians = theta * np.pi / 180
+        phiRadians = p * np.pi / 180
+        
+        #plane equation
+        z = np.cos(thetaRadians) * radius
+        y = np.sin(phiRadians) * radius
+        
+        xsq =  - ((y**2) + (z**2)) + (radius**2)
+        x = np.sqrt(xsq)
+        
+        if thetaRadians > 0:
+            print """<location x="%f" y="%f" z="%f" name="det%d"></location>""" % (x, y, z, detId)  #
+        else :
+            print """<location x="%f" y="%f" z="%f" name="det%d"></location>""" % (-x, y, z, detId)  #
         detId+=1
+        
     print """  </component>"""
     print """</type>"""
     
+    
+    print "<!-- Rosace -->"
     
     print """<type name="rosace">"""
     print """  <component type="point">"""
@@ -135,7 +162,24 @@ def printDetectors():
     print """</type>"""
     
 
-    
+def printMonitors():
+    print """<!--MONITOR SHAPE-->
+    <!--FIXME: Do something real here.-->
+    <type is="monitor" name="monitor">
+    <cylinder id="cyl-approx">
+    <centre-of-bottom-base y="0.0" x="0.0" z="0.0"/>
+    <axis y="0.0" x="0.0" z="1.0"/>
+    <radius val="0.01"/>
+    <height val="0.03"/>
+    </cylinder>
+    <algebra val="cyl-approx"/>
+    </type>
+
+    <!--MONITOR IDs-->
+    <idlist idname="monitors">
+    <id val="0"/>
+    </idlist>
+    """     
 
  
 
@@ -168,10 +212,11 @@ def printEnd():
     
 
 if __name__ == '__main__':
-    printHeader();
-    printDetectors();
-    printPixels();
-    printEnd();
+    printHeader()
+    printDetectors()
+    printMonitors()
+    printPixels()
+    printEnd()
     
     
      

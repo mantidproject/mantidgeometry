@@ -1,18 +1,16 @@
 #!/usr/bin/python
 
-INST_NAME = "ARCS"
-NUM_PIXELS_PER_TUBE = 128
-NUM_TUBES_PER_BANK = 8
-SMALL_TOP_TUBE_SIZE = 0.2885 #meter
-SMALL_BOTTOM_TUBE_SIZE = 0.3925 #meter
-LARGE_TUBE_SIZE = 1.00608 #meter
-TUBE_WIDTH = 0.0254 #meter
-AIR_GAP_WIDTH = 0.002032 #meter
+INST_NAME = "CORELLI"
+NUM_PIXELS_PER_TUBE = 256
+NUM_TUBES_PER_BANK = 16
+TUBE_SIZE = 0.8392 #meter
+TUBE_WIDTH = 0.0127 #meter
+AIR_GAP_WIDTH = 0.00127 #meter
 PIXELS_PER_BANK = NUM_TUBES_PER_BANK * NUM_PIXELS_PER_TUBE
 CONVERT_TO_METERS = 1000.0 #x,y,z in millimeters
 # Detector Parameters
-TUBE_PRESSURE = ("tube_pressure", 10.0, "atm")
-TUBE_THICKNESS = ("tube_thickness", 0.0008, "metre")
+TUBE_PRESSURE = ("tube_pressure", 15.0, "atm")
+TUBE_THICKNESS = ("tube_thickness", 0.0005, "metre")
 TUBE_TEMPERATURE = ("tube_temperature", 290.0, "K")
 
 def convert(value):
@@ -26,12 +24,12 @@ if __name__ == "__main__":
     try:
         geom_input_file = sys.argv[1]
     except IndexError:
-        geom_input_file = "SNS/ARCS/ARCS_geom_20121011-.txt"
+        geom_input_file = "SNS/CORELLI/CORELLI_geom.txt"
 
     # Set header information
-    comment = "Created by Michael Reuter"
+    comment = "Created by Ross Whitfield"
     # Time needs to be in UTC?
-    valid_from = "2012-10-11 12:54:01"
+    valid_from = "2014-02-25 00:00:00"
 
     # Get geometry information file
     detinfo = readFile(geom_input_file)
@@ -41,16 +39,22 @@ if __name__ == "__main__":
     det = MantidGeom(INST_NAME, comment=comment, valid_from=valid_from)
     det.addSnsDefaults(default_view="cylindrical_y")
     det.addComment("SOURCE AND SAMPLE POSITION")
-    det.addModerator(-13.60)
+    det.addCuboidModerator(-20.00)
     det.addSamplePosition()
-    det.addComment("CHOPPERS")
-    det.addChopper("t0-chopper",-4.83)
-    det.addVerticalAxisT0Chopper("t0-chopper")
-    det.addChopper("fermi-chopper",-1.99)
-    det.addFermiChopper("fermi-chopper")
     det.addComment("MONITORS")
-    det.addMonitors(names=["monitor1", "monitor2"],
-                    distance=["-1.769", "4.9"])
+    det.addMonitors(names=["monitor1", "monitor2", "monitor3"],
+                    distance=["-2.046", "-1.948", "4.554"])
+
+    det.addChopper("single-disk-chopper",-7.669527)
+    det.addSingleDiskChopper("single-disk-chopper")
+
+    det.addChopper("double-disk-chopper",-11.79995)
+    det.addDoubleDiskChopper("double-disk-chopper")
+
+    choppersequence="4.185 2.823 4.267 4.248 2.816 2.809 1.388 7.113 1.406 1.41 2.816 4.251 1.403 4.244 5.646 1.43 1.353 1.424 1.429 1.419 1.401 2.803 1.425 2.821 4.262 1.386 7.098 1.403 4.221 4.242 1.332 2.856 4.23 1.437 4.214 7.054 1.423 2.822 2.841 1.38 1.45 2.783 1.446 7.036 1.429 1.384 1.451 1.389 2.847 5.611 1.45 1.379 1.418 1.414 2.866 1.354 1.437 4.225 5.643 2.803 1.444 1.411 2.803 8.488 1.38 5.678 2.838 1.393 2.838 1.411 2.823 4.238 1.379 2.833 2.821 1.402 1.423 1.4 1.421 1.412 8.471 1.415 2.865 1.394 2.805 2.83 4.208 2.851 1.383 2.854 1.299 1.557 4.136 5.692 4.213 1.437 1.345 2.867 2.831 1.426 9.876 4.296 1.388 1.392 1.438 1.376 2.833 1.415 1.42 1.411 1.444 2.789 2.86 5.592 7.069 2.876 9.821 1.417 1.449 1.404 1.41 1.431 1.406 5.642 1.411 2.818 1.405 2.85"
+    det.addChopper("correlation-chopper",-2.000653)
+    det.addCorrelationChopper("correlation-chopper",sequence=choppersequence)
+    det.addDetectorStringParameters("correlation-chopper",("sequence",choppersequence))
 
     row_id = ""
     row_id_list = []
@@ -70,48 +74,22 @@ if __name__ == "__main__":
         xpos = convert(detinfo["Xsci"][i])
         ypos = convert(detinfo["Ysci"][i])
         zpos = convert(detinfo["Zsci"][i])
-        det_type = "eightpack"
+        det_type = "sixteenpack"
         
-        if location.startswith("M"):
-            if location.endswith("A"):
-                det_type = "eightpack-top"
-            elif location.endswith("B"):
-                det_type = "eightpack-bottom"
-
         det.addDetector(xpos, ypos, zpos, 
                         detinfo["Xrot_sci"][i], detinfo["Yrot_sci"][i], detinfo["Zrot_sci"][i],
                         location, det_type)
 
-    det.addComment("STANDARD 8-PACK")
-    det.addNPack("eightpack", NUM_TUBES_PER_BANK, TUBE_WIDTH, AIR_GAP_WIDTH)
-    det.addComment("8-PACK ABOVE BEAMSTOP")
-    det.addNPack("eightpack-top", NUM_TUBES_PER_BANK, TUBE_WIDTH,
-                 AIR_GAP_WIDTH, type_name="tube-top")
-    det.addComment("8-PACK BELOW BEAMSTOP")
-    det.addNPack("eightpack-bottom", NUM_TUBES_PER_BANK, TUBE_WIDTH,
-                 AIR_GAP_WIDTH, type_name="tube-bottom")
+    det.addComment("16-PACK")
+    det.addNPack("sixteenpack", NUM_TUBES_PER_BANK, TUBE_WIDTH, AIR_GAP_WIDTH)
 
-    det.addComment("STANDARD 128 PIXEL TUBE")
-    det.addPixelatedTube("tube", NUM_PIXELS_PER_TUBE, LARGE_TUBE_SIZE)
-    det.addComment("SMALL TOP 128 PIXEL TUBE")
-    det.addPixelatedTube("tube-top", NUM_PIXELS_PER_TUBE, SMALL_TOP_TUBE_SIZE,
-                         type_name="pixel-top")
-    det.addComment("SMALL BOTTOM 128 PIXEL TUBE")
-    det.addPixelatedTube("tube-bottom", NUM_PIXELS_PER_TUBE,
-                         SMALL_BOTTOM_TUBE_SIZE, type_name="pixel-bottom")
+    det.addComment("STANDARD 256 PIXEL TUBE")
+    det.addPixelatedTube("tube", NUM_PIXELS_PER_TUBE, TUBE_SIZE)
 
-    det.addComment("PIXEL FOR STANDARD 128 PIXEL TUBE")
+    det.addComment("PIXEL FOR STANDARD 256 PIXEL TUBE")
     det.addCylinderPixel("pixel", (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
                          (TUBE_WIDTH/2.0),
-                         (LARGE_TUBE_SIZE/NUM_PIXELS_PER_TUBE))
-    det.addComment("PIXEL FOR SMALL TOP 128 PIXEL TUBE")
-    det.addCylinderPixel("pixel-top", (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
-                         (TUBE_WIDTH/2.0),
-                         (SMALL_TOP_TUBE_SIZE/NUM_PIXELS_PER_TUBE))
-    det.addComment("PIXEL FOR SMALL BOTTOM 128 PIXEL TUBE")
-    det.addCylinderPixel("pixel-bottom", (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
-                         (TUBE_WIDTH/2.0),
-                         (SMALL_BOTTOM_TUBE_SIZE/NUM_PIXELS_PER_TUBE))
+                         (TUBE_SIZE/NUM_PIXELS_PER_TUBE))
 
     det.addComment("MONITOR SHAPE")
     det.addComment("FIXME: Do something real here.")
@@ -133,7 +111,7 @@ if __name__ == "__main__":
         det.addDetectorIds(row_id_str, id_list)
 
     det.addComment("MONITOR IDs")
-    det.addMonitorIds(["-1", "-2"])
+    det.addMonitorIds(["-1", "-2", "-3"])
 
     det.addComment("DETECTOR PARAMETERS")
     for row_id in row_id_list:
