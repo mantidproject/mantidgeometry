@@ -607,13 +607,24 @@ class MantidGeom:
             par = le.SubElement(complink, "parameter", name=arg[0], type="string")
             le.SubElement(par, "value", val=str(arg[1]))
 
-    def addChopper(self, component_name, distance):
+    def addChopper(self, component_name, distance, *args):
         """
         Add chopper position.
+        *args are for attaching logfile to the chopper component
+              should contain list of parameter name, logfile string
+              and optionally extractSingleValueAs (default mean)
         """
         component = le.SubElement(self.__root, "component", type = component_name)
         distance = float(distance)
         le.SubElement(component, "location", z=str(distance))
+        for arg in args:
+            log = le.SubElement(component, "parameter", name=arg[0])
+            if len(arg) == 2:
+                le.SubElement(log, "logfile", id=arg[1])
+            elif len(arg) == 3:
+                le.SubElement(log, "logfile", **{"id":arg[1], "extract-single-value-as":arg[2]})
+            else:
+                raise IndexError("Will not be able to parse:", arg)
 
     def addEmptyChopper(self,component_name, distance, is_type="chopper"):
         """
