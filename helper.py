@@ -5,7 +5,7 @@ INCH_TO_METRE = 0.0254
 DEG_TO_RAD = 0.0174533 # degrees to radians according to idl
 XMLNS = "http://www.mantidproject.org/IDF/1.0"
 XSI = "http://www.w3.org/2001/XMLSchema-instance"
-SCHEMA_LOC = "http://www.mantidproject.org/IDF/1.0 Schema/IDFSchema.xsd"
+SCHEMA_LOC = "http://www.mantidproject.org/IDF/1.0 http://schema.mantidproject.org/IDF/1.0/IDFSchema.xsd"
 
 class MantidGeom:
 
