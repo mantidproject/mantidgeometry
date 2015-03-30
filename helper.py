@@ -637,7 +637,7 @@ class MantidGeom:
                       **{"name":component_name, "is":is_type})
 
     def addSingleDiskChopper(self, name, center=(-0.17, 0.0),
-                             hole=(0.02,0.02), radius=0.2,
+                             hole=(0.04,0.02), radius=0.2,
                              height=0.02, is_type="chopper"):
         """
         Add a single disk chopper. The chopper center and hole dimensions
@@ -664,7 +664,7 @@ class MantidGeom:
         
 
     def addDoubleDiskChopper(self, name, center=(0.17, 0.0),
-                             hole=(0.03,0.015), radius=0.2,
+                             hole=(0.04,0.02), radius=0.2,
                              height=0.02, separation=0.015, is_type="chopper"):
         """
         Add a double disk chopper. The chopper center and hole dimensions
@@ -678,14 +678,14 @@ class MantidGeom:
         le.SubElement(cylinder1, "axis", x="0.0", y="0.0", z="1.0")
         le.SubElement(cylinder1, "radius", val=str(radius))
         le.SubElement(cylinder1, "height", val=str(height))
-        cuboid1 = le.SubElement(type_element, "cuboid", id="hole1")
-        le.SubElement(cuboid1, "left-front-bottom-point",
+        cuboid = le.SubElement(type_element, "cuboid", id="hole")
+        le.SubElement(cuboid, "left-front-bottom-point",
                       x=str(hole[0]),y=str(-hole[1]),z="0.0")
-        le.SubElement(cuboid1, "left-front-top-point",
-                      x=str(hole[0]),y=str(-hole[1]),z=str(height))
-        le.SubElement(cuboid1, "left-back-bottom-point",
+        le.SubElement(cuboid, "left-front-top-point",
+                      x=str(hole[0]),y=str(-hole[1]),z=str(height*2+separation))
+        le.SubElement(cuboid, "left-back-bottom-point",
                       x=str(-hole[0]),y=str(-hole[1]),z="0.0")
-        le.SubElement(cuboid1, "right-front-bottom-point",
+        le.SubElement(cuboid, "right-front-bottom-point",
                       x=str(hole[0]),y=str(hole[1]),z="0.0")
         cylinder2 = le.SubElement(type_element, "cylinder", id="body2")
         le.SubElement(cylinder2, "centre-of-bottom-base",x=str(-center[0]),
@@ -693,17 +693,8 @@ class MantidGeom:
         le.SubElement(cylinder2, "axis", x="0.0", y="0.0", z="1.0")
         le.SubElement(cylinder2, "radius", val=str(radius))
         le.SubElement(cylinder2, "height", val=str(height))
-        cuboid2 = le.SubElement(type_element, "cuboid", id="hole2")
-        le.SubElement(cuboid2, "left-front-bottom-point",
-                      x=str(hole[0]),y=str(-hole[1]),z=str(height+separation))
-        le.SubElement(cuboid2, "left-front-top-point",
-                      x=str(hole[0]),y=str(-hole[1]),z=str(height*2+separation))
-        le.SubElement(cuboid2, "left-back-bottom-point",
-                      x=str(-hole[0]),y=str(-hole[1]),z=str(height+separation))
-        le.SubElement(cuboid2, "right-front-bottom-point",
-                      x=str(hole[0]),y=str(hole[1]),z=str(height+separation))
-        le.SubElement(type_element, "algebra", val="body1 (# hole1) : body2 (# hole2)")
-    
+        le.SubElement(type_element, "algebra", val="(body1 : body2) (#hole)")
+
     def addFermiChopper(self, name, radius=0.05, height=0.065,width=0.061,is_type="chopper"):
         """
          Add a Fermi chopper 
@@ -773,7 +764,7 @@ class MantidGeom:
                       x=str(-x0_i),y=str(y0),z=str(0))
         le.SubElement(hex_2, "left-back-top-point",
                       x=str(-x0_i),y=str(-y0),z=str(0))              
-        le.SubElement(type_element, "algebra", val="body (# hole1) (# hole2)")
+        le.SubElement(type_element, "algebra", val="body (# (hole1 : hole2))")
 
     def addCorrelationChopper(self, name, center=(-0.28, 0.0),
                               radius=0.3, height=0.02,
@@ -789,7 +780,7 @@ class MantidGeom:
         le.SubElement(cylinder, "centre-of-bottom-base",x=str(center[0]),
                       y=str(center[1]),z="0.0")
         le.SubElement(cylinder, "axis", x="0.0", y="0.0", z="1.0")
-        le.SubElement(cylinder, "radius", val=str(radius))
+        le.SubElement(cylinder, "radius", val=str(radius*0.85))
         le.SubElement(cylinder, "height", val=str(height))
         sequence=map(float,sequence.split())
         n=len(sequence)
@@ -798,13 +789,13 @@ class MantidGeom:
         hexahedrons=[0]*n
         for i in range(n/2):
             hexahedrons[i] = le.SubElement(type_element, "hexahedron", id="hole"+str(i))
-            hole_list+=" (# hole"+str(i)+')'
-            angle_start=sum(sequence[:i*2-1])*math.pi*2./s
-            angle_end=sum(sequence[:i*2])*math.pi*2./s
-            xx1=math.sin(angle_start)*radius*1.1
-            xx2=math.sin(angle_end)*radius*1.1
-            yy1=math.cos(angle_start)*radius*1.1
-            yy2=math.cos(angle_end)*radius*1.1
+            hole_list+="hole"+str(i)+" : "
+            angle_start=sum(sequence[:i*2])*math.pi*2./s
+            angle_end=sum(sequence[:i*2+1])*math.pi*2./s
+            xx1=math.sin(angle_start)*radius
+            xx2=math.sin(angle_end)*radius
+            yy1=math.cos(angle_start)*radius
+            yy2=math.cos(angle_end)*radius
             le.SubElement(hexahedrons[i], "left-back-bottom-point",
                           x=str(xx1+center[0]),
                           y=str(yy1+center[1]),
@@ -837,4 +828,11 @@ class MantidGeom:
                           x=str(xx2*0.8+center[0]),
                           y=str(yy2*0.8+center[1]),
                           z="0.0")
-        le.SubElement(type_element, "algebra", val="body "+hole_list)
+        le.SubElement(type_element, "algebra", val="body : "+hole_list[:-3])
+        box = le.SubElement(type_element, "bounding-box")
+        le.SubElement(box,"x-min",val=str(center[0]-radius))
+        le.SubElement(box,"x-max",val=str(center[0]+radius))
+        le.SubElement(box,"y-min",val=str(center[1]-radius))
+        le.SubElement(box,"y-max",val=str(center[1]+radius))
+        le.SubElement(box,"z-min",val="0.0")
+        le.SubElement(box,"z-max",val=str(height))
