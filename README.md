@@ -1,3 +1,6 @@
+[![Code Climate](https://codeclimate.com/github/mantidproject/mantidgeometry/badges/gpa.svg)](https://codeclimate.com/github/mantidproject/mantidgeometry)
+
+
 This repository is intended to store the python helper scripts for 
 generating the Mantid IDFs. Each instrument is supported in its own
 python script.
