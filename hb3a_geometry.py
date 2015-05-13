@@ -43,80 +43,44 @@ def main(argv):
     
     # add source/moderator
     hb3a.addComment("SOURCE")
-    hb3a.addModerator(HB2AParam["source_distance"])
+    hb3a.addModerator(HB3AParam["source_distance"])
     # add sample
     hb3a.addComment("SAMPLE")
-    hb3a.addSamplePosition(location=HB2AParam["sample_position"])
+    hb3a.addSamplePosition(location=HB3AParam["sample_position"])
 
     # add panel
     hb3a.addComment("PANEL")
+    panel = hb3a.addComponent2(type_name='panel', idstart=1, idfillbyfirst='y', idstepbyrow=256, blank_location=False)
+    hb3a.addLocationRTP2(root=panel, name='bank1', 
+            r = HB3AParam["detector_distance"], 
+            t = '2theta -1.0*2theta+0.0', 
+            p = '0.0',
+            rot_x = None,
+            rot_y = '2theta -1.0*2theta+0.0',
+            rot_z = None)
+
+    xpixels="256" 
+    xstart="-0.078795" 
+    xstep="+0.000618"
+    ypixels="256" 
+    ystart="-0.078795" 
+    ystep="+0.000618"
+    hb3a.addRectangularDetector(None, xpixels, xstart, xstep, ypixels, ystart, ystep)
+
+    # add pixel information
+    hb3a.addCuboidPixel(name="pixel", 
+                        lfb_pt = [-0.000309, -0.000309, 0.0],
+                        lft_pt = [-0.000309,  0.000309, 0.0],
+                        lbb_pt = [-0.000309, -0.000309, -0.0001],
+                        rfb_pt = [ 0.000309, -0.000309, 0.0],
+                        is_type="detector", shape_id="pixel-shape")
 
 
-    
+    hb3a.showGeom()
 
-
-    
-    # add detector idlist
-    hb2a.addComment("Detector list def")
-    hb2a.addDetectorIds(idname="detectors", idlist=[1,44,1]) 
-    
-    hb2a.addComponent(type_name="detectors", idlist="detectors")
-    
-    # detector banks
-    hb2a.addComment("Detector Banks")
-   
-    locationdict = {
-        "r_position": 0,
-        "p_position": 0
-        }
-    
-    typeattrib = {
-        "component": "bank_uniq"
-        }
-    el = hb2a.makeTypeElement(name="detectors") #, extra_attrs=typeattrib)
-    el_bank = hb2a.makeDetectorElement(name="bank_uniq", root=el)
-    
-    hb2a.addLocationRTP(root=el_bank, r='0.', t='rotangle rotangle+0.0', p='0.', rot_x='0.', rot_y='rotangle rotangle+0.0', rot_z='0.') 
-    
-    # add detectors
-    hb2a.addComment("Definition of the unique existent bank (made of tubes)")
-    
-    bankattrib = {
-        "component": "standard_tube"
-        }
-    
-    el_dets = hb2a.makeTypeElement(name="bank_uniq") #, extra_attrs=bankattrib)
-    el_tube = hb2a.makeDetectorElement(name="standard_tube", root=el_dets)
-   
-    twotheta = 0.0
-    for i in xrange(1, 45):
-        pixel_id = "anode%d" % (i)
-        twotheta += gapdict[pixel_id]
-        hb2a.addLocationPolar(el_tube, r='2.00', theta=str(twotheta), phi='0.0', name='tube_%d'%(i))
-        
-    # add single detector/pixel information
-    hb2a.addComment("Definition of standard_tube")
-
-    tubedict = {"outline": "yes"}
-    el_tube = hb2a.makeTypeElement(name='standard_tube', extra_attrs=tubedict)
-    el_pixel = hb2a.makeDetectorElement(name='standard_pixel', root=el_tube)
-    hb2a.addLocation(el_pixel, x=0, y=0, z=0)
-    
-    # add standard_pixel
-    hb2a.addCylinderPixel(name="standard_pixel", center_bottom_base=[0.0,0.0,0.0], axis=[0.,1.,0.],
-        pixel_radius=0.00127, pixel_height=0.0114341328125, algebra='shape')
-    
-    """
-    pixdict = {"is": "detector"}
-    el_pixel = hb2a.makeTypeElement(name="standard_pixel", extra_attrs=pixdict)
-    hb2a.makeCylinderPixel(root=el_pixel, center_bottom_base=[0.0,0.0,0.0], axis=[0.,0.,0.],
-        pixel_radius=0.00127, pixel_height=0.0114341328125, algebra='shape')
-    """
-    
     # write geometry
     hb2a.showGeom()
     hb2a.writeGeom(outidfname)
-    
     
     return    
     

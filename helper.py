@@ -229,7 +229,48 @@ class MantidGeom:
         l=comp
         if blank_location:
           l=le.SubElement(comp, "location")
-        return l        
+        return l    
+
+
+    def addComponent2(self, type_name, idstart, idfillbyfirst, idstepbyrow, root=None, blank_location=True):
+        """
+        Add a component to the XML definition. A blank location is added.
+        """
+        if root is None:
+            root = self.__root
+         
+        comp = le.SubElement(root, "component", type=type_name, idstart=str(idstart),
+                idfillbyfirst=str(idfillbyfirst), idstepbyrow=str(idstepbyrow))
+
+        l=comp
+        if blank_location:
+          l=le.SubElement(comp, "location")
+
+        return l
+
+
+    def addRectangularDetector(self, root, xpixels, xstart, xstep, ypixels, ystart, ystep):
+        """ 
+        """
+        if root is None:
+            root = self.__root
+
+        xpixels = int(xpixels)
+        xstart = float(xstart)
+        xstep = float(xstep)
+
+        ypixels = int(ypixels)
+        ystart = float(ystart)
+        ystep =  float(ystep)
+
+        le.SubElement(root, "type", type="pixel", name="panel", 
+                xpixels=str(xpixels), xstart=str(xstart), xstep=str(xstep),
+                ypixels=str(ypixels), ystart=str(ystart), ystep=str(ystep), 
+                **{"is":"rectangular_detector"})
+
+        return
+
+
 
     def makeTypeElement(self, name, extra_attrs={}):
         """
@@ -333,6 +374,51 @@ class MantidGeom:
         else:
             pos_loc = le.SubElement(root, "location", r=r, t=theta, p=phi)
         return pos_loc
+
+
+    def addLocationRTP2(self, root, r, t, p, rot_x=None, rot_y=None, rot_z=None, name=None):
+        """ A modified version
+        """
+        if name is None:
+            pos_loc = le.SubElement(root, "location")
+        else:
+            pos_loc = le.SubElement(root, "location", name=name)
+
+        self._addLocationParameter(pos_loc, "r-position", r)
+        self._addLocationParameter(pos_loc, "t-position", t)
+        self._addLocationParameter(pos_loc, "p-position", p)
+        if rot_x is not None: 
+            self._addLocationParameter(pos_loc, "rotx", rot_x)
+        if rot_y is not None: 
+            self._addLocationParameter(pos_loc, "roty", rot_y)
+        if rot_z is not None: 
+            self._addLocationParameter(pos_loc, "rotz", rot_z)
+
+        return 
+
+
+    def _addLocationParameter(self, root, name, value):
+        """ 
+        """ 
+        log = le.SubElement(root, "parameter",**{"name": name})
+        try:
+            value = float(value)
+            le.SubElement( log, "value", **{"val": str(value)} )
+        except ValueError:
+            value = str(value)
+            processed = split(value)
+            if len(processed)==1:
+                # 1-term case
+                le.SubElement(log, "logfile", **{"id":r})
+            else:
+                # 2-term case: equation
+                equation = join(processed[1:]).replace(processed[0],"value")
+                le.SubElement(log, "logfile", **{"id":processed[0], "eq":equation})
+            # ENDIFELSE
+        # ENDTRY
+
+        return
+
 
     def addLocationRTP(self, root, r, t, p, rot_x, rot_y, rot_z, name=None):
         """
