@@ -69,7 +69,7 @@ if __name__ == "__main__":
             det.addComponent(row_id_str, row_id_str)
             doc_handle = det.makeTypeElement(row_id_str)
 
-        det.addComponent(location, root=doc_handle)
+        det.addComponent("bank"+str(i+1), root=doc_handle)
         
         xpos = convert(detinfo["Xsci"][i])
         ypos = convert(detinfo["Ysci"][i])
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         
         det.addDetector(xpos, ypos, zpos, 
                         detinfo["Xrot_sci"][i], detinfo["Yrot_sci"][i], detinfo["Zrot_sci"][i],
-                        location, det_type)
+                        "bank"+str(i+1), det_type)
 
     det.addComment("16-PACK")
     det.addNPack("sixteenpack", NUM_TUBES_PER_BANK, TUBE_WIDTH, AIR_GAP_WIDTH)
