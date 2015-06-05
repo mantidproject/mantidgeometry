@@ -1,3 +1,4 @@
+import math
 from lxml import etree as le # python-lxml on rpm based systems
 from string import split,join
 
@@ -150,7 +151,8 @@ class MantidGeom:
         le.SubElement(self.__root, "type",
                       **{"name":"sample-position", "is":"SamplePos"})
 
-    def addDetectorPixels(self, name, r=[], theta=[], phi=[], names=[], energy=[]):
+    def addDetectorPixels(self, name, x=[], y=[], z=[], names=[], energy=[],
+                          neutronic=False, nr=[], ntheta=[], nphi=[]):
 
         #component = le.SubElement(self.__root, "component",
         #                          type=name, idlist=name)
@@ -158,18 +160,17 @@ class MantidGeom:
         type_element = le.SubElement(self.__root, "type", name=name)
         #le.SubElement(type_element, "location")
 
-        for i in range(len(r)):
-            for j in range(len(r[i])):
-                if (str(r[i][j]) != "nan"):
+        for i in range(len(nr)):
+            for j in range(len(nr[i])):
+                if (str(nr[i][j]) != "nan"):
                     basecomponent = le.SubElement(type_element, "component", type="pixel")
-                    location_element = le.SubElement(basecomponent, "location", r=str(r[i][j]),
-                          t=str(theta[i][j]), p=str(phi[i][j]), name=str(names[i][j]))
-                    le.SubElement(location_element, "facing", x="0.0", y="0.0", z="0.0")
-                    #le.SubElement(basecomponent, "properties")
+                    location_element = le.SubElement(basecomponent, "location",
+                          x=str(x[i][j]), y=str(y[i][j]), z=str(z[i][j]), name=str(names[i][j]))
                     efixed_comp = le.SubElement(basecomponent, "parameter", name="Efixed")
                     le.SubElement(efixed_comp, "value", val=str(energy[i][j]))
-                    
-
+                    if neutronic:
+                      le.SubElement(location_element, "neutronic", 
+                                    r=str(nr[i][j]), t=str(ntheta[i][j]), p=str(nphi[i][j]))
 
     def addDetectorPixelsIdList(self, name, r=[], names=[]):
 
