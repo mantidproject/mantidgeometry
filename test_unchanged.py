@@ -5,6 +5,7 @@ import logging
 import os
 import subprocess
 import sys
+import lxml # required for everything
 
 __version__ = "0.1.0"
 LOGLEVELS = ["DEBUG", "INFO", "WARNING"]
@@ -42,7 +43,7 @@ def toOutputNames(filename):
         instr = INSTR_MAP[instr]
 
     return (golden, result, instr)
-    
+
 
 def findSourceDirec():
     direc = sys.argv[0]
