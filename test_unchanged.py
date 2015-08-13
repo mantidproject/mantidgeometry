@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 import lxml # required for everything
+import h5py # required for BASIS
 
 __version__ = "0.1.0"
 LOGLEVELS = ["DEBUG", "INFO", "WARNING"]
