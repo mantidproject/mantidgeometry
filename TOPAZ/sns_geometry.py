@@ -574,7 +574,8 @@ class Geometry():
         """Writes the XML to a file with the prescriptive name"""
         today = date.today()
         filename = "%s_geom_%4i_%02i_%02i.xml" % (self._name,today.year,today.month,today.day)
-        self.generateXML().toprettyxml()
+        f1=open(filename, "w")
+        f1.write(self.generateXML().toprettyxml())
 
 def generateGeom(instrument):
     """Returns a geometry is an instrument containing a source and
