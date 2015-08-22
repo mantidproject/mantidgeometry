@@ -2,7 +2,6 @@
 
 # imports...
 import xml.dom.minidom
-import xml.dom.ext
 from datetime import date
 
 def extractValueByNumber(filename, bankNumber, columnNumber):
@@ -569,13 +568,13 @@ class Geometry():
     
     def writeToScreen(self):
         """Prints the generated XML to the screen"""
-        xml.dom.ext.PrettyPrint(self.generateXML())
+        self.generateXML().toprettyxml()
         
     def writeToFile(self):
         """Writes the XML to a file with the prescriptive name"""
         today = date.today()
         filename = "%s_geom_%4i_%02i_%02i.xml" % (self._name,today.year,today.month,today.day)
-        xml.dom.ext.PrettyPrint(self.generateXML(), open(filename, "w"))
+        self.generateXML().toprettyxml()
 
 def generateGeom(instrument):
     """Returns a geometry is an instrument containing a source and
