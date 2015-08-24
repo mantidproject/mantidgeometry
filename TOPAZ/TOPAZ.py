@@ -4,6 +4,7 @@ from sns_geometry import Geometry, Component, Maths, Recipe, Vector, \
      extractValueFromFile, generateGeom, getEuler
 
 from math import cos, sin, acos, atan2
+from datetime import datetime, date
 import numpy as np
 
 geometry = generateGeom("TOPAZ")
@@ -72,6 +73,15 @@ instrument.addComponent(aperture2)
 
 
 #===============================================================================================
+def writeToFile(xmlOut,append):
+    """Writes the XML to a file with the prescriptive name"""
+    today = date.today()
+    filename = "%s_geom_%4i_%02i_%02i.xml" % ("TOPAZ",today.year,today.month,today.day)
+    f1=open(filename, append)
+    f1.write(xmlOut)
+    f1.write("\n")
+
+#===============================================================================================
 def x_rotation_matrix(polar=0):
     """Generate a rotation matrix for a polar rotation,
     i.e. a rotation about the x axis."""
@@ -112,6 +122,113 @@ def rotation_matrix(phi=0, chi=0, omega=0):
 
     return M;
 
+
+def makeMantidGeometryIntro():
+    """ Generate XML code to make a bit of XML for use in the
+    Mantid XML geometry.
+
+
+    """
+    st = datetime.now()
+
+    sxml = """<?xml version='1.0' encoding='UTF-8'?>
+<!-- For help on the notation used to specify an Instrument Definition File 
+     see http://www.mantidproject.org/IDF -->
+<instrument xmlns="http://www.mantidproject.org/IDF/1.0" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.mantidproject.org/IDF/1.0 http://schema.mantidproject.org/IDF/1.0/IDFSchema.xsd"
+ name="TOPAZ" valid-from   ="%s"
+              valid-to     ="2100-12-31 23:59:59"
+                      last-modified="%s">
+  <!--DEFAULTS-->
+  <defaults>
+    <length unit="metre"/>
+    <angle unit="degree"/>
+    <reference-frame>
+      <along-beam axis="z"/>
+      <pointing-up axis="y"/>
+      <handedness val="right"/>
+    </reference-frame>
+    <default-view view="spherical_y"/>
+  </defaults>
+
+  <!--SOURCE-->
+  <component type="moderator">
+    <location z="-18.0"/>
+  </component>
+  <type name="moderator" is="Source"/>
+
+  <!--SAMPLE-->
+  <component type="sample-position">
+    <location y="0.0" x="0.0" z="0.0"/>
+  </component>
+  <type name="sample-position" is="SamplePos"/>
+
+  <!--MONITORS-->
+  <component type="monitors" idlist="monitors">
+    <location/>
+  </component>
+  <type name="monitors">
+    <component type="monitor">
+      <location z="-2.488" name="monitor1"/>
+    </component>
+    <component type="monitor">
+      <location z="1.049" name="monitor2"/>
+    </component>
+  </type>""" %(st, st)
+
+
+    return sxml
+
+def makeMantidGeometryEnd():
+    """ Generate XML code to make a bit of XML for use in the
+    Mantid XML geometry.
+
+
+    """
+
+    sxml = """
+
+<!-- NOTE: This detector is the same as the SNAP detector -->
+<!-- Rectangular Detector Panel -->
+<type name="panel" is="rectangular_detector" type="pixel"
+    xpixels="256" xstart="-0.078795" xstep="+0.000618"
+    ypixels="256" ystart="-0.078795" ystep="+0.000618" >
+  <properties/>
+</type>
+
+  <!-- Pixel for Detectors-->
+  <type is="detector" name="pixel">
+    <cuboid id="pixel-shape">
+      <left-front-bottom-point y="-0.000309" x="-0.000309" z="0.0"/>
+      <left-front-top-point y="0.000309" x="-0.000309" z="0.0"/>
+      <left-back-bottom-point y="-0.000309" x="-0.000309" z="-0.0001"/>
+      <right-front-bottom-point y="-0.000309" x="0.000309" z="0.0"/>
+    </cuboid>
+    <algebra val="pixel-shape"/>
+  </type>
+
+  <!-- Shape for Monitors-->
+  <!-- TODO: Update to real shape -->
+  <type is="monitor" name="monitor">
+    <cylinder id="some-shape">
+      <centre-of-bottom-base p="0.0" r="0.0" t="0.0"/>
+      <axis y="0.0" x="0.0" z="1.0"/>
+      <radius val="0.01"/>
+      <height val="0.03"/>
+    </cylinder>
+    <algebra val="some-shape"/>
+  </type>
+
+  <!--MONITOR IDs-->
+  <idlist idname="monitors">
+    <id val="-1"/>
+    <id val="-2"/>
+  </idlist>
+</instrument>"""
+
+
+    return sxml
 
 def makeMantidGeometryCode(name, idstart, radius, theta_center_rad, phi_center_rad, phi_rad, chi_rad, omega_rad):
     """ Generate XML code to make a bit of XML for use in the
@@ -250,6 +367,7 @@ def addBank(instrument, banknum, local_name, azimuth, elevation, rotation, dista
     (phi, chi, omega) = getEuler(u_rotated, v_rotated) #getEuler input units defaults to radians
     #print "<!--- Rotated we have u ", u_rotated, ", v", v_rotated, "giving angles ", (phi, chi, omega), " ... for bank", banknum, " --->"
     print makeMantidGeometryCode(local_name, idstart, distance, theta_center, phi_center, phi, chi, omega)
+    writeToFile(makeMantidGeometryCode(local_name, idstart, distance, theta_center, phi_center, phi, chi, omega), 'a')
 
 ##    
 ##    
@@ -284,13 +402,14 @@ def cmp_row(x,y):
 
 
 
-from datetime import datetime
 print "<!-- XML Code automatically generated on %s for the Mantid instrument definition file -->" % datetime.now()
+writeToFile(makeMantidGeometryIntro(), "w")
+writeToFile( "<!-- XML Code automatically generated on %s for the Mantid instrument definition file -->" % datetime.now(), "a")
 
 # Detectors
 import csv
 #f = open("TOPAZ_geom_all_2011.csv") # For TS, removing/adding as needed
-f = open("TOPAZ_geom_all_2012.csv") # All detectors, for Mantid
+f = open("TOPAZ_geom_all_2015.csv") # All detectors, for Mantid
 # f = open("TOPAZ_geom_all_2010.csv") # For 2010 and before  TOPAZ
 cr = csv.reader(f)
 #Ignore the header row
@@ -334,6 +453,10 @@ for row in rows:
 print "<!-- List of all the bank names:"
 print ",".join(all_names)
 print "-->"
+writeToFile( "<!-- List of all the bank names:", "a")
+writeToFile( ",".join(all_names), "a")
+writeToFile( "-->", "a")
+writeToFile(makeMantidGeometryEnd(), "a")
 
 f.close()
 
@@ -440,4 +563,4 @@ maths.addOutput("real_omega", "angle")
 geometry.addMath(maths)
 
 #geometry.writeToScreen()
-geometry.writeToFile()
+#geometry.writeToFile()
