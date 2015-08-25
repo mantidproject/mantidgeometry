@@ -180,20 +180,26 @@ def makeMantidGeometryIntro():
 
     return sxml
 
-def makeMantidGeometryEnd():
+def makeMantidGeometryEnd(widX, widY):
     """ Generate XML code to make a bit of XML for use in the
     Mantid XML geometry.
 
 
     """
 
+    widX /= 100
+    deltaX = widX/256
+    startX = (deltaX-widX)/2
+    widY /= 100
+    deltaY = widY/256
+    startY = (deltaY-widY)/2
     sxml = """
 
 <!-- NOTE: This detector is the same as the SNAP detector -->
 <!-- Rectangular Detector Panel -->
 <type name="panel" is="rectangular_detector" type="pixel"
-    xpixels="256" xstart="-0.078795" xstep="+0.000618"
-    ypixels="256" ystart="-0.078795" ystep="+0.000618" >
+    xpixels="256" xstart="%f" xstep="%f"
+    ypixels="256" ystart="%f" ystep="%f" >
   <properties/>
 </type>
 
@@ -225,7 +231,7 @@ def makeMantidGeometryEnd():
     <id val="-1"/>
     <id val="-2"/>
   </idlist>
-</instrument>"""
+</instrument>""" %(startX, deltaX, startY, deltaY)
 
 
     return sxml
@@ -388,6 +394,8 @@ for row in range(len(open(detCalFile).readlines())):
         upX = float(extractValueFromFile(detCalFile,None,row,None,14))
         upY = float(extractValueFromFile(detCalFile,None,row,None,15))
         upZ = float(extractValueFromFile(detCalFile,None,row,None,16))
+        widX = float(extractValueFromFile(detCalFile,None,row,None,4))
+        widY = float(extractValueFromFile(detCalFile,None,row,None,5))
         center = Vector([cenX,cenY,cenZ])
         base = Vector([baseX,baseY,baseZ])
         up = Vector([upX,upY,upZ])
@@ -401,7 +409,7 @@ print "-->"
 writeToFile( "<!-- List of all the bank names:", "a")
 writeToFile( ",".join(all_names), "a")
 writeToFile( "-->", "a")
-writeToFile(makeMantidGeometryEnd(), "a")
+writeToFile(makeMantidGeometryEnd(widX, widY), "a")
 
 
 ### RECIPES ###
