@@ -123,7 +123,7 @@ def rotation_matrix(phi=0, chi=0, omega=0):
     return M;
 
 
-def makeMantidGeometryIntro():
+def makeMantidGeometryIntro(l1):
     """ Generate XML code to make a bit of XML for use in the
     Mantid XML geometry.
 
@@ -154,7 +154,7 @@ def makeMantidGeometryIntro():
 
   <!--SOURCE-->
   <component type="moderator">
-    <location z="-18.0"/>
+    <location z="%f"/>
   </component>
   <type name="moderator" is="Source"/>
 
@@ -175,7 +175,7 @@ def makeMantidGeometryIntro():
     <component type="monitor">
       <location z="1.049" name="monitor2"/>
     </component>
-  </type>""" %(st, st)
+  </type>""" %(st, st, -l1/100.0)
 
 
     return sxml
@@ -365,9 +365,6 @@ def cmp_row(x,y):
 
 
 detCalFile = (raw_input("Please enter the name of the DetCal file: "))
-print "<!-- XML Code automatically generated on %s for the Mantid instrument definition file from %s -->" % (datetime.now(), detCalFile)
-writeToFile(makeMantidGeometryIntro(), "w")
-writeToFile( "<!-- XML Code automatically generated on %s for the Mantid instrument definition file from %s -->" % (datetime.now(), detCalFile), "a")
 
 #Now sort by bank number so the output looks better
 # rows.sort(cmp_row)
@@ -378,6 +375,12 @@ for row in range(len(open(detCalFile).readlines())):
     #Parse each row
     flag = extractValueFromFile(detCalFile,None,row,None,0)
     #Detector number. 
+    if flag == "7": #Is it in use?
+        l1 = float(extractValueFromFile(detCalFile,None,row,None,1))
+        t0 = float(extractValueFromFile(detCalFile,None,row,None,2))
+        print "<!-- XML Code automatically generated on %s for the Mantid instrument definition file from %s -->" % (datetime.now(), detCalFile)
+        writeToFile(makeMantidGeometryIntro(l1), "w")
+        writeToFile( "<!-- XML Code automatically generated on %s for the Mantid instrument definition file from %s -->" % (datetime.now(), detCalFile), "a")
     if flag == "5": #Is it in use?
         # Bank number; as of Jan 2011, starts at 10 and goes up to 59.
         det_num = int(extractValueFromFile(detCalFile,None,row,None,1))
