@@ -76,7 +76,7 @@ instrument.addComponent(aperture2)
 def writeToFile(xmlOut,append):
     """Writes the XML to a file with the prescriptive name"""
     today = date.today()
-    filename = "%s_geom_%4i_%02i_%02i.xml" % ("TOPAZ",today.year,today.month,today.day)
+    filename = "%s_Definition_%4i-%02i-%02i.xml" % ("TOPAZ",today.year,today.month,today.day)
     f1=open(filename, append)
     f1.write(xmlOut)
     f1.write("\n")
@@ -563,4 +563,4 @@ maths.addOutput("real_omega", "angle")
 geometry.addMath(maths)
 
 #geometry.writeToScreen()
-#geometry.writeToFile()
+geometry.writeToFile()

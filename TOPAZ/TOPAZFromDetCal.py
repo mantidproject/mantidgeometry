@@ -76,7 +76,16 @@ instrument.addComponent(aperture2)
 def writeToFile(xmlOut,append):
     """Writes the XML to a file with the prescriptive name"""
     today = date.today()
-    filename = "%s_geom_%4i_%02i_%02i.xml" % ("TOPAZ",today.year,today.month,today.day)
+    filename = "%s_Definition_%4i-%02i-%02i.xml" % ("TOPAZ",today.year,today.month,today.day)
+    f1=open(filename, append)
+    f1.write(xmlOut)
+    f1.write("\n")
+
+#===============================================================================================
+def writeToFile2(xmlOut,append):
+    """Writes the XML to a file with the prescriptive name"""
+    today = date.today()
+    filename = "%s_Parameters_%4i-%02i-%02i.xml" % ("TOPAZ",today.year,today.month,today.day)
     f1=open(filename, append)
     f1.write(xmlOut)
     f1.write("\n")
@@ -176,6 +185,30 @@ def makeMantidGeometryIntro(l1):
       <location z="1.049" name="monitor2"/>
     </component>
   </type>""" %(st, st, -l1/100.0)
+
+
+    return sxml
+
+def makeMantidParameters(t0):
+    """ Generate XML code to make a bit of XML for use in the
+    Mantid XML geometry.
+
+
+    """
+    st = datetime.now()
+
+    sxml = """<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8" ?>
+<parameter-file instrument = "TOPAZ" valid-from   ="%s" valid-to     ="2100-12-31 23:59:59">
+
+<component-link name = "TOPAZ">
+<!-- Specify that any banks not in NeXus file are to be removed -->
+<parameter name="T0">
+ <value val="%f"/>
+</parameter>
+</component-link>
+
+</parameter-file> """ %(st, t0)
 
 
     return sxml
@@ -380,6 +413,7 @@ for row in range(len(open(detCalFile).readlines())):
         t0 = float(extractValueFromFile(detCalFile,None,row,None,2))
         print "<!-- XML Code automatically generated on %s for the Mantid instrument definition file from %s -->" % (datetime.now(), detCalFile)
         writeToFile(makeMantidGeometryIntro(l1), "w")
+        writeToFile2(makeMantidParameters(t0), "w")
         writeToFile( "<!-- XML Code automatically generated on %s for the Mantid instrument definition file from %s -->" % (datetime.now(), detCalFile), "a")
     if flag == "5": #Is it in use?
         # Bank number; as of Jan 2011, starts at 10 and goes up to 59.
@@ -518,4 +552,4 @@ maths.addOutput("real_omega", "angle")
 geometry.addMath(maths)
 
 #geometry.writeToScreen()
-#geometry.writeToFile()
+geometry.writeToFile()
