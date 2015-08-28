@@ -198,7 +198,6 @@ def makeMantidParameters(t0):
     st = datetime.now()
 
     sxml = """<?xml version='1.0' encoding='UTF-8'?>
-<?xml version="1.0" encoding="UTF-8" ?>
 <parameter-file instrument = "TOPAZ" valid-from   ="%s" valid-to     ="2100-12-31 23:59:59">
 
 <component-link name = "TOPAZ">
