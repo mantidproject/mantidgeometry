@@ -836,10 +836,3 @@ class MantidGeom:
                           y=str(yy2*0.8+center[1]),
                           z="0.0")
         le.SubElement(type_element, "algebra", val="body : "+hole_list[:-3])
-        box = le.SubElement(type_element, "bounding-box")
-        le.SubElement(box,"x-min",val=str(center[0]-radius))
-        le.SubElement(box,"x-max",val=str(center[0]+radius))
-        le.SubElement(box,"y-min",val=str(center[1]-radius))
-        le.SubElement(box,"y-max",val=str(center[1]+radius))
-        le.SubElement(box,"z-min",val="0.0")
-        le.SubElement(box,"z-max",val=str(height))
