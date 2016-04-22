@@ -7,6 +7,9 @@ BIOSANS new Wing detector
 
 I'm using DJANGO templates to generate this
 
+This is just a test, note that this does not procuce the full IDF file
+accepted by mantid
+
 """
 from django.template import Template, Context
 from django.conf import settings

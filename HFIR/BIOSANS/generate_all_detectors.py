@@ -3,9 +3,17 @@
 
 """
 
-BIOSANS new Wing detector
+BIOSANS
 
-I'm using DJANGO templates to generate this
+Generates main detector and wing detector
+
+File is accepted by mantid
+
+```
+./generate_all_detectors.py > /tmp/biosans.xml
+LoadEmptyInstrument(Filename='/tmp/biosans.xml', OutputWorkspace='tmp')
+```
+
 
 """
 from django.template import Template, Context
