@@ -7,8 +7,9 @@ BIOSANS
 
 Generates main detector and wing detector
 
-File is accepted by mantid
+File is accepted by mantid.
 
+@author: ferrazlealrm@ornl.gov
 ```
 ./generate_all_detectors.py > /tmp/biosans.xml
 LoadEmptyInstrument(Filename='/tmp/biosans.xml', OutputWorkspace='tmp')
@@ -125,17 +126,13 @@ template = """<?xml version='1.0' encoding='ASCII'?>
 
 
 <!-- Wing Detector -->
-<component type="detectors" idlist="detectors">
+<component type="wing_detector" idlist="wing_detector_ids">
     <location />
 </component>
 
-<idlist idname="detectors">
+<idlist idname="wing_detector_ids">
     <id start="{{ first_id }}" end="{{ last_id }}" />
 </idlist>
-
-<type name="detectors">
-    <component type="wing_detector"><location/></component>
-</type>
 
 <type name="wing_detector">
     <component type="wing_tube">
