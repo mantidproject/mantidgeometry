@@ -44,8 +44,12 @@ pixel_positions = np.linspace(-0.54825, 0.54825, 256)
 # Values to replace in the template
 values = {
     "last_modified" : str(datetime.now()),
-    "first_id" : 2000000,
-    "last_id" : 2000000 + n_total_pixels -1,
+    "monitor_1_id" : 1,
+    "monitor_2_id" : 2,
+    "main_detector_id_first" : 3,
+    "main_detector_id_step" : 256,
+    "wing_detector_id_first" : 2 + 192 * 256 +1,
+    "wing_detector_id_last" :  2 + 192 * 256 + n_total_pixels,
     "radius" : radius,
     "tube_pos_angle" : [ -tube_step_angle_degrees * x for x in range(n_tubes) ] ,
     "pixel_positions" : pixel_positions,
@@ -57,7 +61,7 @@ template = """<?xml version='1.0' encoding='ASCII'?>
 <instrument xmlns="http://www.mantidproject.org/IDF/1.0"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.mantidproject.org/IDF/1.0 http://schema.mantidproject.org/IDF/1.0/IDFSchema.xsd"
-            name="TODO"
+            name="BIOSANS"
             valid-from="2016-04-22 00:00:00"
             valid-to="2100-01-31 23:59:59"
 		    last-modified="{{ last_modified }}">
@@ -83,6 +87,7 @@ template = """<?xml version='1.0' encoding='ASCII'?>
 </component>
 <type name="sample-position" is="SamplePos"/>
 
+<!-- ***************************************************************** -->
 <!--MONITOR 1 -->
 <component type="monitor1" idlist="monitor1">
     <location z="-10.5" />
@@ -101,37 +106,39 @@ template = """<?xml version='1.0' encoding='ASCII'?>
     <id val="2" />
 </idlist>
 
+<!-- ***************************************************************** -->
 <!-- Main Detector -->
-<component type="main_detector" idstart="1000000" idfillbyfirst="y" idstep="192" idstepbyrow="1">
+<component type="main_detector" idstart="{{ main_detector_id_first }}" idfillbyfirst="x" idstep="{{main_detector_id_step}}" idstepbyrow="1">
     <location z='2' />
 </component>
 
 <!-- Detector: -->
 <type name="main_detector" is="rectangular_detector" type="pixel_rectangular"
-    xpixels="192" xstart="0.52525" xstep="-0.0055"
-    ypixels="256" ystart="0.54825" ystep="-0.0043">
+    xpixels="192" xstart="-0.52525" xstep="0.0055"
+    ypixels="256" ystart="-0.54825" ystep="0.0043">
     <properties />
 </type>
 
-<!-- Pixel for Detectors: 5.1x5.1 mm -->
+<!-- Pixel for Detectors: 5.5x4 mm -->
 <type is="detector" name="pixel_rectangular">
     <cuboid id="pixel-shape">
-        <left-front-bottom-point y="-0.00255" x="-0.00255" z="0.0" />
-        <left-front-top-point y="0.00255" x="-0.00255" z="0.0" />
-        <left-back-bottom-point y="-0.00255" x="-0.00255" z="-0.0001" />
-        <right-front-bottom-point y="-0.00255" x="0.00255" z="0.0" />
+        <left-front-bottom-point y="-0.002" x="-0.00275" z="0.0" />
+        <left-front-top-point y="0.002" x="-0.00275" z="0.0" />
+        <left-back-bottom-point y="-0.002" x="-0.00275" z="-0.0001" />
+        <right-front-bottom-point y="-0.002" x="0.00275" z="0.0" />
     </cuboid>
     <algebra val="pixel-shape" />
 </type>
 
 
+<!-- ***************************************************************** -->
 <!-- Wing Detector -->
 <component type="wing_detector" idlist="wing_detector_ids">
     <location />
 </component>
 
 <idlist idname="wing_detector_ids">
-    <id start="{{ first_id }}" end="{{ last_id }}" />
+    <id start="{{ wing_detector_id_first }}" end="{{ wing_detector_id_last }}" />
 </idlist>
 
 <type name="wing_detector">
