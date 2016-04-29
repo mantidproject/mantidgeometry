@@ -20,6 +20,8 @@ LoadEmptyInstrument(Filename='/tmp/biosans.xml', OutputWorkspace='tmp')
 from django.template import Template, Context
 from django.conf import settings
 from django import setup
+from xml.etree import ElementTree as ET
+import sys
 
 from datetime import datetime
 import numpy as np
@@ -109,7 +111,7 @@ template = """<?xml version='1.0' encoding='ASCII'?>
 <!-- ***************************************************************** -->
 <!-- Main Detector -->
 <component type="main_detector" idstart="{{ main_detector_id_first }}" idfillbyfirst="x" idstep="{{main_detector_id_step}}" idstepbyrow="1">
-    <location z='2' />
+    <location z='0' />
 </component>
 
 <!-- Detector: -->
@@ -177,7 +179,18 @@ def to_string():
     content = t.render(c)
     return content
 
+def is_xml_valid(xml_string):
+    try:
+        x = ET.fromstring(xml_string)
+        return True
+    except ET.ParseError as e:
+        sys.stderr.write("XML not well-formed" + str(e))
+        return False
+
+
 
 
 if __name__ == '__main__':
-    print to_string()
+    xml = to_string()
+    print xml
+    is_xml_valid(xml)
