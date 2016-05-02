@@ -9,7 +9,7 @@ Using
 -----
 The classes that will help with creating geometry are `helper.py`, `rectangle.py`, and `sns_column.py`. A quick example
 
-```
+```python
 from helper import MantidGeom
 
 inst_name = "VISION"
