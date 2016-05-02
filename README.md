@@ -7,7 +7,7 @@ python script.
 
 Using
 -----
-The classes that will help with creating geometry are `helper.py`, `rectangle.py`, and `sns_column.py`. A quick example
+The classes that will help with creating geometry are [helper.py](helper.py), [rectangle.py](rectangle.py), and [sns_column.py](sns_column.py). A quick example
 
 ```python
 from helper import MantidGeom
