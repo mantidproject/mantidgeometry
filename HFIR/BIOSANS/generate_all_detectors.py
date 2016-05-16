@@ -135,13 +135,43 @@ template = """<?xml version='1.0' encoding='ASCII'?>
 
 <!-- ***************************************************************** -->
 <!-- Wing Detector -->
-<component type="wing_detector" idlist="wing_detector_ids">
-    <location />
+
+<!-- Detector list def -->
+<idlist idname="wing_detector_ids">
+	<id start="{{ wing_detector_id_first }}" end="{{ wing_detector_id_last }}" />
+</idlist>
+
+<component type="wing_detector_arm" idlist="wing_detector_ids">
+	<location />
 </component>
 
-<idlist idname="wing_detector_ids">
-    <id start="{{ wing_detector_id_first }}" end="{{ wing_detector_id_last }}" />
-</idlist>
+<!-- Detector Banks -->
+<type name="wing_detector_arm">
+	<component type="wing_detector">
+		<location>
+			<parameter name="r-position">
+				<value val="0"/>
+			</parameter>
+			<parameter name="t-position">
+				<logfile id="rotangle"  eq="0.0+value"/>
+<!--					<value val="-45"/-->
+			</parameter>
+			<parameter name="p-position">
+				<value val="0"/>
+			</parameter>
+			<parameter name="rotx">
+				<value val="0"/>
+			</parameter>
+			<parameter name="roty">
+				<logfile id="rotangle"  eq="0.0+value"/>
+<!--					<value val="-45"/-->
+			</parameter>
+			<parameter name="rotz">
+				<value val="0"/>
+			</parameter>
+		</location>
+	</component>
+</type>
 
 <type name="wing_detector">
     <component type="wing_tube">
