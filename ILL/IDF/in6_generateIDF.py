@@ -1,6 +1,8 @@
 from common_detector_functions import *
 
-"""This script is used to generate the IDF for IN6...
+"""This script is used to generate the instrument definition for IN6.
+   Note that this requires the output from in6_generate_detector_list.py
+   as an input, to specify the detector positions and angles.
 
 """
 
@@ -60,7 +62,6 @@ def write_in6_monitor_shapes(f):
 if __name__ == '__main__':
     radius = 2.483
     detector_gap = 0.03380144566
-    
     output_filename = 'IN6_Definition.xml'
     detector_bank_list_filename = 'in6_detector_bank_list.txt'
     

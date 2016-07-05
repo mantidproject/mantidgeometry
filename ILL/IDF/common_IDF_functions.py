@@ -4,6 +4,9 @@ import math
 from shutil import copyfile
 import os
 
+"""This Python script contains a number of utility functions for
+   creating IDF files for the ILL.
+"""
 
 def read_detector_bank_list(filename):
     """Reads a text file containing rows with Bank Number, Theta, Detector IDs and Phi angle. The first
