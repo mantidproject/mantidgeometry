@@ -1,9 +1,15 @@
+from __future__ import print_function
 from time import gmtime, strftime
 import math
 
 
 def read_detector_bank_list(filename):
+    """Reads a text file containing rows with Bank Number, Theta, Detector IDs and Phi angle. The first
+       line is ignored (column headings).
 
+       returns: A list of tuples containing bank_number, theta angle, a list of detector ids, phi angle
+    """
+    
     bank_number = []
     theta = []
     detector_ids = []
@@ -47,31 +53,18 @@ def write_header(f, instrument_name, authors):
         <pointing-up axis="y" />
         <handedness val="right" />
       </reference-frame>
-    </defaults>
+    </defaults>)""")
 
-    <component type="moderator">
+
+def write_moderator(f):
+    f.write("""<component type="moderator">
       <location z="-2" />
     </component>
-    <type name="moderator" is="Source"></type>
+    <type name="moderator" is="Source"></type>""")
 
-    <!--MONITORS-->
-    <component type="monitors" idlist="monitors">
-      <location/>
 
-    </component>
-    <type name="monitors">
-      <component type="monitor">
-        <location z="-0.6" name="monitor1"/>
-      </component>
-      <component type="monitor">
-        <location z="-0.5" name="monitor2"/>
-      </component>
-      <component type="monitor">
-        <location z="-0.4" name="monitor3"/>
-      </component>
-    </type>
-
-    <!-- Sample position -->
+def write_sample_position(f):
+    f.write("""<!-- Sample position -->
     <component type="sample-position">
       <location y="0.0" x="0.0" z="0.0" />
     </component>
@@ -82,7 +75,7 @@ def write_header(f, instrument_name, authors):
 def tilting_angle(theta, phi, orientation):
     theta = math.radians(theta)
     phi = math.radians(phi)
-    return 90 + (math.degrees(math.acos(math.cos(theta) / math.sin(theta) * math.sin(phi) / math.cos(phi)))) * orientation
+    return 90 + orientation * (math.degrees(math.acos(math.cos(theta) / math.sin(theta) * math.sin(phi) / math.cos(phi))))
 
 
 def write_detectors(f, detector_bank_list, radius, detector_gap, orientation):
@@ -94,77 +87,74 @@ def write_detectors(f, detector_bank_list, radius, detector_gap, orientation):
        orientation: +1 indicates anti-clockwise from the z-axis, -1 clockwise    
     """
     
-
     first_bank_id = detector_bank_list[0][0]
     number_of_banks = detector_bank_list[-1][0]
     
     first_detector_id = detector_bank_list[0][2]
-    print first_bank_id, number_of_banks, first_detector_id
     
     f.write("<!-- Detector Banks -->")
     
     for bank_number, theta, detector_ids, phi in detector_bank_list:
-		
-        print bank_number, theta, detector_ids, phi
-        
+		        
         # Compute cartesian coordinates of bank
         x = orientation * radius * math.sqrt(math.sin(math.radians(theta))**2 - math.sin(math.radians(phi))**2)
         y = radius * math.sin(math.radians(phi))
         z = radius * math.cos(math.radians(theta))
 
-        print bank_number, x, y, z, radius, theta
+        print(bank_number, detector_ids, 'x=', x, 'y=', y, 'z=', z, )
+        print(bank_number, 'r=', radius, 'theta=', theta, 'phi', phi)
         
         if len(detector_ids) == 3:	
-            f.write("""<component type="bank_3_dets" name="bank_%d" idlist="det_id_list_%d">
-                         <location x="%f" y="%f" z="%f">
-							<rot val="%f" axis-x="0.0" axis-y="1.0" axis-z="0.0" >
-								<rot val="%f" axis-x="1.0" axis-y="0.0" axis-z="0.0" >
-									<rot val="%f" axis-x="0.0" axis-y="0.0" axis-z="1.0" />
+            f.write("""<component type="bank_3_dets" name="bank_{0}" idlist="det_id_list_{0}">
+                         <location x="{1}" y="{2}" z="{3}">
+							<rot val="{4}" axis-x="0.0" axis-y="1.0" axis-z="0.0" >
+								<rot val="{5}" axis-x="1.0" axis-y="0.0" axis-z="0.0" >
+									<rot val="{6}" axis-x="0.0" axis-y="0.0" axis-z="1.0" />
 						        </rot>
 							</rot>                         
                          </location/>
-                       </component>""" % (bank_number, bank_number, x, y, z, math.degrees(math.atan2(x, z)), -phi, tilting_angle(theta, phi, orientation)))
+                       </component>""".format(bank_number, x, y, z, math.degrees(math.atan2(x, z)), -phi, tilting_angle(theta, phi, orientation)))
 
-            f.write("""<idlist idname="det_id_list_%d">
-                         <id val="%d" />
-                         <id val="%d" />
-                         <id val="%d" />
-                       </idlist>""" %(bank_number, detector_ids[0], detector_ids[1], detector_ids[2]))
+            f.write("""<idlist idname="det_id_list_{0}">
+                         <id val="{1}" />
+                         <id val="{2}" />
+                         <id val="{3}" />
+                       </idlist>""".format(bank_number, detector_ids[0], detector_ids[1], detector_ids[2]))
         elif len(detector_ids) == 4:
-            f.write("""<component type="bank_4_dets" name="bank_%d" idlist="det_id_list_%d">
-                         <location x="%f" y="%f" z="%f"> 
-							<rot val="%f" axis-x="0.0" axis-y="1.0" axis-z="0.0" >
-								<rot val="%f" axis-x="1.0" axis-y="0.0" axis-z="0.0" >
-									<rot val="%f" axis-x="0.0" axis-y="0.0" axis-z="1.0" />
+            f.write("""<component type="bank_4_dets" name="bank_{0}" idlist="det_id_list_{0}">
+                         <location x="{1}" y="{2}" z="{3}"> 
+							<rot val="{4}" axis-x="0.0" axis-y="1.0" axis-z="0.0" >
+								<rot val="{5}" axis-x="1.0" axis-y="0.0" axis-z="0.0" >
+									<rot val="{6}" axis-x="0.0" axis-y="0.0" axis-z="1.0" />
 						        </rot>
 							</rot>
 						 </location>
-                       </component>""" % (bank_number, bank_number, x, y, z, math.degrees(math.atan2(x, z)), -phi, tilting_angle(theta, phi, orientation)))
-            f.write("""<idlist idname="det_id_list_%d">
-                         <id val="%d" />
-                         <id val="%d" />
-                         <id val="%d" />
-                         <id val="%d" />                         
-                       </idlist>""" %(bank_number, detector_ids[0], detector_ids[1], detector_ids[2], detector_ids[3]))                       
+                       </component>""".format(bank_number, x, y, z, math.degrees(math.atan2(x, z)), -phi, tilting_angle(theta, phi, orientation)))
+            f.write("""<idlist idname="det_id_list_{0}">
+                         <id val="{1}" />
+                         <id val="{2}" />
+                         <id val="{3}" />
+                         <id val="{4}" />                         
+                       </idlist>""".format(bank_number, detector_ids[0], detector_ids[1], detector_ids[2], detector_ids[3]))                       
         else:
             raise(ValueError('Unexpected number of dectors in bank'))
             
     f.write("""<type name="bank_3_dets">
                  <component type = "tube">
-                   <location x="%f" y="0.0" z="0.0" name="tube_1" />
-                   <location x="%f" y="0.0" z="0.0" name="tube_2" />
-                   <location x="%f" y="0.0" z="0.0" name="tube_3" />
+                   <location x="{0}" y="0.0" z="0.0" name="tube_1" />
+                   <location x="{1}" y="0.0" z="0.0" name="tube_2" />
+                   <location x="{2}" y="0.0" z="0.0" name="tube_3" />
                  </component>                          
-               </type>""" % (detector_gap * -1.0, detector_gap * 0.0, detector_gap * 1.0))
+               </type>""".format(orientation * detector_gap * -1.0, orientation * detector_gap * 0.0, orientation * detector_gap * 1.0))
                
     f.write("""<type name="bank_4_dets">
                  <component type = "tube">
-                   <location x="%f" y="0.0" z="0.0" name="tube_1" />
-                   <location x="%f" y="0.0" z="0.0" name="tube_2" />
-                   <location x="%f" y="0.0" z="0.0" name="tube_3" />
-                   <location x="%f" y="0.0" z="0.0" name="tube_4" />
+                   <location x="{0}" y="0.0" z="0.0" name="tube_1" />
+                   <location x="{1}" y="0.0" z="0.0" name="tube_2" />
+                   <location x="{2}" y="0.0" z="0.0" name="tube_3" />
+                   <location x="{3}" y="0.0" z="0.0" name="tube_4" />
                  </component>                 
-               </type>""" % (detector_gap * -1.5, detector_gap * -0.5, detector_gap * 0.5, detector_gap * 1.5))
+               </type>""".format(orientation * detector_gap * -1.5, orientation * detector_gap * -0.5, orientation * detector_gap * 0.5, orientation * detector_gap * 1.5))
 
 
 def write_end(f):

@@ -1,4 +1,4 @@
-from common_detector_functions import read_detector_bank_list, write_header, write_detectors, write_end
+from common_detector_functions import *
 import os, sys
 
 """This script is used to generate the IDF for IN6...
@@ -6,9 +6,28 @@ import os, sys
 """
 
 
+def write_in6_monitor_positions(f):
+    f.write("""<!--MONITORS-->
+    <component type="monitors" idlist="monitors">
+      <location/>
+
+    </component>
+    <type name="monitors">
+      <component type="monitor">
+        <location z="-0.6" name="monitor1"/>
+      </component>
+      <component type="monitor">
+        <location z="-0.5" name="monitor2"/>
+      </component>
+      <component type="monitor">
+        <location z="-0.4" name="monitor3"/>
+      </component>
+    </type>""")
+
+
 def write_in6_detector_shape(f): 
     f.write("""<!-- Detector tube shape. Cuboids 32 x 16 mm, 300 mm long -->
-                 <type is="detector" name="pixel">
+                 <type is="detector" name="tube">
                    <cuboid id="pixel-shape">
                      <left-front-bottom-point y="-0.150" x="-0.016" z="0.0"/>
                      <left-front-top-point y="0.150" x="-0.016" z="0.0"/>
@@ -19,7 +38,7 @@ def write_in6_detector_shape(f):
                  </type>""")
 
 
-def write_in6_monitors(f):
+def write_in6_monitor_shapes(f):
     f.write("""<!--MONITOR SHAPE-->
     <!--FIXME: Do something real here.-->
     <type is="monitor" name="monitor">
@@ -51,9 +70,12 @@ if __name__ == '__main__':
     f = open(temp_file, 'w')
     
     write_header(f, 'IN6', 'Riccardo Leal and Ian Bush')
+    write_moderator(f)
+    write_in6_monitor_positions(f)
+    write_sample_position(f)
     write_detectors(f, detector_bank_list, radius, detector_gap, -1)
     write_in6_detector_shape(f)    
-    write_in6_monitors(f)
+    write_in6_monitor_shapes(f)
     write_end(f)
     
     f.close()
