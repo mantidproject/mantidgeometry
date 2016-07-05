@@ -1,6 +1,8 @@
 from __future__ import print_function
 from time import gmtime, strftime
 import math
+from shutil import copyfile
+import os
 
 
 def read_detector_bank_list(filename):
@@ -159,3 +161,11 @@ def write_detectors(f, detector_bank_list, radius, detector_gap, orientation):
 
 def write_end(f):
     f.write("</instrument>")
+    
+def clean_up_xml(output_filename):
+    # Requires tidy, available on Ubuntu 14.04
+    temp_filename = output_filename + '_temp'
+    copyfile(output_filename, temp_filename)
+    os.remove(output_filename)
+    os.system('tidy -utf8 -xml -w 255 -i -c -q -asxml {0} > {1}'.format(temp_filename, output_filename))
+    os.remove(temp_filename)

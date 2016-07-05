@@ -1,5 +1,4 @@
 from common_detector_functions import *
-import os, sys
 
 """This script is used to generate the IDF for IN6...
 
@@ -62,12 +61,11 @@ if __name__ == '__main__':
     radius = 2.483
     detector_gap = 0.03380144566
     
-    temp_file = 'temp.xml'
-    detector_file_name = 'IN6_Definition.xml'
-    detector_bank_list_name = 'in6_detector_bank_list.txt'
+    output_filename = 'IN6_Definition.xml'
+    detector_bank_list_filename = 'in6_detector_bank_list.txt'
     
-    detector_bank_list = read_detector_bank_list(detector_bank_list_name)
-    f = open(temp_file, 'w')
+    detector_bank_list = read_detector_bank_list(detector_bank_list_filename)
+    f = open(output_filename, 'w')
     
     write_header(f, 'IN6', 'Riccardo Leal and Ian Bush')
     write_moderator(f)
@@ -80,8 +78,7 @@ if __name__ == '__main__':
     
     f.close()
     
-    os.system('tidy -utf8 -xml -w 255 -i -c -q -asxml {0} > {1}'.format(temp_file, detector_file_name))
-    os.remove(temp_file)
+    clean_up_xml(output_filename)
     
     
 
