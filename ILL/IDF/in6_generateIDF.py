@@ -1,4 +1,4 @@
-from common_detector_functions import *
+from common_IDF_functions import *
 
 """This script is used to generate the instrument definition for IN6.
    Note that this requires the output from in6_generate_detector_list.py
@@ -63,16 +63,16 @@ if __name__ == '__main__':
     radius = 2.483
     detector_gap = 0.03380144566
     output_filename = 'IN6_Definition.xml'
-    detector_bank_list_filename = 'in6_detector_bank_list.txt'
+    detector_box_list_filename = 'in6_detector_box_list.txt'
     
-    detector_bank_list = read_detector_bank_list(detector_bank_list_filename)
+    detector_box_list = read_detector_box_list(detector_box_list_filename)
     f = open(output_filename, 'w')
     
     write_header(f, 'IN6', 'Riccardo Leal and Ian Bush')
     write_moderator(f)
     write_in6_monitor_positions(f)
     write_sample_position(f)
-    write_detectors(f, detector_bank_list, radius, detector_gap, -1)
+    write_detectors(f, detector_box_list, radius, detector_gap, -1)
     write_in6_detector_shape(f)    
     write_in6_monitor_shapes(f)
     write_end(f)
