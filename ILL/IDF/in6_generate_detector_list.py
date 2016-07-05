@@ -37,7 +37,7 @@ def find_average_angle_for_bank_and_slice(detectors, number_of_detectors_middle,
     
 
 if __name__ == '__main__':
-    output_filename = 'IN6_detector_bank_list.txt'
+    output_filename = 'in6_detector_bank_list.txt'
         
     # Sort detector list
     detectors = fixed_theta_angle_list
