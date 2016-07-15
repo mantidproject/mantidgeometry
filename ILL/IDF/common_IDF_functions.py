@@ -80,7 +80,8 @@ def write_sample_position(f):
 def tilting_angle(theta, phi, orientation):
     theta = math.radians(theta)
     phi = math.radians(phi)
-    return 90 - orientation * (math.degrees(math.acos(math.cos(theta) / math.sin(theta) * math.sin(phi) / math.cos(phi))))
+    rotation_angle = orientation * (90 - (math.degrees(math.acos(math.cos(theta) / math.sin(theta) * math.sin(phi) / math.cos(phi)))))
+    return rotation_angle
 
 
 def write_detectors(f, detector_box_list, radius, detector_gap, orientation):

@@ -32,8 +32,8 @@ def write_in6_detector_shape(f):
                    <cuboid id="pixel-shape">
                      <left-front-bottom-point y="-0.150" x="-0.016" z="0.0"/>
                      <left-front-top-point y="0.150" x="-0.016" z="0.0"/>
-                     <left-back-bottom-point y="-0.150" x="-0.016" z="-0.016"/>
-                     <right-front-bottom-point y="-0.150" x="0.016" z="0.0"/>
+                     <left-back-bottom-point y="-0.150" x="-0.0155" z="-0.016"/>
+                     <right-front-bottom-point y="-0.150" x="0.0155" z="0.0"/>
                    </cuboid>
                    <algebra val="pixel-shape"/>
                  </type>""")
