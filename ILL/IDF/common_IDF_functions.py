@@ -76,7 +76,16 @@ def write_sample_position(f):
 
     <type name="sample-position" is="SamplePos" />""")
 
-    
+
+def box_coordinates(radius, theta, phi, orientation):
+    """Computes cartesian coordinates for a detector box.
+    """
+    x = orientation * radius * math.sqrt(numpy.sin(theta)**2 - math.sin(phi)**2)
+    y = radius * math.sin(phi)
+    z = radius * math.cos(theta)
+    return (x, y, z)
+
+
 def tilting_angle(theta, phi, orientation):
     theta = math.radians(theta)
     phi = math.radians(phi)
@@ -101,10 +110,7 @@ def write_detectors(f, detector_box_list, radius, detector_gap, orientation):
     
     for box_number, theta, detector_ids, phi in detector_box_list:
 		        
-        # Compute cartesian coordinates of box
-        x = orientation * radius * math.sqrt(math.sin(math.radians(theta))**2 - math.sin(math.radians(phi))**2)
-        y = radius * math.sin(math.radians(phi))
-        z = radius * math.cos(math.radians(theta))
+        (x, y, z) = box_coordinates(radius, theta, phi, orientation)
 
         print(box_number, detector_ids, 'x=', x, 'y=', y, 'z=', z, )
         print(box_number, 'r=', radius, 'theta=', theta, 'phi', phi)
