@@ -1,4 +1,4 @@
-"""This python script is used to generate a list of detecotr boxs with 
+"""This python script is used to generate a list of detecotr boxes with 
    a box number, a theta angle, a list of detector IDs and a phi angle.
 
    The box number is arbitary, while the detector ID corresponds to the
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     for i in range(number_of_boxs):
         """There are 4 different regimes for the theta angle, 
             corresponding to how many detectors are in each box, and
-            if they exist for upper, lower and/or middle boxs.
+            if they exist for upper, lower and/or middle boxes.
         """
 
         angle = detectors[0]
