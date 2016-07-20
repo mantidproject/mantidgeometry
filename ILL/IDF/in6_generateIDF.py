@@ -15,13 +15,13 @@ def write_in6_monitor_positions(f):
     </component>
     <type name="monitors">
       <component type="monitor">
-        <location z="-0.6" name="monitor1"/>
+        <location z="-0.273" name="monitor1"/>
       </component>
       <component type="monitor">
-        <location z="-0.5" name="monitor2"/>
+        <location z="0.570" name="monitor2"/>
       </component>
       <component type="monitor">
-        <location z="-0.4" name="monitor3"/>
+        <location z="2.483" name="monitor3"/>
       </component>
     </type>""")
 
@@ -41,13 +41,12 @@ def write_in6_detector_shape(f):
 
 def write_in6_monitor_shapes(f):
     f.write("""<!--MONITOR SHAPE-->
-    <!--FIXME: Do something real here.-->
     <type is="monitor" name="monitor">
     <cylinder id="cyl-approx">
     <centre-of-bottom-base y="0.0" x="0.0" z="0.0"/>
     <axis y="0.0" x="0.0" z="1.0"/>
-    <radius val="0.01"/>
-    <height val="0.03"/>
+    <radius val="0.02"/>
+    <height val="0.00"/>
     </cylinder>
     <algebra val="cyl-approx"/>
     </type>
