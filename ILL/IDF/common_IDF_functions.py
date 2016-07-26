@@ -92,7 +92,7 @@ def box_coordinates(radius, theta, phi, orientation):
 def tilting_angle(theta, phi, orientation):
     theta = theta * degree
     phi = phi * degree
-    rotation_angle = orientation * (90 - ((numpy.arccos(numpy.cos(theta) / numpy.sin(theta) * numpy.sin(phi) / numpy.cos(phi)))) / degree)
+    rotation_angle = orientation * ((numpy.arccos(numpy.cos(theta) / numpy.sin(theta) * numpy.sin(phi) / numpy.cos(phi)))) / degree - 90.0
     return rotation_angle
 
 
@@ -128,7 +128,7 @@ def write_detectors(f, detector_box_list, radius, detector_gap, orientation):
 						        </rot>
 							</rot>                         
                          </location/>
-                       </component>""".format(box_number, x, y, z, math.degrees(math.atan2(x, z)), -phi, tilting_angle(theta, phi, orientation)))
+                       </component>""".format(box_number, x, y, z, math.degrees(math.atan2(x, z)) + 180.0, phi, tilting_angle(theta, phi, orientation) + 180.0))
 
             f.write("""<idlist idname="det_id_list_{0}">
                          <id val="{1}" />
@@ -144,7 +144,7 @@ def write_detectors(f, detector_box_list, radius, detector_gap, orientation):
 						        </rot>
 							</rot>
 						 </location>
-                       </component>""".format(box_number, x, y, z, math.degrees(math.atan2(x, z)), -phi, tilting_angle(theta, phi, orientation)))
+                       </component>""".format(box_number, x, y, z, math.degrees(math.atan2(x, z)) + 180.0, phi, tilting_angle(theta, phi, orientation) + 180.0))
             f.write("""<idlist idname="det_id_list_{0}">
                          <id val="{1}" />
                          <id val="{2}" />

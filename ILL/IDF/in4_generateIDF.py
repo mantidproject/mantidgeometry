@@ -114,11 +114,11 @@ def write_in4_box_type(f, size, indent):
     for i in range(size):
         theta = theta_begin - i * WideAngleProperties.dTheta
         x = WideAngleProperties.R * numpy.sin(theta * scipy.constants.degree)
-        z = WideAngleProperties.R * (numpy.cos(theta * scipy.constants.degree) - 1.0)
+        z = WideAngleProperties.R * (1.0 - numpy.cos(theta * scipy.constants.degree))
         pos = (x, 0.0, z)
         f.write(indent + '  <component type="tube" name="tube_{}">\n'.format(i + 1))
         f.write(indent + '    <location x="{pos[0]}" y="{pos[1]}" z="{pos[2]}">\n'.format(pos = pos))
-        f.write(indent + '      <rot val="{}" axis-x="0.0" axis-y="1.0" axis-z="0.0" />\n'.format(-theta))
+        f.write(indent + '      <rot val="{}" axis-x="0.0" axis-y="1.0" axis-z="0.0" />\n'.format(theta))
         f.write(indent + '    </location>\n')
         f.write(indent + '  </component>\n')
     f.write(indent + '</type>\n')
@@ -134,9 +134,9 @@ def write_in4_bank_types(f, indent):
         for i in range(len(WideAngleProperties.thetas[bank_id])):
             f.write(indent + '  <component type="{}_tube_box" name="box_{}">\n'.format(WideAngleProperties.box_sizes[bank_id][i], i + 1))
             f.write(indent + '    <location x="{}" y="{}" z="{}">\n'.format(xs[i], y, zs[i]))
-            f.write(indent + '      <rot val="{}" axis-x="0.0" axis-y="1.0" axis-z="0.0">\n'.format(WideAngleProperties.thetas[bank_id][i]))
-            f.write(indent + '        <rot val="{}" axis-x="1.0" axis-y="0.0" axis-z="0.0">\n'.format(-WideAngleProperties.dPhis[bank_id]))
-            f.write(indent + '          <rot val="{}" axis-x="0.0" axis-y="0.0" axis-z="1.0" />\n'.format(tilting_angles[i] + 180.0))
+            f.write(indent + '      <rot val="{}" axis-x="0.0" axis-y="1.0" axis-z="0.0">\n'.format(WideAngleProperties.thetas[bank_id][i] + 180.0))
+            f.write(indent + '        <rot val="{}" axis-x="1.0" axis-y="0.0" axis-z="0.0">\n'.format(WideAngleProperties.dPhis[bank_id]))
+            f.write(indent + '          <rot val="{}" axis-x="0.0" axis-y="0.0" axis-z="1.0" />\n'.format(tilting_angles[i]))
             f.write(indent + '        </rot>\n')
             f.write(indent + '      </rot>\n')
             f.write(indent + '    </location>\n')
@@ -228,8 +228,8 @@ def write_in4_rosace_type(f, indent):
     for i in range(8):
         f.write(indent + '  <component type="rosace_sector" name="sector_{}">\n'.format(i))
         f.write(indent + '    <location x="0.0" y="0.0" z="0">\n')
-        f.write(indent + '      <rot val="{}" axis-x="0.0" axis-y="0.0" axis-z="1.0">\n'.format(-i * 45.0))
-        f.write(indent + '        <rot val="{}" axis-x="1.0" axis-y="0.0" axis-z="0.0" />\n'.format(tilting - 90.0))
+        f.write(indent + '      <rot val="{}" axis-x="0.0" axis-y="0.0" axis-z="1.0">\n'.format(i * 45.0))
+        f.write(indent + '        <rot val="{}" axis-x="1.0" axis-y="0.0" axis-z="0.0" />\n'.format(90.0 - tilting))
         f.write(indent + '      </rot>\n')
         f.write(indent + '    </location>\n')
         f.write(indent + '  </component>\n')
@@ -245,7 +245,9 @@ def write_in4_detectors_type(f, indent):
     f.write(indent + '    <location />\n')
     f.write(indent + '  </component>\n')
     f.write(indent + '  <component type="rosace">\n')
-    f.write(indent + '    <location z="{}"/>\n'.format(2.0 / numpy.cos(RosaceProperties.mean_theta * scipy.constants.degree)))
+    f.write(indent + '    <location z="{}">\n'.format(2.0 / numpy.cos(RosaceProperties.mean_theta * scipy.constants.degree)))
+    f.write(indent + '      <rot val="180.0" axis-x="0.0" axis-y="1.0" axis-z="0.0" />\n')
+    f.write(indent + '    </location>\n')
     f.write(indent + '  </component>\n')
     f.write(indent + '</type>\n')
 
