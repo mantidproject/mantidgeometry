@@ -130,11 +130,11 @@ def write_detectors(f, detector_box_list, radius, detector_gap, orientation):
                          </location/>
                        </component>""".format(box_number, x, y, z, math.degrees(math.atan2(x, z)) + 180.0, phi, tilting_angle(theta, phi, orientation) + 180.0))
 
-            f.write("""<idlist idname="det_id_list_{0}">
-                         <id val="{1}" />
-                         <id val="{2}" />
-                         <id val="{3}" />
-                       </idlist>""".format(box_number, detector_ids[0], detector_ids[1], detector_ids[2]))
+            f.write("""<idlist idname="det_id_list_{number}">
+                         <id val="{ids[2]}" />
+                         <id val="{ids[1]}" />
+                         <id val="{ids[0]}" />
+                       </idlist>""".format(number = box_number, ids = detector_ids))
         elif len(detector_ids) == 4:
             f.write("""<component type="box_4_dets" name="box_{0}" idlist="det_id_list_{0}">
                          <location x="{1}" y="{2}" z="{3}"> 
@@ -145,12 +145,12 @@ def write_detectors(f, detector_box_list, radius, detector_gap, orientation):
 							</rot>
 						 </location>
                        </component>""".format(box_number, x, y, z, math.degrees(math.atan2(x, z)) + 180.0, phi, tilting_angle(theta, phi, orientation) + 180.0))
-            f.write("""<idlist idname="det_id_list_{0}">
-                         <id val="{1}" />
-                         <id val="{2}" />
-                         <id val="{3}" />
-                         <id val="{4}" />                         
-                       </idlist>""".format(box_number, detector_ids[0], detector_ids[1], detector_ids[2], detector_ids[3]))                       
+            f.write("""<idlist idname="det_id_list_{number}">
+                         <id val="{ids[3]}" />
+                         <id val="{ids[2]}" />
+                         <id val="{ids[1]}" />
+                         <id val="{ids[0]}" />                         
+                       </idlist>""".format(number = box_number, ids = detector_ids))                       
         else:
             raise(ValueError('Unexpected number of dectors in box'))
             
