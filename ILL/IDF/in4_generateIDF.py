@@ -134,7 +134,7 @@ def write_in4_bank_types(f, indent):
         for i in range(len(WideAngleProperties.thetas[bank_id])):
             f.write(indent + '  <component type="{}_tube_box" name="box_{}">\n'.format(WideAngleProperties.box_sizes[bank_id][i], i + 1))
             f.write(indent + '    <location x="{}" y="{}" z="{}">\n'.format(xs[i], y, zs[i]))
-            f.write(indent + '      <rot val="{}" axis-x="0.0" axis-y="1.0" axis-z="0.0">\n'.format(WideAngleProperties.thetas[bank_id][i] + 180.0))
+            f.write(indent + '      <rot val="{}" axis-x="0.0" axis-y="1.0" axis-z="0.0">\n'.format(numpy.arctan2(xs[i], zs[i]) / scipy.constants.degree + 180.0))
             f.write(indent + '        <rot val="{}" axis-x="1.0" axis-y="0.0" axis-z="0.0">\n'.format(WideAngleProperties.dPhis[bank_id]))
             f.write(indent + '          <rot val="{}" axis-x="0.0" axis-y="0.0" axis-z="1.0" />\n'.format(tilting_angles[i]))
             f.write(indent + '        </rot>\n')
