@@ -1,14 +1,20 @@
-from common_IDF_functions import *
-
 """This script is used to generate the instrument definition for IN6.
    Note that this requires the output from in6_generate_detector_list.py
    as an input, to specify the detector positions and angles.
-
 """
 
+from common_IDF_functions import *
 
-def write_in6_monitor_positions(f):
-    f.write("""<!--MONITORS-->
+
+def write_in6_source_chopper(output_file):
+    output_file.write('  <component type="fermi_chopper">\n')
+    output_file.write('    <location z="-0.395" />\n')
+    output_file.write('  </component>\n')
+    output_file.write('  <type name="fermi_chopper" is="Source" />\n')
+
+
+def write_in6_monitor_positions(output_file):
+    output_file.write("""<!--MONITORS-->
     <component type="monitors" idlist="monitors">
       <location/>
 
@@ -26,8 +32,8 @@ def write_in6_monitor_positions(f):
     </type>""")
 
 
-def write_in6_detector_shape(f): 
-    f.write("""<!-- Detector tube shape. Cuboids 32 x 16 mm, 300 mm long -->
+def write_in6_detector_shape(output_file):
+    output_file.write("""<!-- Detector tube shape. Cuboids 32 x 16 mm, 300 mm long -->
                  <type is="detector" name="tube">
                    <cuboid id="pixel-shape">
                      <left-front-bottom-point y="-0.150" x="-0.016" z="0.0"/>
@@ -39,8 +45,8 @@ def write_in6_detector_shape(f):
                  </type>""")
 
 
-def write_in6_monitor_shapes(f):
-    f.write("""<!--MONITOR SHAPE-->
+def write_in6_monitor_shapes(output_file):
+    output_file.write("""<!--MONITOR SHAPE-->
     <type is="monitor" name="monitor">
     <cylinder id="cyl-approx">
     <centre-of-bottom-base y="0.0" x="0.0" z="0.0"/>
@@ -59,26 +65,23 @@ def write_in6_monitor_shapes(f):
 
 
 if __name__ == '__main__':
-    radius = 2.483
-    detector_gap = 0.03380144566
-    output_filename = 'IN6_Definition.xml'
-    detector_box_list_filename = 'in6_detector_box_list.txt'
-    
-    detector_box_list = read_detector_box_list(detector_box_list_filename)
-    f = open(output_filename, 'w')
-    
-    write_header(f, 'IN6', 'Riccardo Leal and Ian Bush')
-    write_moderator(f)
-    write_in6_monitor_positions(f)
-    write_sample_position(f)
-    write_detectors(f, detector_box_list, radius, detector_gap, -1)
-    write_in6_detector_shape(f)    
-    write_in6_monitor_shapes(f)
-    write_end(f)
-    
-    f.close()
-    
-    clean_up_xml(output_filename)
-    
-    
+    RADIUS = 2.483
+    DETECTOR_GAP = 0.03380144566
+    OUTPUT_FILENAME = 'IN6_Definition.xml'
+    DETECTOR_BOX_LIST_FILENAME = 'in6_detector_box_list.txt'
 
+    DETECTOR_BOX_LIST = read_detector_box_list(DETECTOR_BOX_LIST_FILENAME)
+    IDF_FILE = open(OUTPUT_FILENAME, 'w')
+
+    write_header(IDF_FILE, 'IN6', 'Riccardo Leal and Ian Bush')
+    write_in6_source_chopper(IDF_FILE)
+    write_in6_monitor_positions(IDF_FILE)
+    write_sample_position(IDF_FILE)
+    write_detectors(IDF_FILE, DETECTOR_BOX_LIST, RADIUS, DETECTOR_GAP, -1)
+    write_in6_detector_shape(IDF_FILE)
+    write_in6_monitor_shapes(IDF_FILE)
+    write_end(IDF_FILE)
+
+    IDF_FILE.close()
+
+    clean_up_xml(OUTPUT_FILENAME)
