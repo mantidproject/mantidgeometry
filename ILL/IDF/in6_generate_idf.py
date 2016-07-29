@@ -59,7 +59,7 @@ def write_in6_monitor_shapes(output_file):
 
     <!--MONITOR IDs-->
     <idlist idname="monitors">
-        <id start="1" end="3" />
+        <id start="1001" end="1003" />
     </idlist>
     """)
 

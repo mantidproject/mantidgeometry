@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     box = 1 # box number start
     number_of_boxs = 32
-    d_id = 4 # detector id start, others are monitors
+    d_id = 1 # detector id start, others are monitors
 
     f = open(output_filename, 'w')
     f.write('Box # \tTheta \tDetector ID \t\tPhi \n')

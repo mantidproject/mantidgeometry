@@ -1,3 +1,7 @@
+"""This Python script contains a number of utility functions for
+   creating IDF files for the ILL.
+"""
+
 from __future__ import print_function
 from time import gmtime, strftime
 import math
@@ -131,9 +135,9 @@ def write_detectors(f, detector_box_list, radius, detector_gap, orientation):
                        </component>""".format(box_number, x, y, z, math.degrees(math.atan2(x, z)) + 180.0, phi, tilting_angle(theta, phi, orientation) + 180.0))
 
             f.write("""<idlist idname="det_id_list_{number}">
-                         <id val="{ids[2]}" />
-                         <id val="{ids[1]}" />
                          <id val="{ids[0]}" />
+                         <id val="{ids[1]}" />
+                         <id val="{ids[2]}" />
                        </idlist>""".format(number = box_number, ids = detector_ids))
         elif len(detector_ids) == 4:
             f.write("""<component type="box_4_dets" name="box_{0}" idlist="det_id_list_{0}">
@@ -146,10 +150,10 @@ def write_detectors(f, detector_box_list, radius, detector_gap, orientation):
 						 </location>
                        </component>""".format(box_number, x, y, z, math.degrees(math.atan2(x, z)) + 180.0, phi, tilting_angle(theta, phi, orientation) + 180.0))
             f.write("""<idlist idname="det_id_list_{number}">
-                         <id val="{ids[3]}" />
-                         <id val="{ids[2]}" />
+                         <id val="{ids[0]}" />
                          <id val="{ids[1]}" />
-                         <id val="{ids[0]}" />                         
+                         <id val="{ids[2]}" />
+                         <id val="{ids[3]}" />
                        </idlist>""".format(number = box_number, ids = detector_ids))                       
         else:
             raise(ValueError('Unexpected number of dectors in box'))
@@ -160,7 +164,7 @@ def write_detectors(f, detector_box_list, radius, detector_gap, orientation):
                    <location x="{1}" y="0.0" z="0.0" name="tube_2" />
                    <location x="{2}" y="0.0" z="0.0" name="tube_3" />
                  </component>                          
-               </type>""".format(orientation * detector_gap * -1.0, orientation * detector_gap * 0.0, orientation * detector_gap * 1.0))
+               </type>""".format(orientation * detector_gap * 1.0, orientation * detector_gap * 0.0, orientation * detector_gap * -1.0))
                
     f.write("""<type name="box_4_dets">
                  <component type = "tube">
@@ -169,7 +173,7 @@ def write_detectors(f, detector_box_list, radius, detector_gap, orientation):
                    <location x="{2}" y="0.0" z="0.0" name="tube_3" />
                    <location x="{3}" y="0.0" z="0.0" name="tube_4" />
                  </component>                 
-               </type>""".format(orientation * detector_gap * -1.5, orientation * detector_gap * -0.5, orientation * detector_gap * 0.5, orientation * detector_gap * 1.5))
+               </type>""".format(orientation * detector_gap * 1.5, orientation * detector_gap * 0.5, orientation * detector_gap * -0.5, orientation * detector_gap * -1.5))
 
 
 def write_end(f):
