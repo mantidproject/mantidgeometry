@@ -78,7 +78,7 @@ def write_in4_monitors(f, indent):
     f.write(indent + '</component>\n')
     f.write(indent + '<type name="monitors">\n')
     f.write(indent + '  <component type="monitor">\n')
-    f.write(indent + '    <location x="0.0" y="0.0" z="-0.5" name="monitor_1" />\n')
+    f.write(indent + '    <location x="0.0" y="0.0" z="-0.3039" name="monitor_1" />\n')
     f.write(indent + '  </component>\n')
     f.write(indent + '</type>\n')
 
