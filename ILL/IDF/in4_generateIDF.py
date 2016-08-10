@@ -22,9 +22,9 @@ class WideAngleProperties:
         'bottom': [4, 4, 4, 8, 8, 12, 12, 12, 12, 12, 12]
     }
     dPhis = {           # Latitudes for the banks
-        'top': 12.6,
+        'top': 12.5,
         'middle': 0.0,
-        'bottom': -12.6
+        'bottom': -12.5
     }
     dTheta = 0.95       # Scattering angle delta
     R = 2.0             # Sample-detector distance
