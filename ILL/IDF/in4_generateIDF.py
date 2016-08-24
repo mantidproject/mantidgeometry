@@ -21,10 +21,11 @@ class WideAngleProperties:
         'middle': [12, 12, 12, 12, 12, 12, 12, 12, 4],
         'bottom': [4, 4, 4, 8, 8, 12, 12, 12, 12, 12, 12]
     }
-    dPhis = {           # Latitudes for the banks
-        'top': 12.5,
-        'middle': 0.0,
-        'bottom': -12.5
+    dPhis = dict() # Will be filled below
+    dPhiPrimes = { # From IN4 design documents, need conversion to dPhi
+        'top': numpy.array([-111.0, 58.5, 38.2, 29.6, 22.0, 17.8, 14.7, 13.1, 12.4, 12.9, 14.3]),
+        'middle': numpy.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        'bottom': numpy.array([-111.0, 58.5, 38.2, 29.6, 22.0, 17.8, 14.7, 13.1, 12.4, 12.9, 14.3]),
     }
     dTheta = 0.95       # Scattering angle delta
     R = 2.0             # Sample-detector distance
@@ -35,6 +36,15 @@ class WideAngleProperties:
     }
     tube_length = 0.3
     tube_radius = 0.0127
+
+# Convert dPhiPrimes to dPhi.
+def toPhi(phiPrimes, thetas):
+    phiPrimes = phiPrimes * scipy.constants.degree
+    thetas = thetas * scipy.constants.degree
+    return numpy.arcsin(numpy.sin(phiPrimes) * numpy.sin(thetas)) / scipy.constants.degree
+WideAngleProperties.dPhis['top'] = toPhi(WideAngleProperties.dPhiPrimes['top'], WideAngleProperties.thetas['top'])
+WideAngleProperties.dPhis['middle'] = WideAngleProperties.dPhiPrimes['middle']
+WideAngleProperties.dPhis['bottom'] = -WideAngleProperties.dPhis['top']
 
 class RosaceProperties:
     """This class holds details of the rosace small-angle detector.
@@ -129,13 +139,13 @@ def write_in4_bank_types(f, indent):
     for bank_id in WideAngleProperties.thetas.keys():
         f.write(indent + '<type name="{}_bank">\n'.format(bank_id))
         orientations = numpy.copysign(numpy.ones(len(WideAngleProperties.thetas[bank_id])), WideAngleProperties.thetas[bank_id])
-        (xs, y, zs) = common_IDF_functions.box_coordinates(WideAngleProperties.R, WideAngleProperties.thetas[bank_id], WideAngleProperties.dPhis[bank_id], orientations)
-        tilting_angles = common_IDF_functions.tilting_angle(WideAngleProperties.thetas[bank_id], WideAngleProperties.dPhis[bank_id], 1)
         for i in range(len(WideAngleProperties.thetas[bank_id])):
+            (xs, y, zs) = common_IDF_functions.box_coordinates(WideAngleProperties.R, WideAngleProperties.thetas[bank_id], WideAngleProperties.dPhis[bank_id][i], orientations)
+            tilting_angles = common_IDF_functions.tilting_angle(WideAngleProperties.thetas[bank_id], WideAngleProperties.dPhis[bank_id][i], 1)
             f.write(indent + '  <component type="{}_tube_box" name="box_{}">\n'.format(WideAngleProperties.box_sizes[bank_id][i], i + 1))
             f.write(indent + '    <location x="{}" y="{}" z="{}">\n'.format(xs[i], y, zs[i]))
             f.write(indent + '      <rot val="{}" axis-x="0.0" axis-y="1.0" axis-z="0.0">\n'.format(numpy.arctan2(xs[i], zs[i]) / scipy.constants.degree + 180.0))
-            f.write(indent + '        <rot val="{}" axis-x="1.0" axis-y="0.0" axis-z="0.0">\n'.format(WideAngleProperties.dPhis[bank_id]))
+            f.write(indent + '        <rot val="{}" axis-x="1.0" axis-y="0.0" axis-z="0.0">\n'.format(WideAngleProperties.dPhis[bank_id][i]))
             f.write(indent + '          <rot val="{}" axis-x="0.0" axis-y="0.0" axis-z="1.0" />\n'.format(tilting_angles[i]))
             f.write(indent + '        </rot>\n')
             f.write(indent + '      </rot>\n')
