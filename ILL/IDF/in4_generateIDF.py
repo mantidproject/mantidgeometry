@@ -35,7 +35,7 @@ class WideAngleProperties:
         'bottom': numpy.array([-14.5, 14.5, 20.5, 28.3, 37.9, 49.3, 62.5, 75.7, 88.8, 101.9, 115.1]),
     }
     tube_length = 0.3
-    tube_radius = 0.0127
+    tube_radius = 0.0127 - 0.0005 # Wall thickness 0.5mm.
 
 # Convert dPhiPrimes to dPhi.
 def toPhi(phiPrimes, thetas):
