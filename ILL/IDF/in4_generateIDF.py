@@ -21,8 +21,8 @@ class WideAngleProperties:
         'middle': [12, 12, 12, 12, 12, 12, 12, 12, 4],
         'bottom': [4, 4, 4, 8, 8, 12, 12, 12, 12, 12, 12]
     }
-    dPhis = dict() # Will be filled below
-    dPhiPrimes = { # From IN4 design documents, need conversion to dPhi
+    mus = dict() # Will be filled below
+    alphas = { # From IN4 design documents, need conversion to mu
         'top': numpy.array([111.0, 58.5, 38.2, 29.6, 22.0, 17.8, 14.7, 13.1, 12.4, 12.9, 14.3]),
         'middle': numpy.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
         'bottom': numpy.array([-111.0, -58.5, -38.2, -29.6, -22.0, -17.8, -14.7, -13.1, -12.4, -12.9, -14.3]),
@@ -42,14 +42,15 @@ class WideAngleProperties:
     tube_length = 0.3
     tube_radius = 0.0127 - 0.0005 # Wall thickness 0.5mm.
 
-# Convert dPhiPrimes to dPhi.
+# Convert alphas to mu.
 def toPhi(phiPrimes, thetas):
     phiPrimes = phiPrimes * scipy.constants.degree
     thetas = thetas * scipy.constants.degree
-    return numpy.arcsin(numpy.sin(phiPrimes) * numpy.sin(thetas)) / scipy.constants.degree
-WideAngleProperties.dPhis['top'] = toPhi(WideAngleProperties.dPhiPrimes['top'], WideAngleProperties.thetas['top'])
-WideAngleProperties.dPhis['middle'] = WideAngleProperties.dPhiPrimes['middle']
-WideAngleProperties.dPhis['bottom'] = toPhi(WideAngleProperties.dPhiPrimes['bottom'], WideAngleProperties.thetas['bottom'])
+    return (numpy.arcsin(numpy.sin(phiPrimes) * numpy.sin(thetas)) /
+        scipy.constants.degree)
+WideAngleProperties.mus['top'] = toPhi(WideAngleProperties.alphas['top'], WideAngleProperties.thetas['top'])
+WideAngleProperties.mus['middle'] = WideAngleProperties.alphas['middle']
+WideAngleProperties.mus['bottom'] = toPhi(WideAngleProperties.alphas['bottom'], WideAngleProperties.thetas['bottom'])
 
 class RosaceProperties:
     """This class holds details of the rosace small-angle detector.
@@ -110,9 +111,10 @@ def write_in4_idlist(f, indent):
 def write_in4_tube_type(f, indent):
     """Writes the wide angle detector tube type to f.
     """
+    dy = WideAngleProperties.tube_length / 2.0
     f.write(indent + '<type name="tube" is="detector">\n')
     f.write(indent + '  <cylinder id="tube_shape">\n')
-    f.write(indent + '    <centre-of-bottom-base x="0.0" y="-{}" z="0.0" />\n'.format(WideAngleProperties.tube_length / 2.0))
+    f.write(indent + '    <centre-of-bottom-base x="0.0" y="-{}" z="0.0" />\n'.format(dy))
     f.write(indent + '    <axis x="0.0" y="1.0" z="0.0" />\n')
     f.write(indent + '    <radius val="{}" />\n'.format(WideAngleProperties.tube_radius))
     f.write(indent + '    <height val="{}" />\n'.format(WideAngleProperties.tube_length))
@@ -145,13 +147,18 @@ def write_in4_bank_types(f, indent):
         f.write(indent + '<type name="{}_bank">\n'.format(bank_id))
         n = len(WideAngleProperties.thetas[bank_id])
         s = WideAngleProperties.orientations[bank_id]
-        (xs, ys, zs) = common_IDF_functions.box_coordinates(WideAngleProperties.R, WideAngleProperties.thetas[bank_id], WideAngleProperties.dPhis[bank_id], s)
-        tilting_angles = common_IDF_functions.tilting_angle(WideAngleProperties.thetas[bank_id], s * WideAngleProperties.dPhis[bank_id], 1)
+        R = WideAngleProperties.R
+        thetas = WideAngleProperties.thetas[bank_id]
+        mus = WideAngleProperties.mus[bank_id]
+        (xs, ys, zs) = common_IDF_functions.box_coordinates(R, thetas, mus, s)
+        tilting_angles = common_IDF_functions.tilting_angle(thetas, s * mus, 1)
         for i in range(n):
-            f.write(indent + '  <component type="{}_tube_box" name="box_{}">\n'.format(WideAngleProperties.box_sizes[bank_id][i], i + 1))
+            box_size = WideAngleProperties.box_sizes[bank_id][i]
+            gamma1 = numpy.arctan2(xs[i], zs[i]) / scipy.constants.degree + 180.0
+            f.write(indent + '  <component type="{}_tube_box" name="box_{}">\n'.format(box_size, i + 1))
             f.write(indent + '    <location x="{}" y="{}" z="{}">\n'.format(xs[i], ys[i], zs[i]))
-            f.write(indent + '      <rot val="{}" axis-x="0.0" axis-y="1.0" axis-z="0.0">\n'.format(numpy.arctan2(xs[i], zs[i]) / scipy.constants.degree + 180.0))
-            f.write(indent + '        <rot val="{}" axis-x="1.0" axis-y="0.0" axis-z="0.0">\n'.format(WideAngleProperties.dPhis[bank_id][i]))
+            f.write(indent + '      <rot val="{}" axis-x="0.0" axis-y="1.0" axis-z="0.0">\n'.format(gamma1))
+            f.write(indent + '        <rot val="{}" axis-x="1.0" axis-y="0.0" axis-z="0.0">\n'.format(mus[i]))
             f.write(indent + '          <rot val="{}" axis-x="0.0" axis-y="0.0" axis-z="1.0" />\n'.format(tilting_angles[i]))
             f.write(indent + '        </rot>\n')
             f.write(indent + '      </rot>\n')
@@ -180,7 +187,8 @@ def rosace_pixel_r(theta):
     """Calculates a pixel's distance from detector center.
     """
     theta = theta * scipy.constants.degree
-    return numpy.sin(theta) / numpy.cos(RosaceProperties.mean_theta * scipy.constants.degree - theta) * RosaceProperties.R
+    return (numpy.sin(theta) / numpy.cos(RosaceProperties.mean_theta * scipy.constants.degree - theta) *
+        RosaceProperties.R)
 
 def rosace_pixel_half_xml(lb, lt, rt, rb, indent):
     """Returns an xml snipped describing the left half of a pixel.
@@ -230,7 +238,9 @@ def write_in4_rosace_sector_type(f, indent):
     # Sample to detector center distance along z-axis.
     R_z = RosaceProperties.R / numpy.cos(RosaceProperties.mean_theta * scipy.constants.degree)
     for i in range(12):
-        y = R_z * numpy.sin(RosaceProperties.thetas[i] * scipy.constants.degree) / numpy.cos((RosaceProperties.mean_theta - RosaceProperties.thetas[i]) * scipy.constants.degree)
+        theta = RosaceProperties.thetas[i] * scipy.constants.degree
+        dTheta = (RosaceProperties.mean_theta - RosaceProperties.thetas[i]) * scipy.constants.degree
+        y = R_z * numpy.sin(theta) / numpy.cos(dTheta)
         f.write(indent + '  <component type="rosace_pixel_{}" name="pixel_{}">\n'.format(i, i + 1))
         f.write(indent + '    <location x="0.0" y="{}" z="0.0" />\n'.format(y))
         f.write(indent + '  </component>\n')
@@ -256,12 +266,13 @@ def write_in4_rosace_type(f, indent):
 def write_in4_detectors_type(f, indent):
     """Writes the detectors type to f.
     """
+    theta = 2.0 / numpy.cos(RosaceProperties.mean_theta * scipy.constants.degree)
     f.write(indent + '<type name="detectors">\n')
     f.write(indent + '  <component type="wide_angle">\n')
     f.write(indent + '    <location />\n')
     f.write(indent + '  </component>\n')
     f.write(indent + '  <component type="rosace">\n')
-    f.write(indent + '    <location z="{}">\n'.format(2.0 / numpy.cos(RosaceProperties.mean_theta * scipy.constants.degree)))
+    f.write(indent + '    <location z="{}">\n'.format(theta))
     f.write(indent + '      <rot val="180.0" axis-x="0.0" axis-y="1.0" axis-z="0.0" />\n')
     f.write(indent + '    </location>\n')
     f.write(indent + '  </component>\n')
