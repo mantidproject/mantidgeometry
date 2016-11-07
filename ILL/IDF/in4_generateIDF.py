@@ -139,7 +139,7 @@ def write_in4_class2_tube_type(f, indent):
     """Writes class 2 wide angle detector tube type to f. These are the
        LMT cylindrical 4bar 950V detectors.
     """
-    # At the momnt, this is actually no different than class 1.
+    # At the moment, this is actually no different than class 1.
     write_in4_class1_tube_type(f, indent, 2)
 
 def write_in4_class3_tube_type(f, indent):
@@ -160,7 +160,7 @@ def write_in4_class3_tube_type(f, indent):
     f.write(indent + '</type>\n')
 
 def write_in4_box_type(f, box_class, size, indent):
-    """Writes tube box of calss box_class to f. The number of tubes in
+    """Writes tube box of class box_class to f. The number of tubes in
        each box is specified by size.
     """
     theta_begin = WideAngleProperties.dTheta * float(size - 1) / 2.0
