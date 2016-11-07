@@ -16,6 +16,15 @@ class WideAngleProperties:
     """This is a placeholder for all the information regarding the
        wide-angle detectors.
     """
+    # Detector classes in boxes:
+    # 1 = Reuter Stokes cylindrical 4bar 1140V.
+    # 2 = LMT cylindrical 4bar 950V.
+    # 3 = Pechiné sqaushed 6bar 1300V.
+    box_classes = {
+        'top': [1, 1, 1, 2, 3, 3, 1, 1, 2, 2, 2],
+        'middle': [3, 3, 3, 3, 1, 1, 2, 2, 2],
+        'bottom': [1, 1, 3, 1, 3, 3, 3, 1, 2, 2, 2]
+    }
     box_sizes = {
         'top': [4, 4, 4, 8, 8, 12, 12, 12, 12, 12, 12],
         'middle': [12, 12, 12, 12, 12, 12, 12, 12, 4],
@@ -40,7 +49,10 @@ class WideAngleProperties:
         'bottom': numpy.array([-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
     }
     tube_length = 0.3
-    tube_radius = 0.0127 - 0.0005 # Wall thickness 0.5mm.
+    tube_radius = 0.0125 - 0.0005 # Wall thickness 0.5mm.
+    # The squashed shape is approximated here by a 32x17.5mm cuboid.
+    tube_width = 0.032 - 2 * 0.0005
+    tube_depth = 0.0175 - 2 * 0.0005
 
 # Convert alphas to mu.
 def toPhi(phiPrimes, thetas):
@@ -108,11 +120,12 @@ def write_in4_idlist(f, indent):
 
 ### Wide-angle detectors
 
-def write_in4_tube_type(f, indent):
-    """Writes the wide angle detector tube type to f.
+def write_in4_class1_tube_type(f, indent, tube_class = 1):
+    """Writes a wide angle detector tube type to f. Class 1 is the
+       Reuter Stokes cylindrical 4bar 1140V detector.
     """
     dy = WideAngleProperties.tube_length / 2.0
-    f.write(indent + '<type name="tube" is="detector">\n')
+    f.write(indent + '<type name="tube_class{}" is="detector">\n'.format(tube_class))
     f.write(indent + '  <cylinder id="tube_shape">\n')
     f.write(indent + '    <centre-of-bottom-base x="0.0" y="-{}" z="0.0" />\n'.format(dy))
     f.write(indent + '    <axis x="0.0" y="1.0" z="0.0" />\n')
@@ -122,18 +135,42 @@ def write_in4_tube_type(f, indent):
     f.write(indent + '  <algebra val="tube_shape" />\n')
     f.write(indent + '</type>\n')
 
-def write_in4_box_type(f, size, indent):
-    """Writes tube box types to f. The number of tubes in each box is
-       specified by size.
+def write_in4_class2_tube_type(f, indent):
+    """Writes class 2 wide angle detector tube type to f. These are the
+       LMT cylindrical 4bar 950V detectors.
+    """
+    # At the momnt, this is actually no different than class 1.
+    write_in4_class1_tube_type(f, indent, 2)
+
+def write_in4_class3_tube_type(f, indent):
+    """Writes class 3 wide angle detector tube type to f. These are the
+       Pechiné squashed 6bar 1300V detectors.
+    """
+    dy = WideAngleProperties.tube_length / 2.0
+    dx = WideAngleProperties.tube_width / 2.0
+    dz = WideAngleProperties.tube_depth / 2.0
+    f.write(indent + '<type name="tube_class3" is="detector">\n')
+    f.write(indent + '  <cuboid id="squashed_tube_shape">\n')
+    f.write(indent + '    <left-front-bottom-point y="-{}" x="-{}" z="{}"/>\n'.format(dy, dx, dz))
+    f.write(indent + '    <left-front-top-point y="{}" x="-{}" z="{}"/>\n'.format(dy, dx, dz))
+    f.write(indent + '    <left-back-bottom-point y="-{}" x="-{}" z="-{}"/>\n'.format(dy, dx, dz))
+    f.write(indent + '    <right-front-bottom-point y="-{}" x="{}" z="{}"/>\n'.format(dy, dx, dz))
+    f.write(indent + '  </cuboid>\n')
+    f.write(indent + '  <algebra val="squashed_tube_shape" />\n')
+    f.write(indent + '</type>\n')
+
+def write_in4_box_type(f, box_class, size, indent):
+    """Writes tube box of calss box_class to f. The number of tubes in
+       each box is specified by size.
     """
     theta_begin = WideAngleProperties.dTheta * float(size - 1) / 2.0
-    f.write(indent + '<type name="{}_tube_box">\n'.format(size))
+    f.write(indent + '<type name="{}_tube_class{}_box">\n'.format(size, box_class))
     for i in range(size):
         theta = theta_begin - i * WideAngleProperties.dTheta
         x = WideAngleProperties.R * numpy.sin(theta * scipy.constants.degree)
         z = WideAngleProperties.R * (1.0 - numpy.cos(theta * scipy.constants.degree))
         pos = (x, 0.0, z)
-        f.write(indent + '  <component type="tube" name="tube_{}">\n'.format(i + 1))
+        f.write(indent + '  <component type="tube_class{}" name="tube_{}">\n'.format(box_class, i + 1))
         f.write(indent + '    <location x="{pos[0]}" y="{pos[1]}" z="{pos[2]}">\n'.format(pos = pos))
         f.write(indent + '      <rot val="{}" axis-x="0.0" axis-y="1.0" axis-z="0.0" />\n'.format(theta))
         f.write(indent + '    </location>\n')
@@ -154,8 +191,9 @@ def write_in4_bank_types(f, indent):
         tilting_angles = common_IDF_functions.tilting_angle(thetas, s * mus, 1)
         for i in range(n):
             box_size = WideAngleProperties.box_sizes[bank_id][i]
+            box_class = WideAngleProperties.box_classes[bank_id][i]
             gamma1 = numpy.arctan2(xs[i], zs[i]) / scipy.constants.degree + 180.0
-            f.write(indent + '  <component type="{}_tube_box" name="box_{}">\n'.format(box_size, i + 1))
+            f.write(indent + '  <component type="{}_tube_class{}_box" name="box_{}">\n'.format(box_size, box_class, i + 1))
             f.write(indent + '    <location x="{}" y="{}" z="{}">\n'.format(xs[i], ys[i], zs[i]))
             f.write(indent + '      <rot val="{}" axis-x="0.0" axis-y="1.0" axis-z="0.0">\n'.format(gamma1))
             f.write(indent + '        <rot val="{}" axis-x="1.0" axis-y="0.0" axis-z="0.0">\n'.format(mus[i]))
@@ -297,10 +335,13 @@ if __name__ == '__main__':
     f.write(indent + '<!-- Detector ids -->\n')
     write_in4_idlist(f, indent)
     f.write(indent + '<!-- Wide-angle detectors -->\n')
-    write_in4_tube_type(f, indent)
-    write_in4_box_type(f, 4, indent)
-    write_in4_box_type(f, 8, indent)
-    write_in4_box_type(f, 12, indent)
+    write_in4_class1_tube_type(f, indent)
+    write_in4_class2_tube_type(f, indent)
+    write_in4_class3_tube_type(f, indent)
+    for box_class in [1, 2, 3]:
+        write_in4_box_type(f, box_class, 4, indent)
+        write_in4_box_type(f, box_class, 8, indent)
+        write_in4_box_type(f, box_class, 12, indent)
     write_in4_bank_types(f, indent)
     write_in4_wide_angle_type(f, indent)
     f.write(indent + '<!-- Small angle rosace detector -->\n')
