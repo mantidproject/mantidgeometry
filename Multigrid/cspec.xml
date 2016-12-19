@@ -1,0 +1,813 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<instrument xmlns="http://www.mantidproject.org/IDF/1.0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.mantidproject.org/IDF/1.0/IDFSchema.xsd"
+name="VoxelDetector" valid-from   ="2015-11-01 00:00:01"
+valid-to     ="2100-12-31 23:59:59"
+last-modified="2015-11-05 12:00:00">
+
+<defaults>
+<length unit="meter"/>
+<angle unit="degree"/>
+<location r="0.0" t="0.0" p="0.0" ang="0.0" axis-x="0.0" axis-y="0.0" axis-z="1.0"/>
+<reference-frame>
+<!-- The z-axis is set parallel to and in the direction of the beam. they-axis points up and the coordinate system is right handed. -->
+<along-beam axis="z"/>
+<pointing-up axis="y"/>
+<handedness val="right"/>
+<origin val="beam" />
+</reference-frame>
+<default-view view="cylindrical_y"/>
+</defaults>
+
+<!-- ***** SOURCE ***** -->
+<component type="cold_source">
+	<location z="-36.2"><facing val="none"/></location>
+</component>
+
+<type name="cold_source" is="Source">
+	<properties />
+	<cylinder id="some-shape">
+		<centre-of-bottom-base r="0.0" t="0.0" p="0.0" />
+		<axis x="0.0" y="0.0" z="1.0" />
+		<radius val="0.01" />
+		<height val="0.03" />
+	</cylinder>
+	<algebra val="some-shape" />
+</type>
+
+<!-- ***** SAMPLE POSITION ***** -->
+<component type="sample_position">
+	<location><facing val="none"/></location>
+</component>
+
+<type name="sample_position" is="SamplePos">
+	<properties />
+	<sphere id="some-shape">
+		<centre x="0.0"  y="0.0" z="0.0" />
+		<radius val="0.03" />
+	</sphere>
+	<algebra val="some-shape" />
+</type>
+
+<component type="bank" idlist="module_1" name="module_1">
+	<location x="0.261467228243" y="0" z="2.98858409428"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_2" name="module_2">
+	<location x="0.331804991288" y="0" z="2.98159444723"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_3" name="module_3">
+	<location x="0.401958556255" y="0" z="2.97294959914"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_4" name="module_4">
+	<location x="0.471888978124" y="0" z="2.96265434911"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_5" name="module_5">
+	<location x="0.541557435752" y="0" z="2.95071441244"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_6" name="module_6">
+	<location x="0.610925253421" y="0" z="2.93713641745"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_7" name="module_7">
+	<location x="0.679953922311" y="0" z="2.92192790184"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_8" name="module_8">
+	<location x="0.748605121877" y="0" z="2.90509730844"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_9" name="module_9">
+	<location x="0.816840741122" y="0" z="2.88665398059"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_10" name="module_10">
+	<location x="0.884622899754" y="0" z="2.8666081569"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_11" name="module_11">
+	<location x="0.951913969215" y="0" z="2.84497096562"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_12" name="module_12">
+	<location x="1.01867659357" y="0" z="2.82175441839"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_13" name="module_13">
+	<location x="1.08487371025" y="0" z="2.79697140365"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_14" name="module_14">
+	<location x="1.1504685706" y="0" z="2.77063567942"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_15" name="module_15">
+	<location x="1.21542476034" y="0" z="2.7427618657"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_16" name="module_16">
+	<location x="1.2797062197" y="0" z="2.71336543636"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_17" name="module_17">
+	<location x="1.34327726352" y="0" z="2.68246271052"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_18" name="module_18">
+	<location x="1.40610260097" y="0" z="2.65007084349"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_19" name="module_19">
+	<location x="1.46814735525" y="0" z="2.6162078173"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_20" name="module_20">
+	<location x="1.52937708284" y="0" z="2.58089243063"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_21" name="module_21">
+	<location x="1.5897577927" y="0" z="2.54414428847"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_22" name="module_22">
+	<location x="1.64925596511" y="0" z="2.50598379116"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_23" name="module_23">
+	<location x="1.70783857029" y="0" z="2.46643212309"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_24" name="module_24">
+	<location x="1.76547308671" y="0" z="2.42551124098"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_25" name="module_25">
+	<location x="1.82212751917" y="0" z="2.38324386161"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_26" name="module_26">
+	<location x="1.87777041655" y="0" z="2.33965344928"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_27" name="module_27">
+	<location x="1.93237088928" y="0" z="2.29476420276"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_28" name="module_28">
+	<location x="1.98589862648" y="0" z="2.24860104183"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_29" name="module_29">
+	<location x="2.03832391278" y="0" z="2.20118959351"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_30" name="module_30">
+	<location x="2.08961764484" y="0" z="2.15255617775"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_31" name="module_31">
+	<location x="2.13975134746" y="0" z="2.1027277929"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_32" name="module_32">
+	<location x="2.18869718946" y="0" z="2.05173210066"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_33" name="module_33">
+	<location x="2.23642799905" y="0" z="1.99959741075"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_34" name="module_34">
+	<location x="2.28291727898" y="0" z="1.94635266521"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_35" name="module_35">
+	<location x="2.3281392212" y="0" z="1.89202742229"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_36" name="module_36">
+	<location x="2.37206872123" y="0" z="1.8366518401"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_37" name="module_37">
+	<location x="2.41468139207" y="0" z="1.78025665981"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_38" name="module_38">
+	<location x="2.45595357773" y="0" z="1.72287318861"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_39" name="module_39">
+	<location x="2.49586236639" y="0" z="1.66453328234"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_40" name="module_40">
+	<location x="2.53438560311" y="0" z="1.60526932779"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_41" name="module_41">
+	<location x="2.57150190211" y="0" z="1.54511422473"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_42" name="module_42">
+	<location x="2.60719065866" y="0" z="1.48410136763"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_43" name="module_43">
+	<location x="2.64143206053" y="0" z="1.42226462714"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_44" name="module_44">
+	<location x="2.67420709895" y="0" z="1.35963833129"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_45" name="module_45">
+	<location x="2.70549757922" y="0" z="1.29625724641"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_46" name="module_46">
+	<location x="2.73528613073" y="0" z="1.23215655784"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_47" name="module_47">
+	<location x="2.7635562167" y="0" z="1.16737185042"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_48" name="module_48">
+	<location x="2.79029214327" y="0" z="1.1019390887"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_49" name="module_49">
+	<location x="2.81547906828" y="0" z="1.035894597"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_50" name="module_50">
+	<location x="2.83910300947" y="0" z="0.969275039216"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_51" name="module_51">
+	<location x="2.86115085224" y="0" z="0.902117398513"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_52" name="module_52">
+	<location x="2.88161035699" y="0" z="0.834458956751"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_53" name="module_53">
+	<location x="2.90047016581" y="0" z="0.766337273807"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_54" name="module_54">
+	<location x="2.9177198089" y="0" z="0.697790166724"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_55" name="module_55">
+	<location x="2.93334971028" y="0" z="0.628855688711"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_56" name="module_56">
+	<location x="2.94735119318" y="0" z="0.559572108026"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_57" name="module_57">
+	<location x="2.95971648482" y="0" z="0.489977886725"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_58" name="module_58">
+	<location x="2.97043872075" y="0" z="0.420111659313"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_59" name="module_59">
+	<location x="2.97951194862" y="0" z="0.350012211298"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_60" name="module_60">
+	<location x="2.98693113152" y="0" z="0.279718457657"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_61" name="module_61">
+	<location x="2.99269215078" y="0" z="0.209269421232"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_62" name="module_62">
+	<location x="2.99679180822" y="0" z="0.138704211073"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_63" name="module_63">
+	<location x="2.99922782797" y="0" z="0.0680620007183"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_64" name="module_64">
+	<location x="2.99999885768" y="0" z="-0.0026179935457"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_65" name="module_65">
+	<location x="2.99910446934" y="0" z="-0.073296534458"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_66" name="module_66">
+	<location x="2.99654515945" y="0" z="-0.143934385564"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_67" name="module_67">
+	<location x="2.99232234879" y="0" z="-0.214492332998"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_68" name="module_68">
+	<location x="2.98643838161" y="0" z="-0.284931207252"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_69" name="module_69">
+	<location x="2.97889652432" y="0" z="-0.355211904919"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_70" name="module_70">
+	<location x="2.96970096371" y="0" z="-0.425295410405"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_71" name="module_71">
+	<location x="2.95885680461" y="0" z="-0.495142817582"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_72" name="module_72">
+	<location x="2.94637006703" y="0" z="-0.564715351391"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_73" name="module_73">
+	<location x="2.93224768286" y="0" z="-0.633974389366"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_74" name="module_74">
+	<location x="2.91649749198" y="0" z="-0.702881483075"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_75" name="module_75">
+	<location x="2.89912823796" y="0" z="-0.771398379464"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_76" name="module_76">
+	<location x="2.88014956316" y="0" z="-0.839487042093"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_77" name="module_77">
+	<location x="2.85957200338" y="0" z="-0.907109672251"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_78" name="module_78">
+	<location x="2.83740698204" y="0" z="-0.974228729942"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_79" name="module_79">
+	<location x="2.81366680384" y="0" z="-1.04080695472"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_80" name="module_80">
+	<location x="2.78836464786" y="0" z="-1.10680738638"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_81" name="module_81">
+	<location x="2.76151456036" y="0" z="-1.17219338547"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_82" name="module_82">
+	<location x="2.73313144686" y="0" z="-1.23692865363"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_83" name="module_83">
+	<location x="2.70323106397" y="0" z="-1.30097725376"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_84" name="module_84">
+	<location x="2.67183001056" y="0" z="-1.36430362995"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_85" name="module_85">
+	<location x="2.6389457186" y="0" z="-1.42687262721"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_86" name="module_86">
+	<location x="2.60459644347" y="0" z="-1.48864951103"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_87" name="module_87">
+	<location x="2.5688012538" y="0" z="-1.5495999866"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_88" name="module_88">
+	<location x="2.53158002093" y="0" z="-1.60969021791"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_89" name="module_89">
+	<location x="2.49295340782" y="0" z="-1.6688868465"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_90" name="module_90">
+	<location x="2.45294285765" y="0" z="-1.72715700997"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_91" name="module_91">
+	<location x="2.41157058185" y="0" z="-1.78446836025"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_92" name="module_92">
+	<location x="2.36885954781" y="0" z="-1.84078908155"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_93" name="module_93">
+	<location x="2.32483346611" y="0" z="-1.89608790799"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_94" name="module_94">
+	<location x="2.27951677738" y="0" z="-1.95033414103"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_95" name="module_95">
+	<location x="2.23293463869" y="0" z="-2.00349766641"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_96" name="module_96">
+	<location x="2.18511290965" y="0" z="-2.05554897098"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_97" name="module_97">
+	<location x="2.13607813797" y="0" z="-2.10645915899"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_98" name="module_98">
+	<location x="2.08585754481" y="0" z="-2.15619996817"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_99" name="module_99">
+	<location x="2.0344790096" y="0" z="-2.20474378545"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+<component type="bank" idlist="module_100" name="module_100">
+	<location x="1.98197105461" y="0" z="-2.25206366222"><facing x="0.0"  y="0.0" z="0.0"/></location>
+</component>
+
+<type name="bank">
+<component type="Grid_module"  name="_Grid_Module">
+	<location x="0" y="0.0" z="0"/>
+	<location x="0" y="0.03125" z="0"/>
+	<location x="0" y="0.0625" z="0"/>
+	<location x="0" y="0.09375" z="0"/>
+	<location x="0" y="0.125" z="0"/>
+	<location x="0" y="0.15625" z="0"/>
+	<location x="0" y="0.1875" z="0"/>
+	<location x="0" y="0.21875" z="0"/>
+	<location x="0" y="0.25" z="0"/>
+	<location x="0" y="0.28125" z="0"/>
+	<location x="0" y="0.3125" z="0"/>
+	<location x="0" y="0.34375" z="0"/>
+	<location x="0" y="0.375" z="0"/>
+	<location x="0" y="0.40625" z="0"/>
+	<location x="0" y="0.4375" z="0"/>
+	<location x="0" y="0.46875" z="0"/>
+	<location x="0" y="0.5" z="0"/>
+	<location x="0" y="0.53125" z="0"/>
+	<location x="0" y="0.5625" z="0"/>
+	<location x="0" y="0.59375" z="0"/>
+	<location x="0" y="0.625" z="0"/>
+	<location x="0" y="0.65625" z="0"/>
+	<location x="0" y="0.6875" z="0"/>
+	<location x="0" y="0.71875" z="0"/>
+	<location x="0" y="0.75" z="0"/>
+	<location x="0" y="0.78125" z="0"/>
+	<location x="0" y="0.8125" z="0"/>
+	<location x="0" y="0.84375" z="0"/>
+	<location x="0" y="0.875" z="0"/>
+	<location x="0" y="0.90625" z="0"/>
+	<location x="0" y="0.9375" z="0"/>
+	<location x="0" y="0.96875" z="0"/>
+	<location x="0" y="1.0" z="0"/>
+	<location x="0" y="1.03125" z="0"/>
+	<location x="0" y="1.0625" z="0"/>
+	<location x="0" y="1.09375" z="0"/>
+	<location x="0" y="1.125" z="0"/>
+	<location x="0" y="1.15625" z="0"/>
+	<location x="0" y="1.1875" z="0"/>
+	<location x="0" y="1.21875" z="0"/>
+	<location x="0" y="1.25" z="0"/>
+	<location x="0" y="1.28125" z="0"/>
+	<location x="0" y="1.3125" z="0"/>
+	<location x="0" y="1.34375" z="0"/>
+	<location x="0" y="1.375" z="0"/>
+	<location x="0" y="1.40625" z="0"/>
+	<location x="0" y="1.4375" z="0"/>
+	<location x="0" y="1.46875" z="0"/>
+	<location x="0" y="1.5" z="0"/>
+	<location x="0" y="1.53125" z="0"/>
+	<location x="0" y="1.5625" z="0"/>
+	<location x="0" y="1.59375" z="0"/>
+	<location x="0" y="1.625" z="0"/>
+	<location x="0" y="1.65625" z="0"/>
+	<location x="0" y="1.6875" z="0"/>
+	<location x="0" y="1.71875" z="0"/>
+	<location x="0" y="1.75" z="0"/>
+	<location x="0" y="1.78125" z="0"/>
+	<location x="0" y="1.8125" z="0"/>
+	<location x="0" y="1.84375" z="0"/>
+	<location x="0" y="1.875" z="0"/>
+	<location x="0" y="1.90625" z="0"/>
+	<location x="0" y="1.9375" z="0"/>
+	<location x="0" y="1.96875" z="0"/>
+	<location x="0" y="2.0" z="0"/>
+	<location x="0" y="2.03125" z="0"/>
+	<location x="0" y="2.0625" z="0"/>
+	<location x="0" y="2.09375" z="0"/>
+	<location x="0" y="2.125" z="0"/>
+	<location x="0" y="2.15625" z="0"/>
+	<location x="0" y="2.1875" z="0"/>
+	<location x="0" y="2.21875" z="0"/>
+	<location x="0" y="2.25" z="0"/>
+	<location x="0" y="2.28125" z="0"/>
+	<location x="0" y="2.3125" z="0"/>
+	<location x="0" y="2.34375" z="0"/>
+	<location x="0" y="2.375" z="0"/>
+	<location x="0" y="2.40625" z="0"/>
+	<location x="0" y="2.4375" z="0"/>
+	<location x="0" y="2.46875" z="0"/>
+	<location x="0" y="2.5" z="0"/>
+	<location x="0" y="2.53125" z="0"/>
+	<location x="0" y="2.5625" z="0"/>
+	<location x="0" y="2.59375" z="0"/>
+	<location x="0" y="2.625" z="0"/>
+	<location x="0" y="2.65625" z="0"/>
+	<location x="0" y="2.6875" z="0"/>
+	<location x="0" y="2.71875" z="0"/>
+	<location x="0" y="2.75" z="0"/>
+	<location x="0" y="2.78125" z="0"/>
+	<location x="0" y="2.8125" z="0"/>
+	<location x="0" y="2.84375" z="0"/>
+	<location x="0" y="2.875" z="0"/>
+	<location x="0" y="2.90625" z="0"/>
+	<location x="0" y="2.9375" z="0"/>
+	<location x="0" y="2.96875" z="0"/>
+	<location x="0" y="3.0" z="0"/>
+	<location x="0" y="3.03125" z="0"/>
+	<location x="0" y="3.0625" z="0"/>
+	<location x="0" y="3.09375" z="0"/>
+	<location x="0" y="3.125" z="0"/>
+	<location x="0" y="3.15625" z="0"/>
+	<location x="0" y="3.1875" z="0"/>
+	<location x="0" y="3.21875" z="0"/>
+	<location x="0" y="3.25" z="0"/>
+	<location x="0" y="3.28125" z="0"/>
+	<location x="0" y="3.3125" z="0"/>
+	<location x="0" y="3.34375" z="0"/>
+	<location x="0" y="3.375" z="0"/>
+	<location x="0" y="3.40625" z="0"/>
+	<location x="0" y="3.4375" z="0"/>
+	<location x="0" y="3.46875" z="0"/>
+	<location x="0" y="3.5" z="0"/>
+	<location x="0" y="3.53125" z="0"/>
+	<location x="0" y="3.5625" z="0"/>
+	<location x="0" y="3.59375" z="0"/>
+	<location x="0" y="3.625" z="0"/>
+	<location x="0" y="3.65625" z="0"/>
+	<location x="0" y="3.6875" z="0"/>
+	<location x="0" y="3.71875" z="0"/>
+	<location x="0" y="3.75" z="0"/>
+	<location x="0" y="3.78125" z="0"/>
+	<location x="0" y="3.8125" z="0"/>
+	<location x="0" y="3.84375" z="0"/>
+	<location x="0" y="3.875" z="0"/>
+	<location x="0" y="3.90625" z="0"/>
+	<location x="0" y="3.9375" z="0"/>
+	<location x="0" y="3.96875" z="0"/>
+</component>
+</type>
+
+<type name="Grid_module">
+	<component type="Grid_layer" outline="yes">
+		<location  x="0.0" y="0" name="Segment1" />
+		<location  x="0.02" y="0" name="Segment2" />
+		<location  x="0.04" y="0" name="Segment3" />
+		<location  x="0.06" y="0" name="Segment4" />
+	</component>
+</type>
+
+<type name="Grid_layer" outline="yes">
+	<component type="Voxel" >
+		<locations z="0" z-end="0.16" name="Voxel_" n-elements="16" />
+	</component>
+</type>
+
+<type name="Voxel" is="detector">
+	<cuboid id="shape">
+		<left-front-bottom-point x="0" y="0" z="0"  />
+		<left-front-top-point  x="0" y="0.03125" z="0"  />
+		<left-back-bottom-point  x="0.02" y="0" z="0"  />
+		<right-front-bottom-point  x="0" y="0" z="0.01"  />
+	</cuboid>
+<algebra val="shape" />
+</type>
+
+<idlist idname="module_1">
+<id start="0" end="8191" />
+</idlist>
+<idlist idname="module_2">
+<id start="8192" end="16383" />
+</idlist>
+<idlist idname="module_3">
+<id start="16384" end="24575" />
+</idlist>
+<idlist idname="module_4">
+<id start="24576" end="32767" />
+</idlist>
+<idlist idname="module_5">
+<id start="32768" end="40959" />
+</idlist>
+<idlist idname="module_6">
+<id start="40960" end="49151" />
+</idlist>
+<idlist idname="module_7">
+<id start="49152" end="57343" />
+</idlist>
+<idlist idname="module_8">
+<id start="57344" end="65535" />
+</idlist>
+<idlist idname="module_9">
+<id start="65536" end="73727" />
+</idlist>
+<idlist idname="module_10">
+<id start="73728" end="81919" />
+</idlist>
+<idlist idname="module_11">
+<id start="81920" end="90111" />
+</idlist>
+<idlist idname="module_12">
+<id start="90112" end="98303" />
+</idlist>
+<idlist idname="module_13">
+<id start="98304" end="106495" />
+</idlist>
+<idlist idname="module_14">
+<id start="106496" end="114687" />
+</idlist>
+<idlist idname="module_15">
+<id start="114688" end="122879" />
+</idlist>
+<idlist idname="module_16">
+<id start="122880" end="131071" />
+</idlist>
+<idlist idname="module_17">
+<id start="131072" end="139263" />
+</idlist>
+<idlist idname="module_18">
+<id start="139264" end="147455" />
+</idlist>
+<idlist idname="module_19">
+<id start="147456" end="155647" />
+</idlist>
+<idlist idname="module_20">
+<id start="155648" end="163839" />
+</idlist>
+<idlist idname="module_21">
+<id start="163840" end="172031" />
+</idlist>
+<idlist idname="module_22">
+<id start="172032" end="180223" />
+</idlist>
+<idlist idname="module_23">
+<id start="180224" end="188415" />
+</idlist>
+<idlist idname="module_24">
+<id start="188416" end="196607" />
+</idlist>
+<idlist idname="module_25">
+<id start="196608" end="204799" />
+</idlist>
+<idlist idname="module_26">
+<id start="204800" end="212991" />
+</idlist>
+<idlist idname="module_27">
+<id start="212992" end="221183" />
+</idlist>
+<idlist idname="module_28">
+<id start="221184" end="229375" />
+</idlist>
+<idlist idname="module_29">
+<id start="229376" end="237567" />
+</idlist>
+<idlist idname="module_30">
+<id start="237568" end="245759" />
+</idlist>
+<idlist idname="module_31">
+<id start="245760" end="253951" />
+</idlist>
+<idlist idname="module_32">
+<id start="253952" end="262143" />
+</idlist>
+<idlist idname="module_33">
+<id start="262144" end="270335" />
+</idlist>
+<idlist idname="module_34">
+<id start="270336" end="278527" />
+</idlist>
+<idlist idname="module_35">
+<id start="278528" end="286719" />
+</idlist>
+<idlist idname="module_36">
+<id start="286720" end="294911" />
+</idlist>
+<idlist idname="module_37">
+<id start="294912" end="303103" />
+</idlist>
+<idlist idname="module_38">
+<id start="303104" end="311295" />
+</idlist>
+<idlist idname="module_39">
+<id start="311296" end="319487" />
+</idlist>
+<idlist idname="module_40">
+<id start="319488" end="327679" />
+</idlist>
+<idlist idname="module_41">
+<id start="327680" end="335871" />
+</idlist>
+<idlist idname="module_42">
+<id start="335872" end="344063" />
+</idlist>
+<idlist idname="module_43">
+<id start="344064" end="352255" />
+</idlist>
+<idlist idname="module_44">
+<id start="352256" end="360447" />
+</idlist>
+<idlist idname="module_45">
+<id start="360448" end="368639" />
+</idlist>
+<idlist idname="module_46">
+<id start="368640" end="376831" />
+</idlist>
+<idlist idname="module_47">
+<id start="376832" end="385023" />
+</idlist>
+<idlist idname="module_48">
+<id start="385024" end="393215" />
+</idlist>
+<idlist idname="module_49">
+<id start="393216" end="401407" />
+</idlist>
+<idlist idname="module_50">
+<id start="401408" end="409599" />
+</idlist>
+<idlist idname="module_51">
+<id start="409600" end="417791" />
+</idlist>
+<idlist idname="module_52">
+<id start="417792" end="425983" />
+</idlist>
+<idlist idname="module_53">
+<id start="425984" end="434175" />
+</idlist>
+<idlist idname="module_54">
+<id start="434176" end="442367" />
+</idlist>
+<idlist idname="module_55">
+<id start="442368" end="450559" />
+</idlist>
+<idlist idname="module_56">
+<id start="450560" end="458751" />
+</idlist>
+<idlist idname="module_57">
+<id start="458752" end="466943" />
+</idlist>
+<idlist idname="module_58">
+<id start="466944" end="475135" />
+</idlist>
+<idlist idname="module_59">
+<id start="475136" end="483327" />
+</idlist>
+<idlist idname="module_60">
+<id start="483328" end="491519" />
+</idlist>
+<idlist idname="module_61">
+<id start="491520" end="499711" />
+</idlist>
+<idlist idname="module_62">
+<id start="499712" end="507903" />
+</idlist>
+<idlist idname="module_63">
+<id start="507904" end="516095" />
+</idlist>
+<idlist idname="module_64">
+<id start="516096" end="524287" />
+</idlist>
+<idlist idname="module_65">
+<id start="524288" end="532479" />
+</idlist>
+<idlist idname="module_66">
+<id start="532480" end="540671" />
+</idlist>
+<idlist idname="module_67">
+<id start="540672" end="548863" />
+</idlist>
+<idlist idname="module_68">
+<id start="548864" end="557055" />
+</idlist>
+<idlist idname="module_69">
+<id start="557056" end="565247" />
+</idlist>
+<idlist idname="module_70">
+<id start="565248" end="573439" />
+</idlist>
+<idlist idname="module_71">
+<id start="573440" end="581631" />
+</idlist>
+<idlist idname="module_72">
+<id start="581632" end="589823" />
+</idlist>
+<idlist idname="module_73">
+<id start="589824" end="598015" />
+</idlist>
+<idlist idname="module_74">
+<id start="598016" end="606207" />
+</idlist>
+<idlist idname="module_75">
+<id start="606208" end="614399" />
+</idlist>
+<idlist idname="module_76">
+<id start="614400" end="622591" />
+</idlist>
+<idlist idname="module_77">
+<id start="622592" end="630783" />
+</idlist>
+<idlist idname="module_78">
+<id start="630784" end="638975" />
+</idlist>
+<idlist idname="module_79">
+<id start="638976" end="647167" />
+</idlist>
+<idlist idname="module_80">
+<id start="647168" end="655359" />
+</idlist>
+<idlist idname="module_81">
+<id start="655360" end="663551" />
+</idlist>
+<idlist idname="module_82">
+<id start="663552" end="671743" />
+</idlist>
+<idlist idname="module_83">
+<id start="671744" end="679935" />
+</idlist>
+<idlist idname="module_84">
+<id start="679936" end="688127" />
+</idlist>
+<idlist idname="module_85">
+<id start="688128" end="696319" />
+</idlist>
+<idlist idname="module_86">
+<id start="696320" end="704511" />
+</idlist>
+<idlist idname="module_87">
+<id start="704512" end="712703" />
+</idlist>
+<idlist idname="module_88">
+<id start="712704" end="720895" />
+</idlist>
+<idlist idname="module_89">
+<id start="720896" end="729087" />
+</idlist>
+<idlist idname="module_90">
+<id start="729088" end="737279" />
+</idlist>
+<idlist idname="module_91">
+<id start="737280" end="745471" />
+</idlist>
+<idlist idname="module_92">
+<id start="745472" end="753663" />
+</idlist>
+<idlist idname="module_93">
+<id start="753664" end="761855" />
+</idlist>
+<idlist idname="module_94">
+<id start="761856" end="770047" />
+</idlist>
+<idlist idname="module_95">
+<id start="770048" end="778239" />
+</idlist>
+<idlist idname="module_96">
+<id start="778240" end="786431" />
+</idlist>
+<idlist idname="module_97">
+<id start="786432" end="794623" />
+</idlist>
+<idlist idname="module_98">
+<id start="794624" end="802815" />
+</idlist>
+<idlist idname="module_99">
+<id start="802816" end="811007" />
+</idlist>
+<idlist idname="module_100">
+<id start="811008" end="819199" />
+</idlist>
+
+</instrument>

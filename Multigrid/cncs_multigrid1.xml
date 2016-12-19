@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- For help on the notation used to specify an Instrument Definition File 
+     see http://www.mantidproject.org/IDF -->
+<instrument xmlns="http://www.mantidproject.org/IDF/1.0" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.mantidproject.org/IDF/1.0/IDFSchema.xsd"
+ name="VoxelDetector" valid-from   ="2015-11-01 00:00:01"
+               valid-to     ="2100-12-31 23:59:59"
+               last-modified="2015-11-05 12:00:00">
+ 
+<defaults>
+     <length unit="meter"/>
+     <angle unit="degree"/>
+ <location r="0.0" t="0.0" p="0.0" ang="0.0" axis-x="0.0" axis-y="0.0" axis-z="1.0"/>
+     <reference-frame>
+       <!-- The z-axis is set parallel to and in the direction of the beam. the 
+        y-axis points up and the coordinate system is right handed. -->
+       <along-beam axis="z"/>
+       <pointing-up axis="y"/>
+       <handedness val="right"/>
+       <origin val="beam" /> 
+     </reference-frame>
+     <default-view view="cylindrical_y"/>
+     <!-- Comment "components-are-facing" out if you dont want the
+     components defined in this file to face a position by default -->    
+     <components-are-facing x="0.0" y="0.0" z="0.0" />
+</defaults>
+
+<!-- ***** SOURCE ***** -->
+<component type="cold_source">
+     <location z="-36.2"> <facing val="none"/> </location>
+</component>
+
+<type name="cold_source" is="Source">
+     <properties />
+     <cylinder id="some-shape">
+       <centre-of-bottom-base r="0.0" t="0.0" p="0.0" />
+       <axis x="0.0" y="0.0" z="1.0" /> 
+       <radius val="0.01" />
+       <height val="0.03" />
+     </cylinder> 
+     <algebra val="some-shape" />
+</type>
+ 
+<!-- ***** SAMPLE POSITION ***** -->
+<component type="sample_position">
+     <location> <facing val="none"/> </location>
+</component>
+
+<type name="sample_position" is="SamplePos">
+     <properties />
+     <sphere id="some-shape">
+       <centre x="0.0"  y="0.0" z="0.0" />
+       <radius val="0.03" />
+     </sphere>
+     <algebra val="some-shape" />
+</type>
+
+<!-- ***** DETECTOR MODULES ***** -->
+
+<component type="Grid_module" idlist="module_01" name="module_01">
+	<location x="0" y="0" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_02" name="module_02">
+	<location x="0" y=".02" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_03" name="module_03">
+	<location x="0" y=".04" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_04" name="module_04">
+	<location x="0" y=".06" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_05" name="module_05">
+	<location x="0" y=".08" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_06" name="module_06">
+	<location x="0" y=".1" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_07" name="module_07">
+	<location x="0" y=".12" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_08" name="module_08">
+	<location x="0" y=".14" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_09" name="module_09">
+	<location x="0" y=".16" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_10" name="module_10">
+	<location x="0" y=".18" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_11" name="module_11">
+	<location x="0" y=".20" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_12" name="module_12">
+	<location x="0" y=".22" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_13" name="module_13">
+	<location x="0" y=".24" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_14" name="module_14">
+	<location x="0" y=".26" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_15" name="module_15">
+	<location x="0" y=".28" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_16" name="module_16">
+	<location x="0" y=".30" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_17" name="module_17">
+	<location x="0" y=".32" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_18" name="module_18">
+	<location x="0" y=".34" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_19" name="module_19">
+	<location x="0" y=".36" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_20" name="module_20">
+	<location x="0" y=".38" z="3.5"/>
+</component>
+<component type="Grid_module" idlist="module_21" name="module_21">
+	<location x="0" y=".4" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_22" name="module_22">
+	<location x="0" y=".42" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_23" name="module_23">
+	<location x="0" y=".44" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_24" name="module_24">
+	<location x="0" y=".46" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_25" name="module_25">
+	<location x="0" y=".48" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_26" name="module_26">
+	<location x="0" y=".5" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_27" name="module_27">
+	<location x="0" y=".52" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_28" name="module_28">
+	<location x="0" y=".54" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_29" name="module_29">
+	<location x="0" y=".56" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_30" name="module_30">
+	<location x="0" y=".58" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_31" name="module_31">
+	<location x="0" y=".6" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_32" name="module_32">
+	<location x="0" y=".62" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_33" name="module_33">
+	<location x="0" y=".64" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_34" name="module_34">
+	<location x="0" y=".66" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_35" name="module_35">
+	<location x="0" y=".68" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_36" name="module_36">
+	<location x="0" y=".7" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_37" name="module_37">
+	<location x="0" y=".72" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_38" name="module_38">
+	<location x="0" y=".74" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_39" name="module_39">
+	<location x="0" y=".76" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_40" name="module_40">
+	<location x="0" y=".78" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_41" name="module_41">
+	<location x="0" y=".8" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_42" name="module_42">
+	<location x="0" y=".82" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_43" name="module_43">
+	<location x="0" y=".84" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_44" name="module_44">
+	<location x="0" y=".86" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_45" name="module_45">
+	<location x="0" y=".88" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_46" name="module_46">
+	<location x="0" y=".9" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_47" name="module_47">
+	<location x="0" y=".92" z="3.50"/>
+</component>
+<component type="Grid_module" idlist="module_48" name="module_48">
+	<location x="0" y=".94" z="3.50"/>
+</component>
+
+
+<!-- ***** DETECTOR TUBES ***** -->
+
+<type name="Grid_module">
+	<component type="Grid_layer" outline="yes">
+		<location  x=" 0" y="0" name="Segment1" />
+		<location  x=" 0.01" y="0" name="Segment2" />
+		<location  x=" 0.02" y="0" name="Segment3" />
+		<location  x=" 0.03" y="0" name="Segment4" />
+ 	</component>
+</type>
+ 
+<type name="Grid_layer" outline="yes">
+	<component type="Voxel" >
+		<locations z="0" z-end="0.16" name="Voxel_" n-elements="16" />
+	</component>
+</type>
+
+<type name="Voxel" is="detector">
+ 	<cuboid id="shape">
+  		<left-front-bottom-point x="0.0" y="-0.01" z="0"  />
+  		<left-front-top-point  x="0.0" y="0.01" z="0"  />
+  		<left-back-bottom-point  x="0.01" y="-0.01" z="0"  />
+  		<right-front-bottom-point  x="0.0" y="-0.01" z="0.01"  />
+	</cuboid>
+<algebra val="shape" />
+</type>
+
+
+
+   <!-- ***** DETECTOR ID LISTS ***** -->
+<idlist idname="module_01">
+   <id start="0" end="63" />
+</idlist>
+<idlist idname="module_02">
+   <id start="64" end="127" />
+</idlist>
+<idlist idname="module_03">
+   <id start="128" end="191" />
+</idlist>
+<idlist idname="module_04">
+   <id start="192" end="255" />
+</idlist>
+<idlist idname="module_05">
+   <id start="256" end="319" />
+</idlist>
+<idlist idname="module_06">
+   <id start="320" end="383" />
+</idlist>
+<idlist idname="module_07">
+   <id start="384" end="447" />
+</idlist>
+<idlist idname="module_08">
+   <id start="448" end="511" />
+</idlist>
+<idlist idname="module_09">
+   <id start="512" end="575" />
+</idlist>
+<idlist idname="module_10">
+   <id start="576" end="639" />
+</idlist>
+<idlist idname="module_11">
+   <id start="640" end="703" />
+</idlist>
+<idlist idname="module_12">
+   <id start="704" end="767" />
+</idlist>
+<idlist idname="module_13">
+   <id start="768" end="831" />
+</idlist>
+<idlist idname="module_14">
+   <id start="832" end="895" />
+</idlist>
+<idlist idname="module_15">
+   <id start="896" end="959" />
+</idlist>
+<idlist idname="module_16">
+   <id start="960" end="1023" />
+</idlist>
+<idlist idname="module_17">
+   <id start="1024" end="1087" />
+</idlist>
+<idlist idname="module_18">
+   <id start="1088" end="1151" />
+</idlist>
+<idlist idname="module_19">
+   <id start="1152" end="1215" />
+</idlist>
+<idlist idname="module_20">
+   <id start="1216" end="1279" />
+</idlist>
+<idlist idname="module_21">
+   <id start="1280" end="1343" />
+</idlist>
+<idlist idname="module_22">
+   <id start="1344" end="1407" />
+</idlist>
+<idlist idname="module_23">
+   <id start="1408" end="1471" />
+</idlist>
+<idlist idname="module_24">
+   <id start="1472" end="1535" />
+</idlist>
+<idlist idname="module_25">
+   <id start="1536" end="1599" />
+</idlist>
+<idlist idname="module_26">
+   <id start="1600" end="1663" />
+</idlist>
+<idlist idname="module_27">
+   <id start="1664" end="1727" />
+</idlist>
+<idlist idname="module_28">
+   <id start="1728" end="1791" />
+</idlist>
+<idlist idname="module_29">
+   <id start="1792" end="1855" />
+</idlist>
+<idlist idname="module_30">
+   <id start="1856" end="1919" />
+</idlist>
+<idlist idname="module_31">
+   <id start="1920" end="1983" />
+</idlist>
+<idlist idname="module_32">
+   <id start="1984" end="2047" />
+</idlist>
+<idlist idname="module_33">
+   <id start="2048" end="2111" />
+</idlist>
+<idlist idname="module_34">
+   <id start="2112" end="2175" />
+</idlist>
+<idlist idname="module_35">
+   <id start="2176" end="2239" />
+</idlist>
+<idlist idname="module_36">
+   <id start="2240" end="2303" />
+</idlist>
+<idlist idname="module_37">
+   <id start="2304" end="2367" />
+</idlist>
+<idlist idname="module_38">
+   <id start="2368" end="2431" />
+</idlist>
+<idlist idname="module_39">
+   <id start="2432" end="2495" />
+</idlist>
+<idlist idname="module_40">
+   <id start="2496" end="2559" />
+</idlist>
+<idlist idname="module_41">
+   <id start="2560" end="2623" />
+</idlist>
+<idlist idname="module_42">
+   <id start="2624" end="2687" />
+</idlist>
+<idlist idname="module_43">
+   <id start="2688" end="2751" />
+</idlist>
+<idlist idname="module_44">
+   <id start="2752" end="2815" />
+</idlist>
+<idlist idname="module_45">
+   <id start="2816" end="2879" />
+</idlist>
+<idlist idname="module_46">
+   <id start="2880" end="2943" />
+</idlist>
+<idlist idname="module_47">
+   <id start="2944" end="3007" />
+</idlist>
+<idlist idname="module_48">
+   <id start="3008" end="3071" />
+</idlist>
+
+</instrument>
