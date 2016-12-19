@@ -256,17 +256,17 @@ class LOKIGenerator(object):
         f.write("\t\t 4  5  6 \n")
         f.write("\-->\n\n")
 
-        f.write( "<component name =\"MonNDtype-0\" type=\"fan\" idstart=\"1000\" idfillfirst=\"y\" idstepbyrow=\"3\" idstep=\"30\">\n")
+        f.write( "<component name =\"MonNDtype-0\" type=\"fan\" idstart=\"0\" idfillbyfirst=\"x\" idstepbyrow=\"1\" idstep=\"100\">\n")
         f.write("<!-- Detector panel 1 with offset x=0.01*sin(0) y=0.01*cos(0) -->\n")
         f.write( "\t<location x=\"0\" y=\"0.01\" z=\" 9.23\"/>\n")
         f.write( "</component>\n\n")
 
         angle = 45.0;
-        id = 4000;
+        id = 1000;
 
         #write components to file.
         for i in xrange(self.numPieces-1):
-            f.write( "<component name =\"MonNDtype-"+str(i+1)+"\" type=\"fan\" idstart=\""+str(id)+"\" idfillfirst=\"y\" idstepbyrow=\"3\" idstep=\"30\">\n")
+            f.write( "<component name =\"MonNDtype-"+str(i+1)+"\" type=\"fan\" idstart=\""+str(id)+"\" idfillbyfirst=\"x\" idstepbyrow=\"1\" idstep=\"100\">\n")
             f.write("<!--\n")
             f.write("Detector Panel "+str(i+2)+" with offset x=0.01*sin("+str(-angle)+") y=0.01*cos("+str(angle)+")\n ")
             f.write("the negative angle in x produces the correct sign for the x offset-->\n")
@@ -276,7 +276,7 @@ class LOKIGenerator(object):
                 f.write( "\t<location x=\""+str(0.01 * math.sin(self.piDiv * -angle))+"\" y=\""+str(0.01 * math.cos(self.piDiv * angle))+"\" z=\"9.23\" rot=\""+str(360-angle)+"\" axis-x=\"0.0\" axis-y=\"0.0\" axis-z=\"-1.0\" />\n")
             angle += 45.0
             f.write( "</component>\n\n")
-            id+=4000
+            id+=1000
 
     def _writeIDFVertices(self, f):
         ''' Writes StructuredDetector type and all vertices which make up the first
