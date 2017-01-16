@@ -18,7 +18,7 @@ nPlates = 48
 radius = 1.471
 cellHeight = 0.15
 cellWidth = 0.002568
-cellDepth = 0.0001  # guess
+cellDepth = 0.001  # 0.05?
 starting2Theta = 1.6
 panel2Theta = 3.2
 
@@ -104,16 +104,16 @@ def printCellType():
     <type is="detector" name="cell">
         <cuboid id="cell-shape">"""
     print """   <left-front-bottom-point x="{0}" y="{1}" z="{2}"/>"""\
-        .format(0, -cellHeight/2., -cellDepth/2.)
+        .format(0, -cellHeight/2., 0)
 
     print """   <left-front-top-point x="{0}" y="{1}" z="{2}"/>"""\
-        .format(0, cellHeight/2., -cellDepth/2.)
+        .format(0, cellHeight/2., 0)
 
     print """   <left-back-bottom-point x="{0}" y="{1}" z="{2}"/>"""\
-        .format(0, -cellHeight/2., cellDepth/2.)
+        .format(0, -cellHeight/2., cellDepth)
 
     print """   <right-front-bottom-point x="{0}" y="{1}" z="{2}"/>"""\
-        .format(cellWidth, -cellHeight/2., -cellDepth/2.)
+        .format(cellWidth, -cellHeight/2., 0)
     print """   </cuboid>
       <algebra val="cell-shape"/>
     </type>
