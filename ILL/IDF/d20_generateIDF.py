@@ -18,7 +18,7 @@ nPlates = 48
 radius = 1.471
 cellHeight = 0.15
 cellWidth = 0.002568
-cellDepth = 0.001  # 0.05?
+cellDepth = 0.05  
 starting2Theta = 1.6
 panel2Theta = 3.2
 L1 = 3.2
@@ -75,7 +75,7 @@ def printHeader():
         <left-front-bottom-point  x="-{1}"  y="-{1}" z="-{1}"   />
         <left-front-top-point     x="-{1}"  y="{1}" z="-{1}" />
         <left-back-bottom-point   x="-{1}" y="-{1}" z="{1}"   />
-        <right-front-bottom-point x="{1}"  y="-{1}"  z="{1}"   />
+        <right-front-bottom-point x="{1}"  y="-{1}"  z="-{1}"   />
       </cuboid>
       <algebra val="shape" />
     </type>
