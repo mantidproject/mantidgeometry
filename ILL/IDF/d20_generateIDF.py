@@ -21,6 +21,9 @@ cellWidth = 0.002568
 cellDepth = 0.001  # 0.05?
 starting2Theta = 1.6
 panel2Theta = 3.2
+L1 = 3.2
+monitorZ = 1.7  # guess
+monitorSize = 0.01  # guess
 
 
 def printHeader():
@@ -51,8 +54,39 @@ def printHeader():
         <handedness val="right" />
       </reference-frame>
     </defaults>
+    """
 
-    <!-- Sample position -->
+    print """<!-- Source position -->
+    <component type="monochromator">
+        <location z="-{0}" />
+    </component>
+
+    <type name="monochromator" is="Source">
+      <properties />
+    </type>""".format(L1)
+
+    print """<!-- Monitor position -->
+    <component type="monitor" idlist="monitors">
+        <location z="-{0}" name="monitor" />
+    </component>
+
+    <type name="monitor" is="monitor">
+      <cuboid id="shape">
+        <left-front-bottom-point  x="-{1}"  y="-{1}" z="-{1}"   />
+        <left-front-top-point     x="-{1}"  y="{1}" z="-{1}" />
+        <left-back-bottom-point   x="-{1}" y="-{1}" z="{1}"   />
+        <right-front-bottom-point x="{1}"  y="-{1}"  z="{1}"   />
+      </cuboid>
+      <algebra val="shape" />
+    </type>
+
+    <idlist idname="monitors">
+        <id val="1" />
+    </idlist>
+
+    """.format(monitorZ, monitorSize/2.)
+
+    print """<!-- Sample position -->
     <component type="sample-position">
       <location y="0.0" x="0.0" z="0.0" />
     </component>
@@ -63,7 +97,7 @@ def printHeader():
 def printDetector():
     print """<!-- Detector IDs -->
     <idlist idname="detectors">
-        <id start="1" end="{0}" />
+        <id start="2" end="{0}" />
     </idlist>
     <!-- Detector list def -->
     <component type="detector" idlist="detectors">
@@ -71,7 +105,7 @@ def printDetector():
     </component>
     <!-- Detector Panels -->
     <type name="detector">
-      <component type="panel">""".format(nCellsPerPlate * nPlates)
+      <component type="panel">""".format(nCellsPerPlate * nPlates + 1)
 
     for panel in range(nPlates):
         print """       <location name="panel_{0}" r="{1}" t="{2}" p="0.0">
