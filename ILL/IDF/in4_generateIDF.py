@@ -85,6 +85,14 @@ class RosaceProperties:
     mean_theta = numpy.mean(thetas)
     thickness = 0.01       # A guess for pixel thickness
 
+def write_in4_source_chopper(f, indent):
+    """Writes the Fermi chopper to f and sets it as the source.
+    """
+    f.write(indent + '<component type="fermi_chopper">\n')
+    f.write(indent + '  <location z="-0.675" />\n')
+    f.write(indent + '</component>\n')
+    f.write(indent + '<type name="fermi_chopper" is="Source" />\n')
+
 def write_in4_monitors(f, indent):
     """Writes monitor information to f.
     """
@@ -327,9 +335,9 @@ if __name__ == '__main__':
     f = sys.stdout
     common_IDF_functions.write_header(f, "IN4", "Riccardo Leal and Antti Soininen")
     common_IDF_functions.write_sample_position(f)
-    common_IDF_functions.write_moderator(f)
     f.write('\n')
     indent = "  "
+    write_in4_source_chopper(f, indent)
     f.write(indent + '<!-- Monitors -->\n')
     write_in4_monitors(f, indent)
     f.write(indent + '<!-- Detector ids -->\n')
