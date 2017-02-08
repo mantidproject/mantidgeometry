@@ -22,7 +22,7 @@ cellDepth = 0.05
 starting2Theta = 1.6
 panel2Theta = 3.2
 L1 = 3.2
-monitorZ = 1.7  # guess
+monitorZ = 2.0
 monitorSize = 0.01  # guess
 
 
@@ -126,7 +126,7 @@ def printPanelType():
 
     for cell in range(nCellsPerPlate):
         print """       <location name="cell_{0}" x="{1}" />
-        """.format(cell+1, (cell - nCellsPerPlate / 2) * cellWidth)
+        """.format(cell+1, (cell - nCellsPerPlate / 2 + 0.5) * cellWidth)
 
     print """   </component>
     </type>
@@ -138,16 +138,16 @@ def printCellType():
     <type is="detector" name="cell">
         <cuboid id="cell-shape">"""
     print """   <left-front-bottom-point x="{0}" y="{1}" z="{2}"/>"""\
-        .format(0, -cellHeight/2., 0)
+        .format(-cellWidth/2., -cellHeight/2., 0)
 
     print """   <left-front-top-point x="{0}" y="{1}" z="{2}"/>"""\
-        .format(0, cellHeight/2., 0)
+        .format(-cellWidth/2., cellHeight/2., 0)
 
     print """   <left-back-bottom-point x="{0}" y="{1}" z="{2}"/>"""\
-        .format(0, -cellHeight/2., cellDepth)
+        .format(-cellWidth/2., -cellHeight/2., cellDepth)
 
     print """   <right-front-bottom-point x="{0}" y="{1}" z="{2}"/>"""\
-        .format(cellWidth, -cellHeight/2., 0)
+        .format(cellWidth/2., -cellHeight/2., 0)
     print """   </cuboid>
       <algebra val="cell-shape"/>
     </type>
