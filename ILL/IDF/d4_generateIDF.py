@@ -125,7 +125,7 @@ def printPanelType():
 
     for cell in range(nCellsPerPlate):
         print """       <location name="cell_{0}" x="{1}" />
-        """.format(cell+1, (cell - nCellsPerPlate / 2) * cellWidth)
+        """.format(cell+1, (cell - nCellsPerPlate / 2 + 0.5) * cellWidth)
 
     print """   </component>
     </type>
@@ -137,16 +137,16 @@ def printCellType():
     <type is="detector" name="cell">
         <cuboid id="cell-shape">"""
     print """   <left-front-bottom-point x="{0}" y="{1}" z="{2}"/>"""\
-        .format(0, -cellHeight/2., -cellDepth/2.)
+        .format(-cellWidth/2., -cellHeight/2., -cellDepth/2.)
 
     print """   <left-front-top-point x="{0}" y="{1}" z="{2}"/>"""\
-        .format(0, cellHeight/2., -cellDepth/2.)
+        .format(-cellWidth/2., cellHeight/2., -cellDepth/2.)
 
     print """   <left-back-bottom-point x="{0}" y="{1}" z="{2}"/>"""\
-        .format(0, -cellHeight/2., cellDepth/2.)
+        .format(-cellWidth/2., -cellHeight/2., cellDepth/2.)
 
     print """   <right-front-bottom-point x="{0}" y="{1}" z="{2}"/>"""\
-        .format(cellWidth, -cellHeight/2., -cellDepth/2.)
+        .format(cellWidth/2., -cellHeight/2., -cellDepth/2.)
     print """   </cuboid>
       <algebra val="cell-shape"/>
     </type>
