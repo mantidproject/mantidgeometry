@@ -50,7 +50,7 @@ def printHeader():
         the y-axis points up and the coordinate system is right handed. -->
         <along-beam axis="z" />
         <pointing-up axis="y" />
-        <handedness val="left" />
+        <handedness val="right" />
       </reference-frame>
     </defaults>
     """
@@ -107,7 +107,7 @@ def printDetector():
       <component type="cell">""".format(nCells + 1)
 
     for cell in range(nCells):
-        print """       <location name="cell_{0}" r="{1}" t="{2}" p="0.0">
+        print """       <location name="cell_{0}" r="{1}" t="-{2}" p="0.0">
                     <facing r="0.0" t="0.0" p="0.0"/>
                 </location>
         """.format(cell + 1, radius, starting2Theta + cell * cell2Theta)
@@ -125,10 +125,10 @@ def printCellType():
         .format(-cellWidth/2., -cellHeight/2., 0)
 
     print """   <left-front-top-point x="{0}" y="{1}" z="{2}"/>"""\
-        .format(0, cellHeight/2., 0)
+        .format(-cellWidth/2., cellHeight/2., 0)
 
     print """   <left-back-bottom-point x="{0}" y="{1}" z="{2}"/>"""\
-        .format(0, -cellHeight/2., cellDepth)
+        .format(-cellWidth/2., -cellHeight/2., cellDepth)
 
     print """   <right-front-bottom-point x="{0}" y="{1}" z="{2}"/>"""\
         .format(cellWidth/2., -cellHeight/2., 0)
