@@ -5,20 +5,24 @@ Created on 20/01/2017
 
 Run as:
 
-cd mantidgeometry/ILL/IDF; python d20_generateIDF.py
- | tidy -utf8 -xml -w 255 -i -c -q -asxml > D20_Definition.xml
+cd mantidgeometry/ILL/IDF; python d20_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > D20_Definition.xml
 
 '''
 
 import time
 
-instrumentName = 'D20'
-nCellsPerPlate = 32
+instrumentName = 'D20c'
+#nCellsPerPlate = 32
+#nCellsPerPlate = 64
+nCellsPerPlate = 96
+#cellWidth = 0.002568
+#cellWidth = 0.001284
+cellWidth = 0.000856
+
 nPlates = 48
 radius = 1.471
 cellHeight = 0.15
-cellWidth = 0.002568
-cellDepth = 0.05  
+cellDepth = 0.05
 starting2Theta = 1.6
 panel2Theta = 3.2
 L1 = 3.2
