@@ -5,19 +5,21 @@ Created on 20/01/2017
 
 Run as:
 
-cd mantidgeometry/ILL/IDF; python d4_generateIDF.py
- | tidy -utf8 -xml -w 255 -i -c -q -asxml > D4_Definition.xml
+cd mantidgeometry/ILL/IDF; python d4_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > D4_Definition.xml
 
 '''
 
 import time
 
-instrumentName = 'D4'
-nCellsPerPlate = 64
+instrumentName = 'D4b'
+#nCellsPerPlate = 64
+nCellsPerPlate = 128
+#cellWidth = 0.0025
+cellWidth = 0.00125
+
 nPlates = 9
 radius = 1.146
 cellHeight = 0.1
-cellWidth = 0.0025
 cellDepth = 0.03
 starting2Theta = 5.5
 panel2Theta = 8
