@@ -11,13 +11,13 @@ cd mantidgeometry/ILL/IDF; python d20_generateIDF.py | tidy -utf8 -xml -w 255 -i
 
 import time
 
-instrumentName = 'D20c'
-#nCellsPerPlate = 32
-#nCellsPerPlate = 64
-nCellsPerPlate = 96
-#cellWidth = 0.002568
-#cellWidth = 0.001284
-cellWidth = 0.000856
+instrumentName = 'D20_lr'
+nCellsPerPlate = 32 # D20_lr
+#nCellsPerPlate = 64 # D20
+#nCellsPerPlate = 96 # D20_hr
+cellWidth = 0.002568 # D20_lr
+#cellWidth = 0.001284 # D20
+#cellWidth = 0.000856 # D20_hr
 
 nPlates = 48
 radius = 1.471
@@ -27,7 +27,7 @@ starting2Theta = 1.6
 panel2Theta = 3.2
 L1 = 3.2
 monitorZ = 2.0
-monitorSize = 0.01  # guess
+monitorSize = 0.01
 
 
 def printHeader():
