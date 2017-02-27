@@ -5,8 +5,7 @@ Created on 20/01/2017
 
 Run as:
 
-cd mantidgeometry/ILL/IDF; python d1b_generateIDF.py
- | tidy -utf8 -xml -w 255 -i -c -q -asxml > D1B_Definition.xml
+cd mantidgeometry/ILL/IDF; python d1b_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > D1B_Definition.xml
 
 '''
 
@@ -17,12 +16,12 @@ nCells = 1280
 radius = 1.500
 cellHeight = 0.1
 cellWidth = 0.0026
-cellDepth = 0.001  # guess
+cellDepth = 0.001
 starting2Theta = 0.85
 cell2Theta = 0.1
-L1 = 2.  # guess
-monitorZ = 0.25  # guess
-monitorSize = 0.01  # guess
+L1 = 2.986
+monitorZ = 0.476
+monitorSize = 0.01
 
 
 def printHeader():
