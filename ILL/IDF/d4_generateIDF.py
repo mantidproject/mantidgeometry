@@ -5,17 +5,17 @@ Created on 20/01/2017
 
 Run as:
 
-cd mantidgeometry/ILL/IDF; python d4_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > D4_Definition.xml
+cd mantidgeometry/ILL/IDF; python d4_generateIDF.py | tidy -utf8 -xml -w 255 -i -c -q -asxml > D4C_Definition.xml
 
 '''
 
 import time
 
-instrumentName = 'D4b'
-#nCellsPerPlate = 64
-nCellsPerPlate = 128
-#cellWidth = 0.0025
-cellWidth = 0.00125
+instrumentName = 'D4C_hr'
+#nCellsPerPlate = 64 # D4C
+nCellsPerPlate = 128 # D4C_hr
+#cellWidth = 0.0025 # D4C
+cellWidth = 0.00125 # D4C_hr
 
 nPlates = 9
 radius = 1.146
@@ -24,10 +24,9 @@ cellDepth = 0.03
 starting2Theta = 5.5
 panel2Theta = 8
 gap2Theta = 7
-L1 = 1.4  # guess
-monitorZ = 0.8  # guess
-monitorSize = 0.01  # guess
-
+L1 = 2.61
+monitorZ = 0.71
+monitorSize = 0.01
 
 def printHeader():
 
