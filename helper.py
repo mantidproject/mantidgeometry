@@ -168,8 +168,6 @@ class MantidGeom:
                     #le.SubElement(basecomponent, "properties")
                     efixed_comp = le.SubElement(basecomponent, "parameter", name="Efixed")
                     le.SubElement(efixed_comp, "value", val=str(energy[i][j]))
-                    
-
 
     def addDetectorPixelsIdList(self, name, r=[], names=[]):
 
@@ -177,9 +175,8 @@ class MantidGeom:
                                   idname=name)
         for i in range(len(r)):
             for j in range(len(r[i])):
-                if (str(r[i][j]) != "nan"):
+                if str(r[i][j]) != "nan":
                     le.SubElement(component, "id", val=str(names[i][j]))
-
 
     def addMonitors(self, distance=[], names=[], neutronic=False):
         """
@@ -220,26 +217,51 @@ class MantidGeom:
         """
         if root is None:
             root = self.__root
-        comp = None
         if idlist is not None:
             comp = le.SubElement(root, "component", type=type_name,
                                  idlist=idlist)
         else:
             comp = le.SubElement(root, "component", type=type_name)
-        l=comp
+        l = comp
         if blank_location:
-          l=le.SubElement(comp, "location")
-        return l        
+            l = le.SubElement(comp, "location")
+        return l
+
+    def addComponentILL(self, type_name, x, y, z, isType=None, idlist=None, root=None):
+        """
+        Add a component to the XML definition. A blank location is added.
+        """
+        if root is None:
+            root = self.__root
+
+        comp = le.SubElement(root, "component", type=type_name)
+
+        self.addLocation(comp, x, y, z)
+
+        if isType is "Source":
+            le.SubElement(self.__root, "type",
+                          **{"name": type_name, "is": "Source"})
+        if isType is "SamplePos":
+            le.SubElement(self.__root, "type",
+                          **{"name": type_name, "is": "SamplePos"})
+
+    def addComponentRectangularDetector(self, type_name, x, y, z, idstart, idfillbyfirst, idstepbyrow, root=None):
+        if root is None:
+            root = self.__root
+
+        comp = le.SubElement(root, "component", type=type_name, idstart=idstart, idfillbyfirst=idfillbyfirst,
+                             idstepbyrow=idstepbyrow)
+        self.addLocation(comp, x, y, z)
 
     def makeTypeElement(self, name, extra_attrs={}):
         """
         Return a simple type element.
         """
         for key in extra_attrs.keys():
-            extra_attrs[key] = str(extra_attrs[key]) # convert everything to strings
+            extra_attrs[key] = str(extra_attrs[key])  # convert everything to strings
         return le.SubElement(self.__root, "type", name=name, **extra_attrs)
             
-    def makeDetectorElement(self, name, idlist_type=None, root=None, extra_attrs={}):
+    def makeDetectorElement(self, name, idlist_type=None, root=None, extra_attrs={}, location=[0.0, 0.0, 0.0]):
         """
         Return a component element.
         """
@@ -249,18 +271,21 @@ class MantidGeom:
             root_element = self.__root
 
         for key in extra_attrs.keys():
-            extra_attrs[key] = str(extra_attrs[key]) # convert everything to strings
+            extra_attrs[key] = str(extra_attrs[key])  # convert everything to strings
 
         if idlist_type is not None:
-            return le.SubElement(root_element, "component", type=name,
+            comp = le.SubElement(root_element, "component", type=name,
                                      idlist=idlist_type, **extra_attrs)
         else:
-            return le.SubElement(root_element, "component", type=name, **extra_attrs)
+            comp = le.SubElement(root_element, "component", type=name, **extra_attrs)
+
+        if location[0] > 0.0 or location[1] > 0.0 or location[2] > 0.0:
+            self.addLocation(comp, location[0], location[1], location[2])
+        return comp
 
     def makeIdListElement(self, name):
         return le.SubElement(self.__root, "idlist", idname=name)
 
-    
     def addDetector(self, x, y, z, rot_x, rot_y, rot_z, name, comp_type, usepolar=None, facingSample=False,
                     neutronic=False, nx=None,  ny=None, nz=None):
         """
@@ -269,15 +294,24 @@ class MantidGeom:
         type_element = le.SubElement(self.__root, "type", name=name)
         comp_element = le.SubElement(type_element, "component", type=comp_type)
         
-        if usepolar is not None:
-            self.addLocationPolar(comp_element, x, y, z, facingSample=facingSample)
-        else:
+        if usepolar is True:
+            self.addLocationPolar(comp_element, x, y, z, name)
+        if usepolar is False:
             self.addLocation(comp_element, x, y, z, rot_x, rot_y, rot_z, facingSample=facingSample,
                 neutronic=neutronic, nx=nx, ny=ny, nz=nz)
 
+    def addRectangularDetector(self, name, type, xstart, xstep, xpixels, ystart, ystep, ypixels):
+        """
+        Add a rectangular detector in a type element for the XML definition.
+        """
+        type_element = le.SubElement(self.__root, "type",
+                                     xstart=xstart, xstep=xstep, xpixels=xpixels,
+                                     ystart=ystart, ystep=ystep, ypixels=ypixels,
+                                     **{"name": name, "is": "rectangular_detector", "type": type})
+        #le.SubElement(type_element, "properties")
 
     def addSingleDetector(self, root, x, y, z, rot_x, rot_y, rot_z, name=None,
-                          id=None, usepolar=None):
+                          usepolar=None, facingSample=False):
         """
         Add a single detector by explicit declaration. The rotation order is
         performed as follows: y, x, z.
@@ -288,7 +322,7 @@ class MantidGeom:
         if usepolar is not None:
             self.addLocationPolar(root, x, y, z, name)
         else:
-            self.addLocation(root, x, y, z, rot_x, rot_y, rot_z, name)
+            self.addLocation(root, x, y, z, rot_x, rot_y, rot_z, name, facingSample=facingSample)
 
     def addLocation(self, root, x, y, z, rot_x=None, rot_y=None, rot_z=None, name=None,
                     facingSample=False, neutronic=False, nx=None, ny=None, nz=None):
@@ -302,19 +336,19 @@ class MantidGeom:
                         
         if rot_y is not None:
             r1 = le.SubElement(pos_loc, "rot", **{"val":str(rot_y), "axis-x":"0",
-                                                  "axis-y":"1", "axis-z":"0"})
+                                                  "axis-y": "1", "axis-z": "0"})
         else:
             r1 = pos_loc
 
         if rot_x is not None:
             r2 = le.SubElement(r1, "rot", **{"val":str(rot_x), "axis-x":"1",
-                                             "axis-y":"0", "axis-z":"0"})
+                                             "axis-y": "0", "axis-z": "0"})
         else:
             r2 = r1
 
         if rot_z is not None:
             r3 = le.SubElement(r2, "rot", **{"val":str(rot_z), "axis-x":"0",
-                                             "axis-y":"0", "axis-z":"1"})
+                                             "axis-y": "0", "axis-z": "1"})
         else:
             r3 = r2
 
@@ -325,7 +359,6 @@ class MantidGeom:
             le.SubElement(pos_loc, "neutronic", x=str(nx), y=str(ny), z=str(nz))
 
         return r3
-
 
     def addLocationPolar(self, root, r, theta, phi, name=None):
         if name is not None:
@@ -356,7 +389,7 @@ class MantidGeom:
               rf=float(r)               
               le.SubElement(log, "value", **{"val":r})    
             except Exception as e:
-              print "Excpetion: ", str(e)
+              print("Excpetion: ", str(e))
               processed=split(str(r))
               if len(processed)==1:
                 le.SubElement(log, "logfile", **{"id":r})
@@ -366,11 +399,11 @@ class MantidGeom:
             log=le.SubElement(pos_loc,"parameter",**{"name":"t-position"})
             try:
               tf=float(t)               
-              le.SubElement(log, "value", **{"val":t})    
+              le.SubElement(log, "value", **{"val": t})
             except:  
               processed=split(str(t))
               if len(processed)==1:
-                le.SubElement(log, "logfile", **{"id":t})
+                le.SubElement(log, "logfile", **{"id": t})
               else:
                 equation=join(processed[1:]).replace(processed[0],"value")
                 le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})        
@@ -453,7 +486,6 @@ class MantidGeom:
                 else:
                     le.SubElement(location_element, "neutronic", x="0.0")
 
-
     def addPixelatedTube(self, name, num_pixels, tube_height,
                          type_name="pixel", neutronic=False, neutronicIsPhysical=False):
         """
@@ -491,7 +523,7 @@ class MantidGeom:
         theta, phi. The axis is a 3-tuple of x, y, z.
         """
         type_element = le.SubElement(self.__root, "type",
-                                     **{"name":name, "is":is_type})
+                                     **{"name": name, "is": is_type})
         #cylinder = le.SubElement(type_element, "cylinder", id="cyl-approx")
         cylinder = le.SubElement(type_element, "cylinder", id=algebra)
         le.SubElement(cylinder, "centre-of-bottom-base",
@@ -507,7 +539,6 @@ class MantidGeom:
 
         return
 
-
     def addCuboidPixel(self, name, lfb_pt, lft_pt, lbb_pt, rfb_pt,
                       is_type="detector", shape_id="shape"):
         """
@@ -516,7 +547,7 @@ class MantidGeom:
         lbb_pt, rfb_pt are 3-tuple of x, y, z.
         """
         type_element = le.SubElement(self.__root, "type",
-                                     **{"name":name, "is":is_type})
+                                     **{"name": name, "is": is_type})
         cuboid = le.SubElement(type_element, "cuboid", id=shape_id)
         le.SubElement(cuboid, "left-front-bottom-point", x=str(lfb_pt[0]),
                       y=str(lfb_pt[1]), z=str(lfb_pt[2]))
@@ -629,7 +660,7 @@ class MantidGeom:
             if len(arg) == 2:
                 le.SubElement(log, "logfile", id=arg[1])
             elif len(arg) == 3:
-                le.SubElement(log, "logfile", **{"id":arg[1], "extract-single-value-as":arg[2]})
+                le.SubElement(log, "logfile", **{"id":arg[1], "extract-single-value-as": arg[2]})
             else:
                 raise IndexError("Will not be able to parse:", arg)
 
