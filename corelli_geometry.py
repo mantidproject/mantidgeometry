@@ -3,7 +3,7 @@
 INST_NAME = "CORELLI"
 NUM_PIXELS_PER_TUBE = 256
 NUM_TUBES_PER_BANK = 16
-TUBE_SIZE = 0.8392 #meter
+TUBE_SIZE = 0.9107 #meter (34.7 in)
 TUBE_WIDTH = 0.0127 #meter
 AIR_GAP_WIDTH = 0.00127 #meter
 PIXELS_PER_BANK = NUM_TUBES_PER_BANK * NUM_PIXELS_PER_TUBE
@@ -61,7 +61,10 @@ if __name__ == "__main__":
     doc_handle = None
     for i in range(num_dets):
         location = detinfo["Location"][i]
-    
+
+        if location[0] == "#":
+            continue
+
         if row_id != location[0]:
             row_id = location[0]
             row_id_list.append(row_id)
@@ -99,9 +102,11 @@ if __name__ == "__main__":
     offset = 0
     for i in range(len(row_id_list)):
         row_id_str = row_id_list[i] + " row"
-        det_names = [x for x in detinfo["Location"] if x.startswith(row_id_list[i])]
+        det_names = [x for x in detinfo["Location"] if x.startswith(row_id_list[i]) or x.startswith("#"+row_id_list[i])]
         id_list = []
         for j in range(len(det_names)):
+            if det_names[j][0] == "#":
+                continue
             id_list.append(j * PIXELS_PER_BANK + offset)
             id_list.append((j+1) * PIXELS_PER_BANK - 1 + offset)
             id_list.append(None)
