@@ -171,7 +171,7 @@ if __name__ == '__main__':
         elif angle > 102:  # 3 upper/lower/middle
             number_of_detectors_middle = 3
             number_of_detectors_upper_lower = 3
-            middle_box_angle, upper_lower_box_angle, DETECTORS = average_angle_for_box(detectors,
+            middle_box_angle, upper_lower_box_angle, detectors = average_angle_for_box(detectors,
                                                                                        number_of_detectors_middle,
                                                                                        number_of_detectors_upper_lower)
 
