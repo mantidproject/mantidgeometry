@@ -35,7 +35,7 @@ if __name__ == "__main__":
     # Set header information
     comment = "Created by Andrei Savici"
     # Time needs to be in UTC?
-    valid_from = "2017-03-14 00:10:00"
+    valid_from = "2017-03-14 10:00:00"
 
     # Get geometry information file
     inst_name = "CNCS"
