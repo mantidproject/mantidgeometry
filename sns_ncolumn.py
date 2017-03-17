@@ -2,7 +2,7 @@
 
 import os
 
-def readFile(filename, hasLabels=True):
+def readFile(filename, hasLabels=True, headerLines=0):
     """This loads in a n-column ascii file and converts it into a dictionary
     where the column headings are the keys, and the columns are as a list in
     the value. If the "hasLabels" variable is False then the keys are the
@@ -12,25 +12,24 @@ def readFile(filename, hasLabels=True):
         raise RuntimeError("File '%s' does not exist" % filename)
 
     # load the file
-    datafile = open(filename, "r")
-    lines = []
-    numcol = None
-    linenum = 0
-    import re
-    splitter = re.compile(r'\s+')
-    for line in datafile:
-        line = line.strip()
-        linenum += 1
-        if len(line) > 0:
-            line = splitter.split(line)
-            if numcol is None:
-                numcol = len(line)
-            else:
-                if numcol != len(line):
-                    raise Exception("Number of columns varies at line %d" \
-                                    % linenum)
-            lines.append(line)
-    datafile.close()
+    with open(filename, "r") as datafile:
+        lines = []
+        numcol = None
+        import re
+        splitter = re.compile(r'\s+')
+        for linenum, line in enumerate(datafile):
+            if linenum < headerLines:
+                continue
+            line = line.strip()
+            if len(line) > 0:
+                line = splitter.split(line)
+                if numcol is None:
+                    numcol = len(line)
+                else:
+                    if numcol != len(line):
+                        raise Exception("Number of columns varies at line %d" \
+                                        % linenum)
+                lines.append(line)
 
     # set up resulting data structure
     if (hasLabels):
@@ -55,4 +54,3 @@ if __name__ == "__main__":
     print "******************************"
     for key in info.keys():
         print key, info[key][0]
-    
