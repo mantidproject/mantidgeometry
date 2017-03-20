@@ -12,6 +12,9 @@ from sns_ncolumn import readFile
 # All of the tubes are 40" long with a 2mm gap between tubes
 TUBE_LENGTH = 40. * INCH_TO_METRE # 1m long matches better in bank4
 AIR_GAP = .002
+TUBE_LENGTH_END = 1.0 # 1m
+TUBE_LENGTH_SHORT = 0.461 # sausages
+AIR_GAP_END = 0.0005
 
 # Indices for the four corners of an eight-pack
 LL = 0*128+0   # LOWER LEFT CORNER
@@ -102,7 +105,6 @@ if __name__ == "__main__":
     group = instr.makeTypeElement('Group1')
     for i in range(num_banks[0]):
         bank_num = bank_offset + i + 1
-        offset = bank_num*8*128
         bank = "bank%d" % bank_num
         corners = getCorners(bank_num)
 
@@ -118,7 +120,6 @@ if __name__ == "__main__":
     group = instr.makeTypeElement('Group2')
     for i in range(num_banks[1]):
         bank_num = bank_offset+i+1
-        offset = (bank_num-1)*8*128
         bank = "bank%d" % bank_num
         corners = getCorners(bank_num)
 
@@ -134,10 +135,8 @@ if __name__ == "__main__":
     group = instr.makeTypeElement('Group3')
     for i in range(num_banks[2]):
         bank_num = bank_offset+i+1
-        offset = (bank_num-1)*8*128
         bank = "bank%d" % bank_num
         corners = getCorners(bank_num)
-        print 'getCorners(%s)' % bank, corners
 
         rect = Rectangle(positions[corners[0]],
                          positions[corners[1]],
@@ -151,7 +150,6 @@ if __name__ == "__main__":
     group = instr.makeTypeElement('Group4')
     for i in range(num_banks[3]):
         bank_num = bank_offset+i+1
-        offset = (bank_num-1)*8*128
         bank = "bank%d" % bank_num
         corners = getCorners(bank_num)
         print 'getCorners(%s)' % bank, corners
@@ -169,13 +167,10 @@ if __name__ == "__main__":
     special = [72, 73]
     for i in range(num_banks[4]):
         bank_num = bank_offset+i+1
-        offset = (bank_num-1)*8*128
-        bank = "bank%d" % bank_num
         if bank_num in special:
             corners = getCornersSpecial(bank_num)
         else:
             corners = getCorners(bank_num)
-        print bank, corners
 
         rect = Rectangle(positions[corners[0]],
                          positions[corners[1]],
@@ -194,13 +189,10 @@ if __name__ == "__main__":
     special = [90,91]
     for i in range(num_banks[5]):
         bank_num = bank_offset+i+1
-        offset = (bank_num-1)*8*128
-        bank = "bank%d" % bank_num
         if bank_num in special:
             corners = getCornersSpecial(bank_num)
         else:
             corners = getCorners(bank_num)
-        print bank, corners
 
         rect = Rectangle(positions[corners[0]],
                          positions[corners[1]],
@@ -211,10 +203,6 @@ if __name__ == "__main__":
         else:
        	    det = instr.makeDetectorElement('packhalf', root=group)
        	rect.makeLocation(instr, det, bank)
-
-
-    ####################
-
 
     ####################
     # define various "packs" of detectors
@@ -231,21 +219,21 @@ if __name__ == "__main__":
     # 1m x .5" 8-pack
     instr.addComment('banks 5 and 6 - 128x8 panel - half inch by 1m')
     instr.addNPack(name='packhalf', type_name='halftube', num_tubes=8,
-                   tube_width=0.5*INCH_TO_METRE, air_gap=AIR_GAP)
+                   tube_width=0.25*INCH_TO_METRE, air_gap=AIR_GAP_END)
     instr.addPixelatedTube(name='halftube', type_name='halfonepixel', num_pixels=128,
-                           tube_height=TUBE_LENGTH)
+                           tube_height=TUBE_LENGTH_END)
     instr.addCylinderPixel('halfonepixel', (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
-                           (.5*INCH_TO_METRE), (TUBE_LENGTH/128.))
+                           (.25*INCH_TO_METRE), (TUBE_LENGTH_END/128.))
 
 
     # sausage .5m x .5" 6-pack
     instr.addComment('banks 5 and 6 - 64x8 panel - half inch by .5m')
     instr.addNPack(name='packhalfshort', type_name='halfshorttube', num_tubes=16,
-                   tube_width=0.5*INCH_TO_METRE, air_gap=AIR_GAP)
+                   tube_width=0.25*INCH_TO_METRE, air_gap=AIR_GAP_END)
     instr.addPixelatedTube(name='halfshorttube', type_name='shortonepixel', num_pixels=64,
-                           tube_height=0.461)
+                           tube_height=TUBE_LENGTH_SHORT)
     instr.addCylinderPixel('shortonepixel', (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
-                           (.5*INCH_TO_METRE), 0.461/64.)
+                           (.25*INCH_TO_METRE), TUBE_LENGTH_SHORT/64.)
 
     # write out the file
     instr.writeGeom(xml_outfile)
