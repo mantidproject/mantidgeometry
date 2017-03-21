@@ -44,18 +44,49 @@ def getCornersSpecial(banknum):
     corners = [tube0 + 0, tube0 + 58, tube15 + 58, tube15 + 0]
     return corners
 
-def readPositions(filename):
-    positions = readFile('SNS/NOMAD/NOM_detpos.txt', hasLabels=False)
+def getRectangle(bank_num, positions, corners, tolerance_len=0.006):
+    # TODO for some reason tolerance is bigger than the default
+    try:
+        return Rectangle(positions[corners[0]],
+                         positions[corners[1]],
+                         positions[corners[2]],
+                         positions[corners[3]], tolerance_len=tolerance_len)
+    except RuntimeError as e:
+        print 'bank', bank_num, corners
+        raise e
+
+def readEngineeringPositions(filename):
+    positions = readFile(filename, hasLabels=False)
+
+    tube = np.array(map(int, positions[0]))
+    pixel = np.array(map(int, positions[1]))
+    id = tube*128+pixel
 
     x = -1. * np.array(map(float, positions[6]))
     x[x == -0.] = 0.
     y = np.array(map(float, positions[5]))
     z = np.array(map(float, positions[7]))
 
-    positions = []
-    for x_i,y_i,z_i in zip(x,y,z):
-        positions.append(Vector(x_i, y_i, z_i))
+    positions = {}
+    for i, x_i,y_i,z_i in zip(id, x,y,z):
+        positions[i] = Vector(x_i, y_i, z_i)
 
+    return positions
+
+def readSurveyPositions(filename):
+    # pixelid, x, y, z
+    positions = readFile(filename, hasLabels=False, headerLines=4)
+    id = np.array(map(float, positions[0]))
+    id = np.array(map(int, id))
+    x = np.array(map(float, positions[1]))
+    y = np.array(map(float, positions[2]))
+    z = np.array(map(float, positions[3]))
+
+    positions = {}
+    for i, x_i,y_i,z_i in zip(id, x,y,z):
+        if x_i == 0. and y_i == 0. and z_i == 0:
+            continue
+        positions[i] = Vector(x_i, y_i, z_i)
     return positions
 
 if __name__ == "__main__":
@@ -83,7 +114,38 @@ if __name__ == "__main__":
 
 
     # TODO choppers and slits could go here
-    positions = readPositions('SNS/NOMAD/NOM_detpos.txt')
+
+
+    ####################
+    # read the positions of the pixels that was provided
+    positions = readEngineeringPositions('SNS/NOMAD/NOM_detpos.txt')
+    positionsSurvey = readSurveyPositions('SNS/NOMAD/pixelpos.dat')
+    '''
+    # update the engineering positons with ones derived from survey
+    special = [74752, 74879, 75775, 75648, # bank 74
+               95232, 95359, 96255, 96128, # bank 94
+               96256, 96383, 97279, 97152] # bank 95
+    for i in special:
+        if i not in positionsSurvey:
+            continue
+        print '*****', i
+        print positions[i], 'eng'
+        print positionsSurvey[i], 'survey'
+    for i in positions.keys():
+        if i in positionsSurvey and i not in special:
+            if abs(positions[i].length-positionsSurvey[i].length) > 0.01:
+                print 'move', i, 'by', positions[i].length-positionsSurvey[i].length
+            positions[i] = positionsSurvey[i]
+
+
+    #print positions[3071], 'eng 3071'
+    #print positions[3072], 'eng 3072'
+    #print positions[3073], 'eng 3073'
+    #print positions2[3072], 'survey'
+    #print '********************'
+    #print '3071', positions2.get(3071, positions[3071]), 'meld'
+    #print '3072', positions2.get(3072, positions[3072]), 'meld'
+    '''
 
     num_banks = [14, 23, 14,12, 18, 18]
 
@@ -107,26 +169,20 @@ if __name__ == "__main__":
         bank_num = bank_offset + i + 1
         bank = "bank%d" % bank_num
         corners = getCorners(bank_num)
-
-        rect = Rectangle(positions[corners[0]],
-                         positions[corners[1]],
-                         positions[corners[2]],
-                         positions[corners[3]], tolerance_len=.003) # TODO for some reason
+        rect = getRectangle(bank_num, positions, corners)
        	det = instr.makeDetectorElement('pack', root=group)
        	rect.makeLocation(instr, det, bank)
 
-    # group 2 is banks 15-37 (inclusive) # appears to be backwards!!!!!!!!!!!!!!!!11
+    # group 2 is banks 15-37 (inclusive)
     bank_offset += num_banks[0]
     group = instr.makeTypeElement('Group2')
     for i in range(num_banks[1]):
         bank_num = bank_offset+i+1
         bank = "bank%d" % bank_num
         corners = getCorners(bank_num)
-
-        rect = Rectangle(positions[corners[1]],
-                         positions[corners[0]],
-                         positions[corners[3]],
-                         positions[corners[2]], tolerance_len=.003) # TODO for some reason
+        # appears to be backwards!!!!!!!!!!!!!!!!
+        corners = [corners[1], corners[0], corners[3], corners[2]]
+        rect = getRectangle(bank_num, positions, corners)
        	det = instr.makeDetectorElement('pack', root=group)
        	rect.makeLocation(instr, det, bank)
 
@@ -137,11 +193,7 @@ if __name__ == "__main__":
         bank_num = bank_offset+i+1
         bank = "bank%d" % bank_num
         corners = getCorners(bank_num)
-
-        rect = Rectangle(positions[corners[0]],
-                         positions[corners[1]],
-                         positions[corners[2]],
-                         positions[corners[3]], tolerance_len=.003) # TODO for some reason
+        rect = getRectangle(bank_num, positions, corners)
        	det = instr.makeDetectorElement('pack', root=group)
        	rect.makeLocation(instr, det, bank)
 
@@ -152,12 +204,9 @@ if __name__ == "__main__":
         bank_num = bank_offset+i+1
         bank = "bank%d" % bank_num
         corners = getCorners(bank_num)
-        print 'getCorners(%s)' % bank, corners
 
-        rect = Rectangle(positions[corners[0]],
-                         positions[corners[1]],
-                         positions[corners[2]],
-                         positions[corners[3]], tolerance_len=.006) # TODO for some reason
+        rect = getRectangle(bank_num, positions, corners)
+
        	det = instr.makeDetectorElement('pack', root=group)
        	rect.makeLocation(instr, det, bank)
 
@@ -172,10 +221,8 @@ if __name__ == "__main__":
         else:
             corners = getCorners(bank_num)
 
-        rect = Rectangle(positions[corners[0]],
-                         positions[corners[1]],
-                         positions[corners[2]],
-                         positions[corners[3]], tolerance_len=.006) # TODO for some reason
+        rect = getRectangle(bank_num, positions, corners)
+
         if bank_num in special:
        	    det = instr.makeDetectorElement('packhalfshort', root=group)
         else:
@@ -194,10 +241,8 @@ if __name__ == "__main__":
         else:
             corners = getCorners(bank_num)
 
-        rect = Rectangle(positions[corners[0]],
-                         positions[corners[1]],
-                         positions[corners[2]],
-                         positions[corners[3]], tolerance_len=.006) # TODO for some reason
+        rect = getRectangle(bank_num, positions, corners)
+
         if bank_num in special:
        	    det = instr.makeDetectorElement('packhalfshort', root=group)
         else:
