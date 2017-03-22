@@ -188,15 +188,15 @@ UNIT_X = Vector(1.,0.,0.)
 UNIT_Y = Vector(0.,1.,0.)
 UNIT_Z = Vector(0.,0.,1.)
 
-def getAngle(y, x, debug=False):
+def getAngle(y, x, debug=False, onlyPositive=True):
     """
     Returns the angle in radians using atan2.
     """
     if debug:
         print "getAngle(%f, %f)=" % (y, x),
     angle = math.atan2(y, x)
-    #if angle < 0:
-    #    angle += 2*math.pi
+    if onlyPositive and angle < 0:
+        angle += 2*math.pi
     if debug:
         print math.degrees(angle)
     return angle
@@ -313,7 +313,7 @@ class Rectangle:
             raise RuntimeError("The Points are in the incorrect order"+specific)
 
 
-        # Parallelogram opposite side from p1 to p4 is parallel and 
+        # Parallelogram opposite side from p1 to p4 is parallel and
         # equal lengths.
         left = p2-p1
         right = p4-p3
@@ -364,7 +364,7 @@ class Rectangle:
     def __calcOrientation(self, p1, p2, p3, p4):
         """
         Calculates the orientation matrix for these points.
-        @return  The 9 element orientation matrix for these points. 
+        @return  The 9 element orientation matrix for these points.
         """
         # calculate the direction vectors
         xvec =  .5*(p4 + p3) - self.__center
@@ -390,7 +390,7 @@ class Rectangle:
     def __euler_rotations_zyz(self):
         """
         The Euler angles are about the z (alpha), then unrotated y (beta),
-        then unrotated z (gamma). This is described in equations and pretty 
+        then unrotated z (gamma). This is described in equations and pretty
         pictures in Arfken pages 199-200.
 
         George Arfken, Mathematical methods for physicists, 3rd edition
@@ -430,8 +430,8 @@ class Rectangle:
 
     def __euler_rotations_yzy(self):
         """
-        This is very similar to __euler_roatations_zyz except the rotations 
-        are about the y (alpha), then unrotated z (beta), then unrotated 
+        This is very similar to __euler_roatations_zyz except the rotations
+        are about the y (alpha), then unrotated z (beta), then unrotated
         y (gamma).
         """
         rotated_x = self.__orient[0]
