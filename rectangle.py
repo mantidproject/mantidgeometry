@@ -429,6 +429,97 @@ class Rectangle:
         return (alpha_rot, beta_rot, gamma_rot)
 
     def __euler_rotations_yzy(self):
+        print(self.__orient) # wikipedia says zyz
+
+        gamma = getAngle(-1.*self.__orient[2][0], self.__orient[2][1])
+        if abs(gamma) == 0.: gamma = 0.
+
+        cg = math.cos(gamma) # c3
+        sg = math.sin(gamma) # s3
+
+        if abs(cg) > abs(sg):
+            beta = getAngle(self.__orient[2][2], -1.*self.__orient[2][0]/cg)
+        else:
+            beta = getAngle(self.__orient[2][2], self.__orient[2][1]/sg)
+        print cg, sg
+
+        alpha = getAngle(self.__orient[1][2], self.__orient[2][0])
+
+        return 0.,beta,gamma
+
+    def __euler_rotations_yzym(self):
+        """
+        Taken from mantid's Quat::getEulerAngles('YZY') with the
+        conditionals calculated out.
+        """
+        #// Cannot be XXY, XYY, or similar. Only first and last may be the same: YXY
+        #if ((conv[0] == conv[1]) || (conv[2] == conv[1]))
+        #  throw std::invalid_argument("Wrong convention name (repeated indices)");
+
+        #boost::replace_all(conv, "X", "0");
+        #boost::replace_all(conv, "Y", "1");
+        #boost::replace_all(conv, "Z", "2");
+
+        #std::stringstream s;
+        #s << conv[0] << " " << conv[1] << " " << conv[2];
+
+        #int first, second, last;
+        #s >> first >> second >> last;
+        first, second, last = 1,2,1
+
+        #// Do we want Tait-Bryan angles, as opposed to 'classic' Euler angles?
+        #const int TB =
+        #    (first * second * last == 0 && first + second + last == 3) ? 1 : 0;
+        TB = 0
+
+        #const int par01 = ((second - first + 9) % 3 == 1) ? 1 : -1;
+        par01 = 1
+        #const int par12 = ((last - second + 9) % 3 == 1) ? 1 : -1;
+        par12 = -1
+
+        #std::vector<double> angles(3);
+
+        #const DblMatrix R = DblMatrix(this->getRotation());
+        R = self.__orient
+
+        #const int i = (last + TB * par12 + 9) % 3;
+        i = 1
+        #const int j1 = (last - par12 + 9) % 3;
+        j1 = 2
+        #const int j2 = (last + par12 + 9) % 3;
+        j2 = 0
+
+        #const double s3 = (1.0 - TB - TB * par12) * R[i][j1];
+        s3 = R[i,j1] # 1,2
+        #const double c3 = (TB - (1.0 - TB) * par12) * R[i][j2];
+        c3 = R[i,j2] # 1,0
+
+        #V3D axis3(0, 0, 0);
+        #axis3[last] = 1.0;
+        axis3 = Vector(0,0,1)
+
+        #angles[2] = atan2(s3, c3) * rad2deg;
+        gamma = atan2(s3, c3)
+
+
+        '''
+        DblMatrix Rm3(Quat(-angles[2], axis3).getRotation());
+        DblMatrix Rp = R * Rm3;
+
+        const double s1 =
+             par01 * Rp[(first - par01 + 9) % 3][(first + par01 + 9) % 3];
+        const double c1 = Rp[second][second];
+        const double s2 = par01 * Rp[first][3 - first - second];
+        const double c2 = Rp[first][first];
+
+        angles[0] = atan2(s1, c1) * rad2deg;
+        angles[1] = atan2(s2, c2) * rad2deg;
+
+        return angles;'''
+        return 0,0,0
+
+
+    def __euler_rotations_yzyold(self):
         """
         This is very similar to __euler_roatations_zyz except the rotations
         are about the y (alpha), then unrotated z (beta), then unrotated
@@ -480,6 +571,7 @@ class Rectangle:
     orientation = property(lambda self: self.__orient[:],
                            doc="Orientation as a set of three basis vectors")
     euler_rot = property(__euler_rotations_zyz)
+    euler_rot_yzy = property(__euler_rotations_yzy)
     points = property(lambda self: self.__points[:],
                       doc="The four corners originally supplied in the constructor")
 
