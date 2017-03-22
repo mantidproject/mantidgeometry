@@ -7,4 +7,4 @@ install:
   - pip install numpy
 
 script:
-  - ./rectangle_test.py
+  - python rectangle_test.py
