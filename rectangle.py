@@ -195,8 +195,8 @@ def getAngle(y, x, debug=False, onlyPositive=True):
     if debug:
         print "getAngle(%f, %f)=" % (y, x),
     angle = math.atan2(y, x)
-    if onlyPositive and angle < 0:
-        angle += 2*math.pi
+    if onlyPositive and angle < 0.:
+        angle += 2.*math.pi
     if debug:
         print math.degrees(angle)
     return angle
