@@ -74,7 +74,9 @@ class TestVector(unittest.TestCase):
 
         self.assertEqual(len(temp), 3)
 
+        self.assertEqual(temp, Vector(100., 200., 300.))
         self.assertEqual(temp, (100., 200., 300.))
+        self.assertEqual(temp, [100., 200., 300.])
         self.assertEqual(temp.x, 100.)
         self.assertEqual(temp.y, 200.)
         self.assertEqual(temp.z, 300.)

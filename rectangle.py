@@ -4,6 +4,7 @@
 #
 
 import math
+import numpy as np
 HAS_LXML = True
 try:
     from lxml import etree as le # python-lxml on rpm based systems
@@ -21,53 +22,33 @@ class Vector:
 
     LENGTH = 3
 
-    def __init__(self, x=None, y=None, z=None):
-        # set the data
-        if y is None and z is None:
-            if x is None:
-                self.__data = [0.]*Vector.LENGTH
-            else:
-                try:
-                    self.__data = x.__data[:]
-                except AttributeError, e:
-                    if len(x) != Vector.LENGTH:
-                        msg = "Expected 3 values, found %d" % len(x)
-                        raise RuntimeError(msg)
-                    self.__data = x[:Vector.LENGTH]
-        else:
-            self.__data = [x, y, z]
+    def __init__(self, *values):
+        self.data = np.array(values, dtype=np.float).flatten()
 
-        # convert the values to floats
-        self.__data = [float(num) for num in self.__data]
+        # check the length
+        if self.data.size != Vector.LENGTH:
+            msg = "Expected %d values, found %d" % (Vector.LENGTH, self.__data.size)
+            raise RuntimeError(msg)
 
         # sanity check the numbers
-        for num in self.__data:
-            if math.isnan(num):
-                raise RuntimeError("Encountered NaN")
+        if np.any(np.isnan(self.data)):
+            raise RuntimeError("Encountered NaN")
 
-    x = property(lambda self: self.__data[0])
-    y = property(lambda self: self.__data[1])
-    z = property(lambda self: self.__data[2])
+    x = property(lambda self: self.data[0])
+    y = property(lambda self: self.data[1])
+    z = property(lambda self: self.data[2])
 
     def cross(self, other):
         """
         Calculate the cross product of this with another vector.
         """
-        result = [0.]*Vector.LENGTH
-        result[0] = self.y*other.z - self.z*other.y
-        result[1] = self.z*other.x - self.x*other.z
-        result[2] = self.x*other.y - self.y*other.x
-
-        return Vector(result)
+        return Vector(np.cross(self.data, other.data))
 
     def dot(self, other):
         """
         Calculate the dot product of this with another vector.
         """
-        result = 0.
-        for (a, b) in zip (self.__data, other.__data):
-            result += a*b
-        return result
+        return np.dot(self.data, other.data)
 
     def normalize(self):
         """
@@ -79,13 +60,11 @@ class Vector:
         length = self.length # cache value
         if abs(length) < TOLERANCE:
             raise RuntimeError("Zero vector of zero length")
-        if abs(length -1.) > TOLERANCE:
-            self.__data = [it/length for it in self.__data]
+        if abs(length - 1.) > TOLERANCE:
+            self.data /= length
 
         # set near zeros to zero
-        for i in range(len(self.__data)):
-            if abs(self.__data[i]) < TOLERANCE:
-                self.__data[i] = 0.
+        self.data[np.abs(self.data) < TOLERANCE] = 0.
 
         return self
 
@@ -95,92 +74,50 @@ class Vector:
         """
         if abs(self.length-1.) > TOLERANCE:
             return False
-        x_is_zero = abs(self.__data[0]) <TOLERANCE
-        y_is_zero = abs(self.__data[1]) <TOLERANCE
-        z_is_zero = abs(self.__data[2]) <TOLERANCE
 
-        def sign(number):
-            """
-            Specialized version of sign intended to be used with +/-1 only
-            """
-            return number/abs(number)
-
-        # x = +/-1
-        if abs(abs(self.__data[0])-1.) <TOLERANCE:
-            if y_is_zero and z_is_zero:
-                if resetValues:
-                    self.__data[0] = sign(self.__data[0])
-                    self.__data[1] = 0.
-                    self.__data[2] = 0.
-                return True
-        # y = +/-1
-        if abs(abs(self.__data[1])-1.) <TOLERANCE:
-            if x_is_zero and z_is_zero:
-                if resetValues:
-                    self.__data[0] = 0.
-                    self.__data[1] = sign(self.__data[1])
-                    self.__data[2] = 0.
-                return True
-        # z = +/-1
-        if abs(abs(self.__data[2])-1.) <TOLERANCE:
-            if x_is_zero and y_is_zero:
-                if resetValues:
-                    self.__data[0] = 0.
-                    self.__data[1] = 0.
-                    self.__data[2] = sign(self.__data[2])
-                return True
-
-        # otherwise no
-        return False
-
-    def __getitem__(self, key):
-        return self.__data[key]
-
-    def __eq__(self, other):
-        other = Vector(other)
-        if not self.x == other.x:
+        temp = np.abs(self.data)
+        if temp[temp < TOLERANCE].size != 2:
             return False
-        if not self.y == other.y:
+        value = self.data[temp >= TOLERANCE][0]
+        if abs(value-1.) >= TOLERANCE:
             return False
-        if not self.z == other.z:
-            return False
+
+        if resetValues:
+            self.data[temp < TOLERANCE] = 0.
+            self.data[temp >= TOLERANCE] = 1.
+
         return True
 
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __eq__(self, other):
+        try:
+            return np.alltrue(self.data == other.data)
+        except AttributeError:
+            other = Vector(other)
+            return self == other
+
     def __add__(self, other):
-        temp = Vector()
-        for i in range(Vector.LENGTH):
-            temp.__data[i] = self.__data[i] + other.__data[i]
-        return temp
+        return Vector(self.data + other.data)
 
     def __sub__(self, other):
-        temp = Vector()
-        for i in range(Vector.LENGTH):
-            temp.__data[i] = self.__data[i] - other.__data[i]
-        return temp
+        return Vector(self.data - other.data)
 
     def __div__(self, other):
-        other = float(other) # only allow divide by a scalar
-        temp = Vector(self)
-        for i in range(Vector.LENGTH):
-            temp.__data[i] /= float(other)
-        return temp
+        return Vector(self.data / other) # only allow divide by a scalar
 
     def __mul__(self, other):
-        other = float(other) # only allow multiply by a scalar
-        temp = Vector(self)
-        for i in range(Vector.LENGTH):
-            temp.__data[i] *= float(other)
-        return temp
+        return Vector(self.data * other) # only allow multiply by a scalar
 
     def __rmul__(self, other):
         return self * other
 
     def __repr__(self):
-        temp = [str(it) for it in self.__data]
-        return "(%s)" % (", ".join(temp))
+        return self.data.__repr__()
 
     def __len__(self):
-        return Vector.LENGTH
+        return self.data.size
 
     length = property(lambda self: math.sqrt(self.dot(self)))
 
