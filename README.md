@@ -1,7 +1,7 @@
 [![Code Climate](https://codeclimate.com/github/mantidproject/mantidgeometry/badges/gpa.svg)](https://codeclimate.com/github/mantidproject/mantidgeometry)
 
 
-This repository is intended to store the python helper scripts for 
+This repository is intended to store the python helper scripts for
 generating the Mantid IDFs. Each instrument is supported in its own
 python script.
 
@@ -39,4 +39,4 @@ The test harness is small and will (generically) generate false positives, but y
 5. `./test_unchaged.py` to see what (if anything) has changed
 
 [![Stories in Ready](https://badge.waffle.io/mantidproject/mantidgeometry.png?label=ready)](https://waffle.io/mantidproject/mantidgeometry)
-
+[![Travis-CI Build Status](https://travis-ci.org/mantidproject/mantidgeometry.svg)](https://travis-ci.org/mantidproject/mantidgeometry)
