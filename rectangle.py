@@ -42,13 +42,13 @@ class Vector:
         """
         Calculate the cross product of this with another vector.
         """
-        return Vector(np.cross(self.data, other.data))
+        return Vector(np.cross(self.data, Vector(other).data))
 
     def dot(self, other):
         """
         Calculate the dot product of this with another vector.
         """
-        return np.dot(self.data, other.data)
+        return np.dot(self.data, Vector(other).data)
 
     def normalize(self):
         """
@@ -75,18 +75,13 @@ class Vector:
         if abs(self.length-1.) > TOLERANCE:
             return False
 
-        temp = np.abs(self.data)
-        if temp[temp < TOLERANCE].size != 2:
-            return False
-        value = self.data[temp >= TOLERANCE][0]
-        if abs(value-1.) >= TOLERANCE:
-            return False
+        for unit_vec in (UNIT_X, UNIT_Y, UNIT_Z):
+            if np.allclose(self.data, unit_vec, atol=TOLERANCE):
+                if resetValues:
+                    self.data = unit_vec
+                return True
 
-        if resetValues:
-            self.data[temp < TOLERANCE] = 0.
-            self.data[temp >= TOLERANCE] = 1.
-
-        return True
+        return False
 
     def __getitem__(self, key):
         return self.data[key]
@@ -127,7 +122,7 @@ UNIT_Z = Vector(0.,0.,1.)
 
 def getAngle(y, x, debug=False, onlyPositive=True):
     """
-    Returns the angle in radians using atan2.
+    Returns the angle in radians using atan2 (y=sin, x=cos)
     """
     if debug:
         print "getAngle(%f, %f)=" % (y, x),
@@ -319,10 +314,8 @@ class Rectangle:
         #print "y dot z =", yvec.dot(zvec)
 
         # xvec should change most in x direction
-        self.__orient = []
-        self.__orient.append(xvec)
-        self.__orient.append(yvec)
-        self.__orient.append(zvec)
+        self.__orient = np.array([xvec.data,yvec.data,zvec.data],
+                                 dtype=np.float)
 
     def __euler_rotations_zyz(self):
         """

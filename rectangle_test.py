@@ -2,6 +2,7 @@
 from rectangle import Rectangle, getAngle
 from rectangle import Vector, UNIT_X, UNIT_Y, UNIT_Z
 import math
+import numpy as np
 import unittest
 
 class TestRectangle(unittest.TestCase):
@@ -61,6 +62,10 @@ class TestVector(unittest.TestCase):
         self.assertEqual(UNIT_Y.cross(UNIT_Z), UNIT_X)
         self.assertEqual(UNIT_Z.cross(UNIT_X), UNIT_Y)
 
+        self.assertEqual(UNIT_X.cross((0,1,0)), UNIT_Z)
+        self.assertEqual(UNIT_X.cross(np.array((0,1,0), dtype=np.float)), UNIT_Z)
+
+
     def testDot(self):
         self.assertEqual(UNIT_X.dot(UNIT_X), 1.)
         self.assertEqual(UNIT_X.dot(UNIT_Y), 0.)
@@ -68,6 +73,9 @@ class TestVector(unittest.TestCase):
         self.assertEqual(UNIT_Y.dot(UNIT_Y), 1.)
         self.assertEqual(UNIT_Y.dot(UNIT_Z), 0.)
         self.assertEqual(UNIT_Z.dot(UNIT_Z), 1.)
+
+        self.assertEqual(UNIT_X.dot((1,0,0)), 1.)
+        self.assertEqual(UNIT_X.dot(np.array((1,0,0), dtype=np.float)), 1.)
 
     def testVector(self):
         temp = Vector(100., 200., 300.)
