@@ -59,7 +59,6 @@ class TestGetAngle(unittest.TestCase):
 
 IDENTITY = np.array([[1,0,0],[0,1,0],[0,0,1]], dtype=np.float)
 ATOL_ROTATION = 1.e-15
-ATOL_ORIENTATION = 1.e-15
 
 class TestOrientation(unittest.TestCase):
     def checkOrientation(self, rotation):

@@ -201,6 +201,7 @@ def __genRotationDict(rotation):
         result["axis-z"] = axis[2]
     return result
 
+ATOL_ORIENTATION = 1.e-15
 def checkRotation(rotation):
     '''Determine if the supplied matrix adheres to the rules of a rotation matrix'''
     # determinant mush be +/- 1
