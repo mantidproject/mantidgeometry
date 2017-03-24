@@ -57,19 +57,61 @@ class TestGetAngle(unittest.TestCase):
         self.check(-1., 0., 270.)
 
 IDENTITY = np.array([[1,0,0],[0,1,0],[0,0,1]], dtype=np.float)
+ATOL_ROTATION = 1.e-15
+ATOL_ORIENTATION = 1.e-15
 
 class TestOrientation(unittest.TestCase):
-    def testOrientation(self):
-        self.assertTrue(np.all(getYZY(IDENTITY) == [0., 0., 0.]))
-        self.assertTrue(np.all(getZYZ(IDENTITY) == [0., 0., 0.]))
+    def checkOrientation(self, rotation):
+        # determinant mush be +/- 1
+        determinant = np.abs(np.linalg.det(rotation))
+        self.assertEquals(determinant, 1.)
 
-    def testRotation(self):
-        for vector in UNIT_X, UNIT_Y, UNIT_Z:
-            matrix = generateRotation(vector, 0.)
-            try:
-                self.assertTrue(np.all(matrix == IDENTITY))
-            except AssertionError:
-                raise AssertionError(str(matrix) + ' != ' + str(IDENTITY))
+        # rotation matrix is orthogonal (inverse == transpose)
+        inverse = np.linalg.inv(rotation)
+        transpose = np.transpose(rotation)
+        try:
+            self.assertTrue(np.allclose(inverse, transpose, atol=ATOL_ORIENTATION))
+        except AssertionError:
+            raise AssertionError(str(inverse) + ' != ' + str(transpose))
+
+    def testOrientation(self):
+        matrix = IDENTITY
+        self.checkOrientation(matrix)
+        self.assertTrue(np.all(getYZY(matrix) == [0., 0., 0.]))
+        self.assertTrue(np.all(getZYZ(matrix) == [0., 0., 0.]))
+
+    def checkRotation(self, axis, angle, exp):
+        obs = generateRotation(axis, angle)
+        try:
+            self.assertTrue(np.allclose(obs,exp, atol=ATOL_ROTATION))
+        except AssertionError:
+            raise AssertionError(str(obs) + ' != ' + str(exp))
+
+    def testRotationIdentity(self):
+        for axis in UNIT_X, UNIT_Y, UNIT_Z:
+            self.checkRotation(axis, 0., IDENTITY)
+
+    def testRotationX(self):
+        exp = np.array([[1,0,0],[0,0,-1],[0,1,0]], dtype=np.float)
+        self.checkRotation(UNIT_X, .5*np.pi, exp)
+
+        exp = np.array([[1,0,0],[0,-1,0],[0,0,-1]], dtype=np.float)
+        self.checkRotation(UNIT_X, np.pi, exp)
+
+    def testRotationY(self):
+        exp = np.array([[0,0,1],[0,1,0],[-1,0,0]], dtype=np.float)
+        self.checkRotation(UNIT_Y, .5*np.pi, exp)
+
+        exp = np.array([[-1,0,0],[0,1,0],[0,0,-1]], dtype=np.float)
+        self.checkRotation(UNIT_Y, np.pi, exp)
+
+    def testRotationZ(self):
+        exp = np.array([[0,-1,0],[1,0,0],[0,0,1]], dtype=np.float)
+        self.checkRotation(UNIT_Z, .5*np.pi, exp)
+
+        exp = np.array([[-1,0,0],[0,-1,0],[0,0,1]], dtype=np.float)
+        self.checkRotation(UNIT_Z, np.pi, exp)
+
         # https://en.wikipedia.org/wiki/Rotation_matrix
 
 class TestVector(unittest.TestCase):
