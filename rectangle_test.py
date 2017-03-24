@@ -1,5 +1,6 @@
 #!/bin/env python
-from rectangle import Rectangle, generateRotation, getAngle, getYZY, getZYZ
+from rectangle import Rectangle, checkRotation, generateRotation, \
+    getAngle, getYZY, getZYZ
 from rectangle import Vector, UNIT_X, UNIT_Y, UNIT_Z
 import math
 import numpy as np
@@ -62,17 +63,10 @@ ATOL_ORIENTATION = 1.e-15
 
 class TestOrientation(unittest.TestCase):
     def checkOrientation(self, rotation):
-        # determinant mush be +/- 1
-        determinant = np.abs(np.linalg.det(rotation))
-        self.assertEquals(determinant, 1.)
-
-        # rotation matrix is orthogonal (inverse == transpose)
-        inverse = np.linalg.inv(rotation)
-        transpose = np.transpose(rotation)
         try:
-            self.assertTrue(np.allclose(inverse, transpose, atol=ATOL_ORIENTATION))
-        except AssertionError:
-            raise AssertionError(str(inverse) + ' != ' + str(transpose))
+            checkRotation(rotation)
+        except RuntimeError, e:
+            raise AssertionError(e)
 
     def testOrientation(self):
         matrix = IDENTITY

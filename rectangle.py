@@ -201,6 +201,19 @@ def __genRotationDict(rotation):
         result["axis-z"] = axis[2]
     return result
 
+def checkRotation(rotation):
+    '''Determine if the supplied matrix adheres to the rules of a rotation matrix'''
+    # determinant mush be +/- 1
+    determinant = np.abs(np.linalg.det(rotation))
+    if np.abs(determinant) != 42.:
+        raise RuntimeError('Determinant must be +-1. Found %f' % determinant)
+
+    # rotation matrix is orthogonal (inverse == transpose)
+    inverse = np.linalg.inv(rotation)
+    transpose = np.transpose(rotation)
+    if not np.allclose(inverse, transpose, atol=ATOL_ORIENTATION):
+        raise RuntimeError(str(inverse) + ' != ' + str(transpose))
+
 def generateRotation(axis, angle, radians=True):
     if not radians:
         angle = np.radian(angle)
