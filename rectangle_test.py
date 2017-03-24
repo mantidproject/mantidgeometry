@@ -1,5 +1,5 @@
 #!/bin/env python
-from rectangle import Rectangle, getAngle
+from rectangle import Rectangle, generateRotation, getAngle, getYZY, getZYZ
 from rectangle import Vector, UNIT_X, UNIT_Y, UNIT_Z
 import math
 import numpy as np
@@ -55,6 +55,22 @@ class TestGetAngle(unittest.TestCase):
         self.check(1.,  0., 90.)
         self.check(0., -1., 180.)
         self.check(-1., 0., 270.)
+
+IDENTITY = np.array([[1,0,0],[0,1,0],[0,0,1]], dtype=np.float)
+
+class TestOrientation(unittest.TestCase):
+    def testOrientation(self):
+        self.assertTrue(np.all(getYZY(IDENTITY) == [0., 0., 0.]))
+        self.assertTrue(np.all(getZYZ(IDENTITY) == [0., 0., 0.]))
+
+    def testRotation(self):
+        for vector in UNIT_X, UNIT_Y, UNIT_Z:
+            matrix = generateRotation(vector, 0.)
+            try:
+                self.assertTrue(np.all(matrix == IDENTITY))
+            except AssertionError:
+                raise AssertionError(str(matrix) + ' != ' + str(IDENTITY))
+        # https://en.wikipedia.org/wiki/Rotation_matrix
 
 class TestVector(unittest.TestCase):
     def testCross(self):

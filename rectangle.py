@@ -201,6 +201,31 @@ def __genRotationDict(rotation):
         result["axis-z"] = axis[2]
     return result
 
+def generateRotation(axis, angle, radians=True):
+    if not radians:
+        angle = np.radian(angle)
+    c,s = np.cos(angle), np.sin(angle)
+
+    rotation = None
+    if axis == UNIT_X:
+        rotation = np.matrix('1 0 0; 0 {} {}; 0 {} {}'.format(c,-s,s,c))
+    elif axis == UNIT_Y:
+        rotation = np.matrix('{} 0 {}; 0 1 0; {} 0 {}'.format(c,s,-s,c))
+    elif axis == UNIT_Z:
+        rotation = np.matrix('{} {} 0; {} {} 0; 0 0 1'.format(c,-s,s,c))
+    else:
+        raise ValueError('Unsupported rotation axis: %s' % str(axis))
+
+    rotation[np.abs(rotation) == 0.] = 0.
+    return rotation
+
+#https://en.wikipedia.org/wiki/Euler_angles
+def getYZY(orientation):
+    return np.array((0., 0., 0.), dtype=np.float)
+
+def getZYZ(orientation):
+    return np.array((0., 0., 0.), dtype=np.float)
+
 def makeLocation(instr, det, name, center, rotations, tol_ang=TOLERANCE):
     """
     Make a location appropriate for an instrument component.
