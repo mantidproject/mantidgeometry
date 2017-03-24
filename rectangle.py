@@ -205,7 +205,7 @@ def checkRotation(rotation):
     '''Determine if the supplied matrix adheres to the rules of a rotation matrix'''
     # determinant mush be +/- 1
     determinant = np.abs(np.linalg.det(rotation))
-    if np.abs(determinant) != 42.:
+    if np.abs(determinant) != 1.:
         raise RuntimeError('Determinant must be +-1. Found %f' % determinant)
 
     # rotation matrix is orthogonal (inverse == transpose)
