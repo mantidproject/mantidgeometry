@@ -1,33 +1,33 @@
 #!/bin/env python
-from rectangle import Rectangle, getAngle
+from rectangle import Rectangle, calcEuler, checkRotation, generateRotation, \
+    getAngle, getYZY, getZYZ
 from rectangle import Vector, UNIT_X, UNIT_Y, UNIT_Z
 import math
+import numpy as np
 import unittest
+
+def assertAllClose(obs, exp, atol):
+    if atol == 0.:
+        if np.all(obs == exp):
+            return
+    else:
+        if np.allclose(obs,exp, atol=atol):
+            return
+
+    # getting here means something didn't match
+    raise AssertionError(str(obs) + ' != ' + str(exp))
 
 class TestRectangle(unittest.TestCase):
     def checkCenter(self, rectangle, center):
-        self.assertEqual(rectangle.center, center)
+        assertAllClose(rectangle.center, center, 0.)
 
     def checkOrientation(self, rectangle, orientation):
-        obs = rectangle.orientation
-        row = 0
-        for (obs_row, exp_row) in zip(obs, orientation):
-            col = 0
-            for (obs_val, exp_val) in zip(obs_row, exp_row):
-                msg = "Mismatch of element [%d, %d] obs=%f != exp=%f" \
-                    % (row, col, obs_val, exp_val)
-                self.assertEqual(obs_val, exp_val, msg)
-                col += 1
-            row += 1
+        assertAllClose(rectangle.orientation, orientation, 0.)
 
     def checkRotation(self, rectangle, alpha, beta, gamma):
         rot = rectangle.euler_rot
-        self.assertEqual(rot[0][0], alpha,
-                         "Error in alpha: %f != %f" % (rot[0][0], alpha))
-        self.assertEqual(rot[1][0], beta,
-                         "Error in beta: %f != %f" % (rot[1][0], beta))
-        self.assertEqual(rot[2][0], gamma,
-                         "Error in gamma: %f != %f" % (rot[2][0], gamma))
+        rot = [item[0] for item in rot]
+        assertAllClose(rot, [alpha, beta, gamma], 0.)
 
     def test_rect1(self):
         rect = Rectangle((0,0,0), (1,0,0), (1,1,0), (0,1,0))
@@ -35,7 +35,7 @@ class TestRectangle(unittest.TestCase):
         self.checkOrientation(rect, ((0.0, 1.0, 0.0),
                                      (1.0, 0.0, 0.0),
                                      (0.0, 0.0, -1.0)))
-        self.checkRotation(rect, 90., 180., 0.)
+        self.checkRotation(rect, 90., 180., 180.) # zyz - was 90,180,0
 
     def test_rect2(self):
         rect = Rectangle((0,1,0), (1,1,0), (1,0,0), (0,0,0))
@@ -44,6 +44,24 @@ class TestRectangle(unittest.TestCase):
                                      (1.0,  0.0, 0.0),
                                      (-0.0, 0.0, 1.0)))
         self.checkRotation(rect, 90., 0., 0.)
+
+    def test_rect3(self):
+        rect = Rectangle((1,1,0), (0,1,0), (0,0,0), (1,0,0))
+
+        self.checkCenter(rect, [.5,.5,0.])
+        #self.checkOrientation(rect, ((0.0, 1.0, 0.0),
+        #                             (1.0, 0.0, 0.0),
+        #                             (0.0, 0.0, -1.0)))
+        #self.checkRotation(rect, 90., 180., 0.)
+
+    def test_rect4(self):
+        rect = Rectangle((1,0,0), (0,0,0), (0,1,0), (1,1,0))
+
+        self.checkCenter(rect, [.5,.5,0.])
+        #self.checkOrientation(rect, ((0.0, 1.0, 0.0),
+        #                             (1.0, 0.0, 0.0),
+        #                             (0.0, 0.0, -1.0)))
+        #self.checkRotation(rect, 90., 180., 0.)
 
 class TestGetAngle(unittest.TestCase):
     def check(self, y, x, angle):
@@ -55,11 +73,67 @@ class TestGetAngle(unittest.TestCase):
         self.check(0., -1., 180.)
         self.check(-1., 0., 270.)
 
+IDENTITY = np.array([[1,0,0],[0,1,0],[0,0,1]], dtype=np.float)
+ATOL_ROTATION = 1.e-15
+
+class TestOrientation(unittest.TestCase):
+    def checkOrientation(self, rotation):
+        try:
+            checkRotation(rotation)
+        except RuntimeError, e:
+            raise AssertionError(e)
+
+    def checkRotation(self, axis, angle, exp):
+        obs = generateRotation(axis, angle)
+        assertAllClose(obs,exp, atol=ATOL_ROTATION)
+        return obs
+
+    def testRotationIdentity(self):
+        for axis in UNIT_X, UNIT_Y, UNIT_Z:
+            self.checkRotation(axis, 0., IDENTITY)
+
+        assertAllClose(np.degrees(getYZY(IDENTITY)), [0., 0., 0.], 0.)
+        assertAllClose(np.degrees(getZYZ(IDENTITY)), [0., 0., 0.], 0.)
+
+    def testRotationX(self):
+        exp = np.array([[1,0,0],[0,0,-1],[0,1,0]], dtype=np.float)
+        obs = self.checkRotation(UNIT_X, .5*np.pi, exp)
+        assertAllClose(np.degrees(getYZY(obs)), np.degrees(calcEuler(obs, 'YZY')), 0.)
+        assertAllClose(np.degrees(getYZY(obs)), [90., 90., 270.], 0.) # TODO verify
+
+        assertAllClose(np.degrees(getZYZ(obs)), np.degrees(calcEuler(obs, 'ZYZ')), 0.)
+        assertAllClose(np.degrees(getZYZ(obs)), [270., 90., 90.], 0.) # TODO verify
+
+        exp = np.array([[1,0,0],[0,-1,0],[0,0,-1]], dtype=np.float)
+        obs = self.checkRotation(UNIT_X, np.pi, exp)
+        assertAllClose(np.degrees(getYZY(obs)), [180., 180., 0.], 0.) # TODO verify
+        assertAllClose(np.degrees(getZYZ(obs)), [0., 180., 180.], 0.) # TODO verify
+
+    def testRotationY(self):
+        exp = np.array([[0,0,1],[0,1,0],[-1,0,0]], dtype=np.float)
+        obs = self.checkRotation(UNIT_Y, .5*np.pi, exp)
+
+        exp = np.array([[-1,0,0],[0,1,0],[0,0,-1]], dtype=np.float)
+        obs = self.checkRotation(UNIT_Y, np.pi, exp)
+
+    def testRotationZ(self):
+        exp = np.array([[0,-1,0],[1,0,0],[0,0,1]], dtype=np.float)
+        obs = self.checkRotation(UNIT_Z, .5*np.pi, exp)
+
+        exp = np.array([[-1,0,0],[0,-1,0],[0,0,1]], dtype=np.float)
+        obs = self.checkRotation(UNIT_Z, np.pi, exp)
+
+        # https://en.wikipedia.org/wiki/Rotation_matrix
+
 class TestVector(unittest.TestCase):
     def testCross(self):
         self.assertEqual(UNIT_X.cross(UNIT_Y), UNIT_Z)
         self.assertEqual(UNIT_Y.cross(UNIT_Z), UNIT_X)
         self.assertEqual(UNIT_Z.cross(UNIT_X), UNIT_Y)
+
+        self.assertEqual(UNIT_X.cross((0,1,0)), UNIT_Z)
+        self.assertEqual(UNIT_X.cross(np.array((0,1,0), dtype=np.float)), UNIT_Z)
+
 
     def testDot(self):
         self.assertEqual(UNIT_X.dot(UNIT_X), 1.)
@@ -69,12 +143,17 @@ class TestVector(unittest.TestCase):
         self.assertEqual(UNIT_Y.dot(UNIT_Z), 0.)
         self.assertEqual(UNIT_Z.dot(UNIT_Z), 1.)
 
+        self.assertEqual(UNIT_X.dot((1,0,0)), 1.)
+        self.assertEqual(UNIT_X.dot(np.array((1,0,0), dtype=np.float)), 1.)
+
     def testVector(self):
         temp = Vector(100., 200., 300.)
 
         self.assertEqual(len(temp), 3)
 
+        self.assertEqual(temp, Vector(100., 200., 300.))
         self.assertEqual(temp, (100., 200., 300.))
+        self.assertEqual(temp, [100., 200., 300.])
         self.assertEqual(temp.x, 100.)
         self.assertEqual(temp.y, 200.)
         self.assertEqual(temp.z, 300.)
