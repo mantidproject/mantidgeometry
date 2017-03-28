@@ -43,7 +43,7 @@ class TestRectangle(unittest.TestCase):
         self.checkOrientation(rect, ((0.0, -1.0, 0.0),
                                      (1.0,  0.0, 0.0),
                                      (-0.0, 0.0, 1.0)))
-        self.checkRotation(rect, 90., 0., 0.)
+        self.checkRotation(rect, 0., 0., 90.)
 
     def test_rect3(self):
         rect = Rectangle((1,1,0), (0,1,0), (0,0,0), (1,0,0))
