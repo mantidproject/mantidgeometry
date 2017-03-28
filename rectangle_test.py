@@ -1,35 +1,33 @@
 #!/bin/env python
-from rectangle import Rectangle, checkRotation, generateRotation, \
+from rectangle import Rectangle, calcEuler, checkRotation, generateRotation, \
     getAngle, getYZY, getZYZ
 from rectangle import Vector, UNIT_X, UNIT_Y, UNIT_Z
 import math
 import numpy as np
 import unittest
 
+def assertAllClose(obs, exp, atol):
+    if atol == 0.:
+        if np.all(obs == exp):
+            return
+    else:
+        if np.allclose(obs,exp, atol=atol):
+            return
+
+    # getting here means something didn't match
+    raise AssertionError(str(obs) + ' != ' + str(exp))
+
 class TestRectangle(unittest.TestCase):
     def checkCenter(self, rectangle, center):
-        self.assertEqual(rectangle.center, center)
+        assertAllClose(rectangle.center, center, 0.)
 
     def checkOrientation(self, rectangle, orientation):
-        obs = rectangle.orientation
-        row = 0
-        for (obs_row, exp_row) in zip(obs, orientation):
-            col = 0
-            for (obs_val, exp_val) in zip(obs_row, exp_row):
-                msg = "Mismatch of element [%d, %d] obs=%f != exp=%f" \
-                    % (row, col, obs_val, exp_val)
-                self.assertEqual(obs_val, exp_val, msg)
-                col += 1
-            row += 1
+        assertAllClose(rectangle.orientation, orientation, 0.)
 
     def checkRotation(self, rectangle, alpha, beta, gamma):
         rot = rectangle.euler_rot
-        self.assertEqual(rot[0][0], alpha,
-                         "Error in alpha: %f != %f" % (rot[0][0], alpha))
-        self.assertEqual(rot[1][0], beta,
-                         "Error in beta: %f != %f" % (rot[1][0], beta))
-        self.assertEqual(rot[2][0], gamma,
-                         "Error in gamma: %f != %f" % (rot[2][0], gamma))
+        rot = [item[0] for item in rot]
+        assertAllClose(rot, [alpha, beta, gamma], 0.)
 
     def test_rect1(self):
         rect = Rectangle((0,0,0), (1,0,0), (1,1,0), (0,1,0))
@@ -37,7 +35,7 @@ class TestRectangle(unittest.TestCase):
         self.checkOrientation(rect, ((0.0, 1.0, 0.0),
                                      (1.0, 0.0, 0.0),
                                      (0.0, 0.0, -1.0)))
-        self.checkRotation(rect, 90., 180., 0.)
+        self.checkRotation(rect, 90., 180., 180.) # zyz - was 90,180,0
 
     def test_rect2(self):
         rect = Rectangle((0,1,0), (1,1,0), (1,0,0), (0,0,0))
@@ -46,6 +44,24 @@ class TestRectangle(unittest.TestCase):
                                      (1.0,  0.0, 0.0),
                                      (-0.0, 0.0, 1.0)))
         self.checkRotation(rect, 90., 0., 0.)
+
+    def test_rect3(self):
+        rect = Rectangle((1,1,0), (0,1,0), (0,0,0), (1,0,0))
+
+        self.checkCenter(rect, [.5,.5,0.])
+        #self.checkOrientation(rect, ((0.0, 1.0, 0.0),
+        #                             (1.0, 0.0, 0.0),
+        #                             (0.0, 0.0, -1.0)))
+        #self.checkRotation(rect, 90., 180., 0.)
+
+    def test_rect4(self):
+        rect = Rectangle((1,0,0), (0,0,0), (0,1,0), (1,1,0))
+
+        self.checkCenter(rect, [.5,.5,0.])
+        #self.checkOrientation(rect, ((0.0, 1.0, 0.0),
+        #                             (1.0, 0.0, 0.0),
+        #                             (0.0, 0.0, -1.0)))
+        #self.checkRotation(rect, 90., 180., 0.)
 
 class TestGetAngle(unittest.TestCase):
     def check(self, y, x, angle):
@@ -67,43 +83,45 @@ class TestOrientation(unittest.TestCase):
         except RuntimeError, e:
             raise AssertionError(e)
 
-    def testOrientation(self):
-        matrix = IDENTITY
-        self.checkOrientation(matrix)
-        self.assertTrue(np.all(getYZY(matrix) == [0., 0., 0.]))
-        self.assertTrue(np.all(getZYZ(matrix) == [0., 0., 0.]))
-
     def checkRotation(self, axis, angle, exp):
         obs = generateRotation(axis, angle)
-        try:
-            self.assertTrue(np.allclose(obs,exp, atol=ATOL_ROTATION))
-        except AssertionError:
-            raise AssertionError(str(obs) + ' != ' + str(exp))
+        assertAllClose(obs,exp, atol=ATOL_ROTATION)
+        return obs
 
     def testRotationIdentity(self):
         for axis in UNIT_X, UNIT_Y, UNIT_Z:
             self.checkRotation(axis, 0., IDENTITY)
 
+        assertAllClose(np.degrees(getYZY(IDENTITY)), [0., 0., 0.], 0.)
+        assertAllClose(np.degrees(getZYZ(IDENTITY)), [0., 0., 0.], 0.)
+
     def testRotationX(self):
         exp = np.array([[1,0,0],[0,0,-1],[0,1,0]], dtype=np.float)
-        self.checkRotation(UNIT_X, .5*np.pi, exp)
+        obs = self.checkRotation(UNIT_X, .5*np.pi, exp)
+        assertAllClose(np.degrees(getYZY(obs)), np.degrees(calcEuler(obs, 'YZY')), 0.)
+        assertAllClose(np.degrees(getYZY(obs)), [90., 90., 270.], 0.) # TODO verify
+
+        assertAllClose(np.degrees(getZYZ(obs)), np.degrees(calcEuler(obs, 'ZYZ')), 0.)
+        assertAllClose(np.degrees(getZYZ(obs)), [270., 90., 90.], 0.) # TODO verify
 
         exp = np.array([[1,0,0],[0,-1,0],[0,0,-1]], dtype=np.float)
-        self.checkRotation(UNIT_X, np.pi, exp)
+        obs = self.checkRotation(UNIT_X, np.pi, exp)
+        assertAllClose(np.degrees(getYZY(obs)), [180., 180., 0.], 0.) # TODO verify
+        assertAllClose(np.degrees(getZYZ(obs)), [0., 180., 180.], 0.) # TODO verify
 
     def testRotationY(self):
         exp = np.array([[0,0,1],[0,1,0],[-1,0,0]], dtype=np.float)
-        self.checkRotation(UNIT_Y, .5*np.pi, exp)
+        obs = self.checkRotation(UNIT_Y, .5*np.pi, exp)
 
         exp = np.array([[-1,0,0],[0,1,0],[0,0,-1]], dtype=np.float)
-        self.checkRotation(UNIT_Y, np.pi, exp)
+        obs = self.checkRotation(UNIT_Y, np.pi, exp)
 
     def testRotationZ(self):
         exp = np.array([[0,-1,0],[1,0,0],[0,0,1]], dtype=np.float)
-        self.checkRotation(UNIT_Z, .5*np.pi, exp)
+        obs = self.checkRotation(UNIT_Z, .5*np.pi, exp)
 
         exp = np.array([[-1,0,0],[0,-1,0],[0,0,1]], dtype=np.float)
-        self.checkRotation(UNIT_Z, np.pi, exp)
+        obs = self.checkRotation(UNIT_Z, np.pi, exp)
 
         # https://en.wikipedia.org/wiki/Rotation_matrix
 

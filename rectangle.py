@@ -5,6 +5,7 @@
 
 import math
 import numpy as np
+from string import maketrans
 HAS_LXML = True
 try:
     from lxml import etree as le # python-lxml on rpm based systems
@@ -206,7 +207,7 @@ def checkRotation(rotation):
     '''Determine if the supplied matrix adheres to the rules of a rotation matrix'''
     # determinant mush be +/- 1
     determinant = np.abs(np.linalg.det(rotation))
-    if np.abs(determinant) != 1.:
+    if np.abs(determinant) - 1. > 1.e-15:
         raise RuntimeError('Determinant must be +-1. Found %f' % determinant)
 
     # rotation matrix is orthogonal (inverse == transpose)
@@ -218,27 +219,92 @@ def checkRotation(rotation):
 def generateRotation(axis, angle, radians=True):
     if not radians:
         angle = np.radian(angle)
-    c,s = np.cos(angle), np.sin(angle)
 
-    rotation = None
-    if axis == UNIT_X:
-        rotation = np.matrix('1 0 0; 0 {} {}; 0 {} {}'.format(c,-s,s,c))
-    elif axis == UNIT_Y:
-        rotation = np.matrix('{} 0 {}; 0 1 0; {} 0 {}'.format(c,s,-s,c))
-    elif axis == UNIT_Z:
-        rotation = np.matrix('{} {} 0; {} {} 0; 0 0 1'.format(c,-s,s,c))
-    else:
-        raise ValueError('Unsupported rotation axis: %s' % str(axis))
+    sqr_a = axis.x*axis.x
+    sqr_b = axis.y*axis.y
+    sqr_c = axis.z*axis.z
+    len2  = sqr_a+sqr_b+sqr_c
 
-    rotation[np.abs(rotation) == 0.] = 0.
+    k2    = math.cos(angle)
+    k1    = (1.0-k2)/len2
+    k3    = math.sin(angle)/math.sqrt(len2)
+    k1ab  = k1*axis.x*axis.y
+    k1ac  = k1*axis.x*axis.z
+    k1bc  = k1*axis.y*axis.z
+    k3a   = k3*axis.x
+    k3b   = k3*axis.y
+    k3c   = k3*axis.z
+
+    rotation = np.matrix([[k1*sqr_a+k2, k1ab-k3c, k1ac+k3b],
+                          [k1ab+k3c, k1*sqr_b+k2, k1bc-k3a],
+                          [k1ac-k3b, k1bc+k3a, k1*sqr_c+k2]],
+                         dtype=np.float)
+    rotation[np.abs(rotation) < 1.e-15] = 0.
+
+    checkRotation(rotation)
     return rotation
 
-#https://en.wikipedia.org/wiki/Euler_angles
-def getYZY(orientation):
-    return np.array((0., 0., 0.), dtype=np.float)
+def calcEuler(rotation, convention):
+    R=rotation
+    angles = np.zeros(3, dtype=np.float)
+    XYZ=np.array([[1,0,0],[0,1,0],[0,0,1]], dtype=np.float) # identity matrix
+    #decode the convention: code X=0, Y=1, Z=2
+    convention=convention.upper().translate(maketrans("XYZ","012"))
+    first,second,last=int(convention[0]),int(convention[1]),int(convention[2])
+    tb = 1 if (first+second+last==3) else 0
+    par12 = 1 if ((last-second)%3 ==1) else -1
+    par01 = 1 if ((second-first)%3 ==1) else -1
+    s3=(1-tb-tb*par12)*R[(last+tb*par12)%3,(last-par12)%3]
+    c3=(tb-(1-tb)*par12)*R[(last+tb*par12)%3,(last+par12)%3]
+    angles[2]=getAngle(s3,c3)
+    R1R2=np.dot(R, generateRotation(Vector(XYZ[last]),-1.*angles[2]))
+    s1=par01*R1R2[(first-par01)%3,(first+par01)%3]
+    c1=R1R2[second,second]
+    s2=par01*R1R2[first,3-first-second]
+    c2=R1R2[first,first]
+    angles[1]=getAngle(s2,c2)
+    angles[0]=getAngle(s1,c1)
+    #note equivalent solution o1-180,-o2,o3-180 for ABA
+    #note equivalent solution o1-180,180-o2,o3-180 for ABC
+    angles[abs(angles) < 1.e-5] = 0.
+    return angles
 
-def getZYZ(orientation):
-    return np.array((0., 0., 0.), dtype=np.float)
+#https://en.wikipedia.org/wiki/Euler_angles
+def getYZY(rotation):
+    angles = calcEuler(rotation, 'YZY')
+
+    # if the z-rotation is missing, just set
+    # everything to the first y-rotation
+    if angles[1] == 0.:
+        angles = [angles[0]+angles[2], 0., 0.]
+        if abs(angles[0] - 2.*np.pi) < 1.e-15:
+            angles[0] = 0.
+
+    # make sure that everything has angle <= 2pi
+    for i,angle in enumerate(angles):
+        while angle >= 2*np.pi:
+            angle -= 2*np.pi
+        angles[i] = angle
+
+    return angles
+
+def getZYZ(rotation):
+    angles = calcEuler(rotation, 'ZYZ')
+
+    # if the y-rotation is missing, just set
+    # everything to the first z-rotation
+    if angles[1] == 0.:
+        angles = [angles[0]+angles[2], 0., 0.]
+        if abs(angles[0] - 2.*np.pi) < 1.e-15:
+            angles[0] = 0.
+
+    # make sure that everything has angle <= 2pi
+    for i,angle in enumerate(angles):
+        while angle >= 2*np.pi:
+            angle -= 2*np.pi
+        angles[i] = angle
+
+    return angles
 
 def makeLocation(instr, det, name, center, rotations, tol_ang=TOLERANCE):
     """
@@ -357,172 +423,22 @@ class Rectangle:
                                  dtype=np.float)
 
     def __euler_rotations_zyz(self):
-        """
-        The Euler angles are about the z (alpha), then unrotated y (beta),
-        then unrotated z (gamma). This is described in equations and pretty
-        pictures in Arfken pages 199-200.
-
-        George Arfken, Mathematical methods for physicists, 3rd edition
-        Academic Press, 1985
-        """
-        # calculate beta
-        beta = getAngle(UNIT_Z.cross(self.__orient[2]).length,
-                        UNIT_Z.dot(self.__orient[2]))
-
-        if abs(math.sin(beta)) < self._tol_ang: # special case for numerics
-            # since alpha and gamma are coincident, just force gamma to be zero
-            gamma = 0.
-
-            # calculate alpha
-            cos_beta = UNIT_Z.dot(self.__orient[2])
-            if cos_beta == 1. or cos_beta == -1.:
-                alpha = getAngle(UNIT_X.dot(self.__orient[1]),
-                                 UNIT_Y.dot(self.__orient[1]))
-            else:
-                msg = "Equations aren't worked out for cos(beta)=%f" % cos_beta
-                raise RuntimeError(msg)
-
-        else: # go with the traditional route
-            # calculate alpha
-            alpha = getAngle(UNIT_Z.dot(self.__orient[1]),
-                             UNIT_Z.dot(self.__orient[0]))
-
-            # calculate gamma
-            gamma = getAngle(UNIT_Y.dot(self.__orient[2]),
-                             -1.*UNIT_X.dot(self.__orient[2]))
+        angles = np.degrees(getZYZ(self.__orient))
 
         # output for each: rotation angle (in degrees), axis of rotation
-        alpha_rot = [math.degrees(alpha), (0., 0., 1.)]
-        beta_rot  = [math.degrees(beta),  (0., 1., 0.)]
-        gamma_rot = [math.degrees(gamma), (0., 0., 1.)]
+        alpha_rot = [angles[0], (0., 0., 1.)]
+        beta_rot  = [angles[1], (0., 1., 0.)]
+        gamma_rot = [angles[2], (0., 0., 1.)]
+
         return (alpha_rot, beta_rot, gamma_rot)
 
     def __euler_rotations_yzy(self):
-        print(self.__orient) # wikipedia says zyz
+        angles = np.degrees(getYZY(self.__orient))
 
-        gamma = getAngle(-1.*self.__orient[2][0], self.__orient[2][1])
-        if abs(gamma) == 0.: gamma = 0.
+        alpha_rot = [-1.*angles[0], (0., 1., 0.)]
+        beta_rot  = [-1.*angles[1], (0., 0., 1.)]
+        gamma_rot = [-1.*angles[2], (0., 1., 0.)]
 
-        cg = math.cos(gamma) # c3
-        sg = math.sin(gamma) # s3
-
-        if abs(cg) > abs(sg):
-            beta = getAngle(self.__orient[2][2], -1.*self.__orient[2][0]/cg)
-        else:
-            beta = getAngle(self.__orient[2][2], self.__orient[2][1]/sg)
-        print cg, sg
-
-        alpha = getAngle(self.__orient[1][2], self.__orient[2][0])
-
-        return 0.,beta,gamma
-
-    def __euler_rotations_yzym(self):
-        """
-        Taken from mantid's Quat::getEulerAngles('YZY') with the
-        conditionals calculated out.
-        """
-        #// Cannot be XXY, XYY, or similar. Only first and last may be the same: YXY
-        #if ((conv[0] == conv[1]) || (conv[2] == conv[1]))
-        #  throw std::invalid_argument("Wrong convention name (repeated indices)");
-
-        #boost::replace_all(conv, "X", "0");
-        #boost::replace_all(conv, "Y", "1");
-        #boost::replace_all(conv, "Z", "2");
-
-        #std::stringstream s;
-        #s << conv[0] << " " << conv[1] << " " << conv[2];
-
-        #int first, second, last;
-        #s >> first >> second >> last;
-        first, second, last = 1,2,1
-
-        #// Do we want Tait-Bryan angles, as opposed to 'classic' Euler angles?
-        #const int TB =
-        #    (first * second * last == 0 && first + second + last == 3) ? 1 : 0;
-        TB = 0
-
-        #const int par01 = ((second - first + 9) % 3 == 1) ? 1 : -1;
-        par01 = 1
-        #const int par12 = ((last - second + 9) % 3 == 1) ? 1 : -1;
-        par12 = -1
-
-        #std::vector<double> angles(3);
-
-        #const DblMatrix R = DblMatrix(this->getRotation());
-        R = self.__orient
-
-        #const int i = (last + TB * par12 + 9) % 3;
-        i = 1
-        #const int j1 = (last - par12 + 9) % 3;
-        j1 = 2
-        #const int j2 = (last + par12 + 9) % 3;
-        j2 = 0
-
-        #const double s3 = (1.0 - TB - TB * par12) * R[i][j1];
-        s3 = R[i,j1] # 1,2
-        #const double c3 = (TB - (1.0 - TB) * par12) * R[i][j2];
-        c3 = R[i,j2] # 1,0
-
-        #V3D axis3(0, 0, 0);
-        #axis3[last] = 1.0;
-        axis3 = Vector(0,0,1)
-
-        #angles[2] = atan2(s3, c3) * rad2deg;
-        gamma = atan2(s3, c3)
-
-
-        '''
-        DblMatrix Rm3(Quat(-angles[2], axis3).getRotation());
-        DblMatrix Rp = R * Rm3;
-
-        const double s1 =
-             par01 * Rp[(first - par01 + 9) % 3][(first + par01 + 9) % 3];
-        const double c1 = Rp[second][second];
-        const double s2 = par01 * Rp[first][3 - first - second];
-        const double c2 = Rp[first][first];
-
-        angles[0] = atan2(s1, c1) * rad2deg;
-        angles[1] = atan2(s2, c2) * rad2deg;
-
-        return angles;'''
-        return 0,0,0
-
-
-    def __euler_rotations_yzyold(self):
-        """
-        This is very similar to __euler_roatations_zyz except the rotations
-        are about the y (alpha), then unrotated z (beta), then unrotated
-        y (gamma).
-        """
-        rotated_x = self.__orient[0]
-        rotated_y = self.__orient[1]
-        rotated_z = self.__orient[2]
-
-        # calculate beta
-        beta = getAngle(UNIT_Y.cross(rotated_y).length,
-                        UNIT_Y.dot(rotated_y))
-
-        if abs(math.sin(beta)) < self._tol_ang: # special case for numerics
-            print "small beta:", beta, math.sin(beta)
-            # since alpha and gamma are coincident, just force gamma to be zero
-            gamma = 0.
-
-            # calculate alpha
-            alpha = getAngle(UNIT_Z.dot(rotated_x),
-                             UNIT_Z.dot(rotated_z))
-        else:
-            # calculate alpha
-            alpha = getAngle(UNIT_Y.dot(rotated_z),
-                             -1.*UNIT_Y.dot(rotated_x))
-
-            # calculate gamma
-            gamma = getAngle(UNIT_Z.dot(rotated_y),
-                             UNIT_X.dot(rotated_y))
-
-        # output for each: rotation angle (in degrees), axis of rotation
-        alpha_rot = [-1.*math.degrees(alpha), (0., 1., 0.)]
-        beta_rot  = [-1.*math.degrees(beta),  (0., 0., 1.)]
-        gamma_rot = [-1.*math.degrees(gamma), (0., 1., 0.)]
         return (alpha_rot, beta_rot, gamma_rot)
 
     def __width(self):
@@ -540,7 +456,6 @@ class Rectangle:
     orientation = property(lambda self: self.__orient[:],
                            doc="Orientation as a set of three basis vectors")
     euler_rot = property(__euler_rotations_zyz)
-    euler_rot_yzy = property(__euler_rotations_yzy)
     points = property(lambda self: self.__points[:],
                       doc="The four corners originally supplied in the constructor")
 
