@@ -276,15 +276,11 @@ def getYZY(rotation):
     # if the z-rotation is missing, just set
     # everything to the first y-rotation
     if angles[1] == 0.:
-        angles = [angles[0]+angles[2], 0., 0.]
-        if abs(angles[0] - 2.*np.pi) < 1.e-15:
-            angles[0] = 0.
+        angles = np.array([0., 0., angles[0]+angles[2]])
 
     # make sure that everything has angle <= 2pi
-    for i,angle in enumerate(angles):
-        while angle >= 2*np.pi:
-            angle -= 2*np.pi
-        angles[i] = angle
+    angles = angles % (2. * np.pi)
+    angles[np.abs(angles) < 1.e-15] = 0.
 
     return angles
 
@@ -294,15 +290,11 @@ def getZYZ(rotation):
     # if the y-rotation is missing, just set
     # everything to the first z-rotation
     if angles[1] == 0.:
-        angles = [angles[0]+angles[2], 0., 0.]
-        if abs(angles[0] - 2.*np.pi) < 1.e-15:
-            angles[0] = 0.
+        angles = np.array([0., 0., angles[0]+angles[2]])
 
     # make sure that everything has angle <= 2pi
-    for i,angle in enumerate(angles):
-        while angle >= 2*np.pi:
-            angle -= 2*np.pi
-        angles[i] = angle
+    angles = angles % (2. * np.pi)
+    angles[np.abs(angles) < 1.e-15] = 0.
 
     return angles
 
@@ -310,6 +302,12 @@ def makeLocation(instr, det, name, center, rotations, tol_ang=TOLERANCE):
     """
     Make a location appropriate for an instrument component.
     """
+    # set angles to zero if they aren' already
+    for i, rot in enumerate(rotations):
+        if abs(rot[0]) < 1.e-15:
+            rotations[i] = [0., rot[1]]
+
+    # location includes first rotation
     sub = instr.addLocation(det,
                             x=center[0], y=center[1], z=center[2],
                             name=name, rot_y=rotations[0][0])
