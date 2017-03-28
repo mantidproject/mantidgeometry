@@ -157,7 +157,7 @@ if __name__ == "__main__":
         stop = start + num_banks_in_pack*8*128-1
         info = instr.addDetectorIds('Group%d' % (i+1), [start, stop, None])
 
-    for i, _ in enumerate(num_banks): # TODO edit as more come in
+    for i, _ in enumerate(num_banks):
         group = 'Group%d' % (i+1)
         group = instr.addComponent(group, idlist=group)
 
@@ -216,11 +216,14 @@ if __name__ == "__main__":
     special = [72, 73]
     for i in range(num_banks[4]):
         bank_num = bank_offset+i+1
+        bank = "bank%d" % bank_num
         if bank_num in special:
             corners = getCornersSpecial(bank_num)
         else:
             corners = getCorners(bank_num)
 
+        # flipy
+        corners = [corners[2], corners[3], corners[0], corners[1]]
         rect = getRectangle(bank_num, positions, corners)
 
         if bank_num in special:
@@ -236,10 +239,21 @@ if __name__ == "__main__":
     special = [90,91]
     for i in range(num_banks[5]):
         bank_num = bank_offset+i+1
+        bank = "bank%d" % bank_num
         if bank_num in special:
             corners = getCornersSpecial(bank_num)
         else:
             corners = getCorners(bank_num)
+
+        # corners are mixed up
+        if bank_num == 91:
+            # flipx
+            corners = [corners[3], corners[2], corners[1], corners[0]]
+        elif bank_num == 90:
+            # flipy
+            corners = [corners[2], corners[3], corners[0], corners[1]]
+        else:
+            corners = [corners[2], corners[3], corners[0], corners[1]]
 
         rect = getRectangle(bank_num, positions, corners)
 
