@@ -10,4 +10,4 @@ install:
 
 script:
   - python rectangle_test.py
-  - python *_geometry.py
+  - "python test_unchanged.py --setup"
