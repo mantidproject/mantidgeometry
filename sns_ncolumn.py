@@ -27,8 +27,8 @@ def readFile(filename, hasLabels=True, headerLines=0):
                     numcol = len(line)
                 else:
                     if numcol != len(line):
-                        raise Exception("Number of columns varies at line %d" \
-                                        % linenum)
+                        raise Exception("Number of columns varies at line %d in '%s'" \
+                                        % (linenum, filename))
                 lines.append(line)
 
     # set up resulting data structure
