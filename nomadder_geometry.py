@@ -119,8 +119,8 @@ if __name__ == "__main__":
     ####################
     # read the positions of the pixels that was provided
     positions = readEngineeringPositions('SNS/NOMAD/NOM_detpos.txt')
-    positionsSurvey = readSurveyPositions('SNS/NOMAD/pixelpos.dat')
     '''
+    positionsSurvey = readSurveyPositions('SNS/NOMAD/pixelpos.dat')
     # update the engineering positons with ones derived from survey
     special = [74752, 74879, 75775, 75648, # bank 74
                95232, 95359, 96255, 96128, # bank 94
@@ -131,12 +131,15 @@ if __name__ == "__main__":
         print '*****', i
         print positions[i], 'eng'
         print positionsSurvey[i], 'survey'
+    updated_pos = np.zeros(len(positions.keys())).astype(bool)
     for i in positions.keys():
         if i in positionsSurvey and i not in special:
-            if abs(positions[i].length-positionsSurvey[i].length) > 0.01:
-                print 'move', i, 'by', positions[i].length-positionsSurvey[i].length
+            distance = (positions[i]-positionsSurvey[i]).length
+            if abs(distance) > 0.01:
+                print 'move', i, 'by', distance
             positions[i] = positionsSurvey[i]
-
+            updated_pos[i] = True
+    print 'updated', updated_pos
 
     #print positions[3071], 'eng 3071'
     #print positions[3072], 'eng 3072'
