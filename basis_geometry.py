@@ -31,7 +31,7 @@ if __name__ == "__main__":
     if not os.path.exists(nexusfile):
         print 'Cannot read information from \'%s\'. Not creating geometry' % nexusfile
         import sys
-        sys.exit(0)
+        sys.exit(2)
 
     inst_name = "BASIS"
     short_name = "BSS"
