@@ -5,6 +5,7 @@ python:
 
 install:
   - pip install numpy
+  - pip install lxml
 
 script:
   - python rectangle_test.py
