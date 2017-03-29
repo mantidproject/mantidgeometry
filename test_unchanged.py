@@ -106,13 +106,18 @@ def runGeom(pyscript, outfile, goldenfile, generateGolden):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate() # waits for process to finish
     retcode = proc.wait()
-    logging.debug("----output----")
-    logging.debug(out)
-    logging.debug("----error-----")
-    logging.debug(err)
 
     if retcode:
+        logging.warning("----output----")
+        logging.warning(out)
+        logging.warning("----error-----")
+        logging.warning(err)
         raise RuntimeError("'%s' returned %d" % (cmd, retcode))
+    else:
+        logging.debug("----output----")
+        logging.debug(out)
+        logging.debug("----error-----")
+        logging.debug(err)
 
     finalfile = outfile
     if generateGolden:

@@ -10,4 +10,4 @@ install:
 
 script:
   - python rectangle_test.py
-  - python test_unchanged.py --setup -l DEBUG
+  - python test_unchanged.py --setup
