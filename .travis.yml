@@ -8,3 +8,4 @@ install:
 
 script:
   - python rectangle_test.py
+  - python test_unchanged.py --setup # confirms that the scripts all run w/o checking results
