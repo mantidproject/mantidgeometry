@@ -38,5 +38,8 @@ The test harness is small and will (generically) generate false positives, but y
 4. `git checkout -` to go back to your latest commit/branch
 5. `./test_unchaged.py` to see what (if anything) has changed
 
+There are also tests for some of the helper classes. This is run automatically by travis-ci
+and can be found in the `.travis.yml` in the `script` section.
+
 [![Stories in Ready](https://badge.waffle.io/mantidproject/mantidgeometry.png?label=ready)](https://waffle.io/mantidproject/mantidgeometry)
 [![Travis-CI Build Status](https://travis-ci.org/mantidproject/mantidgeometry.svg)](https://travis-ci.org/mantidproject/mantidgeometry)
