@@ -106,13 +106,27 @@ def runGeom(pyscript, outfile, goldenfile, generateGolden):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate() # waits for process to finish
     retcode = proc.wait()
-    logging.debug("----output----")
-    logging.debug(out)
-    logging.debug("----error-----")
-    logging.debug(err)
+    (out, err) = (out.strip(), err.strip())
 
     if retcode:
-        raise RuntimeError("'%s' returned %d" % (cmd, retcode))
+        if len(out) > 0:
+            logging.warning("----output----")
+            logging.warning(out)
+        if len(err) > 0:
+            logging.warning("----error-----")
+            logging.warning(err)
+        if retcode == 2: # two means skip
+            print 'Skipped creating', outfile
+            return
+        else:
+            raise RuntimeError("'%s' returned %d" % (cmd, retcode))
+    else:
+        if len(out) > 0:
+            logging.debug("----output----")
+            logging.debug(out)
+        if len(err) > 0:
+            logging.debug("----error-----")
+            logging.debug(err)
 
     finalfile = outfile
     if generateGolden:
@@ -136,9 +150,11 @@ def getModified(instrTag):
 
 def compareGeom(golden, outfile, headerDecoration):
     if not os.path.exists(golden):
-        raise RuntimeError("Failed to find the orignal geometry '%s'" % golden)
+        logging.warning("Failed to find the orignal geometry '%s' - not comparing" % golden)
+        return
     if not os.path.exists(outfile):
-        raise RuntimeError("Failed to find the new geometry '%s'" % outfile)
+        logging.warning("Failed to find the new geometry '%s'" % outfile)
+        return
 
     oldData = open(golden, 'r').readlines()
     newData = open(outfile, 'r').readlines()

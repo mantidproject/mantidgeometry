@@ -3,6 +3,7 @@
 from helper import MantidGeom
 import h5py
 import math
+import os
 
 nexusfile = "/SNS/BSS/IPTS-5908/0/32264/NeXus/BSS_32264_event.nxs"
 banks = 4
@@ -27,6 +28,11 @@ ELASTIC_TUBE_TEMPERATURE = ("tube_temperature", 290.0, "K")
 
 if __name__ == "__main__":
 
+    if not os.path.exists(nexusfile):
+        print 'Cannot read information from \'%s\'. Not creating geometry' % nexusfile
+        import sys
+        sys.exit(2)
+
     inst_name = "BASIS"
     short_name = "BSS"
 
@@ -48,10 +54,10 @@ if __name__ == "__main__":
     det.addMonitors(names=["monitor1"], distance=["-0.23368"])
 
     # Create the inelastic banks information
-    # Slicer for removing ghosts. Due to the mapping, the ghost tubes sit 
+    # Slicer for removing ghosts. Due to the mapping, the ghost tubes sit
     # on the same sides of the arrays for all banks.
-    remove_ghosts = slice(-8)    
-    
+    remove_ghosts = slice(-8)
+
     for i in range(banks):
         pixel_id = nfile["/entry/instrument/bank%d/pixel_id" % (i+1)].value[remove_ghosts]
         distance = nfile["/entry/instrument/bank%d/distance" % (i+1)].value[remove_ghosts]
@@ -59,7 +65,7 @@ if __name__ == "__main__":
         polar_angle *= (180.0/math.pi)
         azimuthal_angle = nfile["/entry/instrument/bank%d/azimuthal_angle" % (i+1)].value[remove_ghosts]
         azimuthal_angle *= (180.0/math.pi)
-        
+
         analyser_wavelength = nfile["/entry/instrument/analyzer%d/wavelength" % (i+1)].value[remove_ghosts]
         analyser_energy = 81.8042051/analyser_wavelength**2
 
@@ -68,7 +74,7 @@ if __name__ == "__main__":
         #doc_handle = det.makeTypeElement(bank_id)
 
         det.addDetectorPixels(bank_id, r=distance, theta=polar_angle,
-                              phi=azimuthal_angle, names=pixel_id, 
+                              phi=azimuthal_angle, names=pixel_id,
                               energy=analyser_energy)
 
         det.addDetectorPixelsIdList(bank_id, r=distance, names=pixel_id)
@@ -86,36 +92,36 @@ if __name__ == "__main__":
     for i in range(ELASTIC_BANK_START, ELASTIC_BANK_END+1):
         bank_name = "bank%d" % i
         det.addComponent(bank_name, root=handle)
-	
+
         k = i - ELASTIC_BANK_START
 
         x_coord = detector_x[k]
         y_coord = detector_y[k]
         z_coord = detector_z[k]
-		
-        det.addDetector(x_coord, y_coord, z_coord, 0.0, 0., 90., 
+
+        det.addDetector(x_coord, y_coord, z_coord, 0.0, 0., 90.,
                         bank_name, "tube-elastic", facingSample=True)
 
         idlist.append(ELASTIC_DETECTORID_START + ELASTIC_TUBE_NPIXELS*(i-ELASTIC_BANK_START))
-        idlist.append(ELASTIC_DETECTORID_START + ELASTIC_TUBE_NPIXELS*(i-ELASTIC_BANK_START) 
+        idlist.append(ELASTIC_DETECTORID_START + ELASTIC_TUBE_NPIXELS*(i-ELASTIC_BANK_START)
         + ELASTIC_TUBE_NPIXELS-1)
         idlist.append(None)
 
     # Diffraction tube information
     det.addComment("ELASTIC TUBE (90 degrees)")
-    det.addPixelatedTube("tube-elastic", ELASTIC_TUBE_NPIXELS, 
-                         ELASTIC_TUBE_LENGTH, "pixel-elastic-tube", 
+    det.addPixelatedTube("tube-elastic", ELASTIC_TUBE_NPIXELS,
+                         ELASTIC_TUBE_LENGTH, "pixel-elastic-tube",
                          neutronic=True, neutronicIsPhysical=True)
-                         
+
     # Set the diffraction pixel Ids
     det.addDetectorIds("elastic", idlist)
 
     # Creating diffraction pixel
     det.addComment("PIXEL FOR DIFFRACTION TUBES")
     det.addCylinderPixel("pixel-elastic-tube", (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
-                         (ELASTIC_TUBE_WIDTH/2.0), 
+                         (ELASTIC_TUBE_WIDTH/2.0),
                          (ELASTIC_TUBE_LENGTH/ELASTIC_TUBE_NPIXELS))
-    
+
     # Creating inelastic pixel
     # Pixel Height
     y_pixel_offset = nfile["/entry/instrument/bank1/y_pixel_offset"].value
@@ -138,7 +144,7 @@ if __name__ == "__main__":
     right_front_bottom = ((pixel_xsize/2.0), (-pixel_ysize/2.0), 0.0)
 
     det.addComment("PIXEL FOR INELASTIC TUBES")
-    det.addCuboidPixel("pixel", left_front_bottom, left_front_top, 
+    det.addCuboidPixel("pixel", left_front_bottom, left_front_top,
                        left_back_bottom, right_front_bottom, "detector")
 
     det.addComment("MONITOR SHAPE")
