@@ -37,7 +37,7 @@ if __name__ == "__main__":
     short_name = "BSS"
 
     # Set header information
-    comment = "Created by Michael Reuter"
+    comment = "Created by Michael Reuter and Jose Borreguero"
     # Time needs to be in UTC?
     valid_from = "2013-01-20 00:00:00"
 
@@ -76,8 +76,8 @@ if __name__ == "__main__":
         det.addDetectorPixels(bank_id, r=distance, theta=polar_angle,
                               phi=azimuthal_angle, names=pixel_id,
                               energy=analyser_energy)
-
-        det.addDetectorPixelsIdList(bank_id, r=distance, names=pixel_id)
+        det.addDetectorPixelsIdList(bank_id, r=distance, names=pixel_id,
+                                    elg="multiple_ranges")
 
     # Create the diffraction bank information
     det.addComponent("elastic", "elastic")
