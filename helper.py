@@ -6,7 +6,7 @@ from operator import itemgetter
 
 # Conversions from 2.7 to 3.x without modifying the code
 split = lambda s: s.split()  # replaces from string import split
-join = lambda t: ' '.join()  # replaces from string import join
+join = lambda t: ' '.join(t)  # replaces from string import join
 
 INCH_TO_METRE = 0.0254
 DEG_TO_RAD = 0.0174533 # degrees to radians according to idl
