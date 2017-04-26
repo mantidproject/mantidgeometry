@@ -45,8 +45,8 @@ class MantidGeom:
         """
         Print the XML geometry to the screeen
         """
-        print le.tostring(self.__root, pretty_print=True,
-                             xml_declaration=True)
+        print(le.tostring(self.__root, pretty_print=True,
+                             xml_declaration=True))
 
     def addSnsDefaults(self, indirect=False, default_view=None):
         """
@@ -229,7 +229,7 @@ class MantidGeom:
 
     def addComponentILL(self, type_name, x, y, z, isType=None, idlist=None, root=None):
         """
-        Add a component to the XML definition. A blank location is added.
+        Add a component with location to the XML definition.
         """
         if root is None:
             root = self.__root
@@ -246,6 +246,11 @@ class MantidGeom:
                           **{"name": type_name, "is": "SamplePos"})
 
     def addComponentRectangularDetector(self, type_name, x, y, z, idstart, idfillbyfirst, idstepbyrow, root=None):
+        """
+
+        Returns: a component argument -> rectangular detector
+
+        """
         if root is None:
             root = self.__root
 
@@ -296,7 +301,7 @@ class MantidGeom:
         
         if usepolar is True:
             self.addLocationPolar(comp_element, x, y, z, name)
-        if usepolar is False:
+        else:
             self.addLocation(comp_element, x, y, z, rot_x, rot_y, rot_z, facingSample=facingSample,
                 neutronic=neutronic, nx=nx, ny=ny, nz=nz)
 
@@ -308,7 +313,6 @@ class MantidGeom:
                                      xstart=xstart, xstep=xstep, xpixels=xpixels,
                                      ystart=ystart, ystep=ystep, ypixels=ypixels,
                                      **{"name": name, "is": "rectangular_detector", "type": type})
-        #le.SubElement(type_element, "properties")
 
     def addSingleDetector(self, root, x, y, z, rot_x, rot_y, rot_z, name=None,
                           usepolar=None, facingSample=False):
@@ -389,7 +393,7 @@ class MantidGeom:
               rf=float(r)               
               le.SubElement(log, "value", **{"val":r})    
             except Exception as e:
-              print("Excpetion: ", str(e))
+              print("Excpetion: {}".format(str(e)))
               processed=split(str(r))
               if len(processed)==1:
                 le.SubElement(log, "logfile", **{"id":r})
@@ -652,7 +656,7 @@ class MantidGeom:
               should contain list of parameter name, logfile string
               and optionally extractSingleValueAs (default mean)
         """
-        component = le.SubElement(self.__root, "component", type = component_name)
+        component = le.SubElement(self.__root, "component", type=component_name)
         distance = float(distance)
         le.SubElement(component, "location", z=str(distance))
         for arg in args:
