@@ -116,9 +116,13 @@ if __name__ == "__main__":
     banks = readPositions("SNS/POWGEN/PG3_geom_2017.csv")
 
     # create columns
-    columns = []
-    # TODO - get from csv
-    for name in ['SA', 'SB', 'SC', 'SD', 'SE', 'SF', 'SG', 'SH', 'SI', 'SJ', 'SK', 'SL']:
+    columns = set()
+    for name in banks.keys():
+        column, _ =  banks[name]
+        columns.add(column)
+    columns = list(columns)
+    columns.sort()
+    for name in columns:
         group = instr.addComponent(str(name))
 
     createdcolumns = dict()
