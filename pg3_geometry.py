@@ -51,9 +51,7 @@ def readPositions(filename):
             raise ValueError("Inconceivable! i = %d" % i)
 
         if i == 3:
-            #banks[bank] = (column, Rectangle(one, two, three, four, tolerance_len=0.006))
-            #banks[bank] = (column, Rectangle(three, four, one, two, tolerance_len=0.006))
-            banks[bank] = (column, Rectangle(two, three, four, one, tolerance_len=0.006))
+            banks[bank] = (column, Rectangle(four, one, two, three, tolerance_len=0.006))
 
     return banks
 
