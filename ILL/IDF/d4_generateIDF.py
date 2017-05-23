@@ -81,7 +81,7 @@ def printHeader():
       <algebra val="shape" />
     </type>
     <idlist idname="monitors">
-        <id val="1" />
+        <id val="0" />
     </idlist>
     """.format(monitorZ, monitorSize / 2.)
 
@@ -96,7 +96,7 @@ def printHeader():
 def printDetector():
     print """<!-- Detector IDs -->
     <idlist idname="detectors">
-        <id start="2" end="{0}" />
+        <id start="1" end="{0}" />
     </idlist>
     <!-- Detector list def -->
     <component type="detector" idlist="detectors">
@@ -104,7 +104,7 @@ def printDetector():
     </component>
     <!-- Detector Panels -->
     <type name="detector">
-      <component type="panel">""".format(nCellsPerPlate * nPlates + 1)
+      <component type="panel">""".format(nCellsPerPlate * nPlates)
 
     for panel in range(nPlates):
         print """       <location name="panel_{0}" r="{1}" t="{2}" p="0.0">
