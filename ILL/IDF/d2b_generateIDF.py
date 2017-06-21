@@ -71,8 +71,7 @@ def printHeader():
                <length unit="meter" />
                <angle unit="degree" />
                <reference-frame>
-                 <!-- The z-axis is set parallel to and in the direction of the beam.
-                      the y-axis points up and the coordinate system is right handed. -->
+                 <!-- The z-axis is set parallel to and in the direction of the beam. The y-axis points up and the coordinate system is right handed. -->
                  <along-beam axis="z" />
                  <pointing-up axis="y" />
                  <handedness val="right" />
@@ -113,7 +112,7 @@ def printMonitor():
 def printSample():
     print("""<!-- Sample position -->
              <component type="sample-position">
-               <location y="0.0" x="0.0" z="0.0" />
+               <location x="0.0" y="0.0" z="0.0" />
              </component>
              <type name="sample-position" is="SamplePos" />""")
 
