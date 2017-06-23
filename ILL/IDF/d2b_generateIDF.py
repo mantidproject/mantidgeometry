@@ -20,8 +20,9 @@ monitor_distance = 1.594
 monitor_size = 0.01
 
 number_of_tubes = 128
+"""These angles are arbitary, the correct start value is always read from the NeXus file."""
 tube_theta_angles_start = 165.0
-tube_theta_angles_end = 5.0
+tube_theta_angles_end = 6.25
 
 number_of_pixels = 128
 detector_tube_length = 0.3
