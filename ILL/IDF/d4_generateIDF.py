@@ -54,6 +54,7 @@ def printHeader():
         <along-beam axis="z" />
         <pointing-up axis="y" />
         <handedness val="right" />
+        <theta-sign axis="x" />
       </reference-frame>
     </defaults>
     """
