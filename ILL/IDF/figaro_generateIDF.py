@@ -82,8 +82,7 @@ figaro.addDummyMonitor(0.01, 0.03)
 figaro.addComment("MONITOR IDs")
 figaro.addMonitorIds(["0", "1"])
 figaro.addComment("DETECTORS")
-figaro.addComment("64 tubes form the detector")  # bank can be renamed to detector
-# this is like for D17, but Figaro has vertical tubes -> is the instrument correct of idfillbyfirst is x?
+figaro.addComment("64 tubes form the detector")
 figaro.addComponentRectangularDetector("detector", 0.0, 0.0, detValue, idstart="2", idfillbyfirst="x",
                                     idstepbyrow="1")
 figaro.addComment("PIXEL, EACH PIXEL IS A DETECTOR")

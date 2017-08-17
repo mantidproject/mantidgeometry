@@ -70,10 +70,10 @@ d17.addDummyMonitor(0.01, 0.03)
 d17.addComment("MONITOR IDs")
 d17.addMonitorIds(["0", "1"])
 d17.addComment("DETECTORS")
-d17.addComment("64 TUBES FORM ONE BANK")  # bank can be renamed to detector
-d17.addComponentRectangularDetector("bank", 0.0, 0.0, detValue, idstart="2", idfillbyfirst="x",
+d17.addComment("64 TUBES FORM ONE DETECTOR")
+d17.addComponentRectangularDetector("detector", 0.0, 0.0, detValue, idstart="2", idfillbyfirst="x",
                                     idstepbyrow="1")
 d17.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
-d17.addRectangularDetector("bank", "pixel", xstart, xstep, xpixels, ystart, ystep, ypixels)
+d17.addRectangularDetector("detector", "pixel", xstart, xstep, xpixels, ystart, ystep, ypixels)
 d17.addCuboidPixel("pixel", [-x, -y, z], [x, y, z], [-x, -y, thickness], [x, -y, z], shape_id="pixel-shape")
 d17.showGeom()
