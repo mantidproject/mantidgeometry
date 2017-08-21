@@ -28,7 +28,7 @@ tubeSeparation = tubeWidth + tubeWallThickness
 xstart = repr(0)
 xstep = repr(detectorWidth)
 xpixels = "1"
-ystart = "0"
+ystart = repr(-detectorHeight / 2)
 ystep = repr(pixelHeight)
 ypixels = repr(numberOfPixelsPerTube)
 # definition of a cuboid pixel
