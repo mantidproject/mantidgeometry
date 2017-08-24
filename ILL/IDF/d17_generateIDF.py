@@ -16,8 +16,8 @@ detValue = 3.1  # sample - detector distance (from Nexus file det.target_value)
 zMon1 = 0.0181
 zMon2 = -0.5
 # definition of the rectangular detector
-xstart = repr(- (pixelWidth * (numberOfPixelsPerTube - 1) / 2))
-xstep = repr(pixelWidth)
+xstart = repr((pixelWidth * (numberOfPixelsPerTube - 1) / 2))
+xstep = repr(-pixelWidth)
 xpixels = repr(numberOfPixelsPerTube)
 ystart = "0"
 ystep = repr(detectorHeight)
@@ -68,10 +68,10 @@ d17.addComment("MONITOR SHAPE")
 d17.addComment("FIXME: Do something real here.")
 d17.addDummyMonitor(0.01, 0.03)
 d17.addComment("MONITOR IDs")
-d17.addMonitorIds(["0", "1"])
+d17.addMonitorIds(["100000", "100001"])
 d17.addComment("DETECTORS")
 d17.addComment("64 TUBES FORM ONE DETECTOR")
-d17.addComponentRectangularDetector("detector", 0.0, 0.0, detValue, idstart="2", idfillbyfirst="x",
+d17.addComponentRectangularDetector("detector", 0.0, 0.0, detValue, idstart="1", idfillbyfirst="x",
                                     idstepbyrow="1")
 d17.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d17.addRectangularDetector("detector", "pixel", xstart, xstep, xpixels, ystart, ystep, ypixels)

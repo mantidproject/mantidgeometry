@@ -80,10 +80,10 @@ figaro.addComment("MONITOR SHAPE")
 figaro.addComment("FIXME: Do something real here.")
 figaro.addDummyMonitor(0.01, 0.03)
 figaro.addComment("MONITOR IDs")
-figaro.addMonitorIds(["0", "1"])
+figaro.addMonitorIds(["100000", "100001"])
 figaro.addComment("DETECTORS")
 figaro.addComment("64 tubes form the detector")
-figaro.addComponentRectangularDetector("detector", 0.0, 0.0, detValue, idstart="2", idfillbyfirst="x",
+figaro.addComponentRectangularDetector("detector", 0.0, 0.0, detValue, idstart="1", idfillbyfirst="x",
                                     idstepbyrow="1")
 figaro.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 figaro.addRectangularDetector("detector", "pixel", xstart, xstep, xpixels, ystart, ystep, ypixels)
