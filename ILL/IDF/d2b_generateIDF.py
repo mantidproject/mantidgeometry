@@ -136,7 +136,7 @@ def printDetectors():
     tube_angles = tube_theta_angles()
 
     for tube_number in range(number_of_tubes):
-        print """<location r="{0}" t="{1}" name="tube_{2}" />""".format(distance_to_detector, tube_angles[tube_number], tube_number + 1)
+        print(("""<location r="{0}" t="-{1}" name="tube_{2}" />""").format(distance_to_detector, tube_angles[tube_number], tube_number + 1))
 
     print("""  </component>
              </type>""")
@@ -150,7 +150,7 @@ def printTubeDefinition():
     pixel_positions = pixel_height_positions()
 
     for pixel_number in range(number_of_pixels):
-        print("""<location y="{0}" />""").format(pixel_positions[pixel_number])
+        print(("""<location y="{0}" />""").format(pixel_positions[pixel_number]))
 
     print("""  </component>
              </type>""")
@@ -169,7 +169,7 @@ def printPixelDefinition():
 
 
 def printEnd():
-    print "</instrument>"
+    print("</instrument>")
 
 
 if __name__ == '__main__':
