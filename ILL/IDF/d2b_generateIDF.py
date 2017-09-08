@@ -39,7 +39,7 @@ def tube_theta_angles():
     tube_theta_delta = (tube_theta_angles_start - tube_theta_angles_end) / (number_of_tubes - 1)
 
     for tube_number in range(number_of_tubes):
-        tube_theta_angles.append(tube_theta_angles_start - tube_theta_delta * tube_number)
+        tube_theta_angles.append(tube_theta_angles_end + tube_theta_delta * tube_number)
 
     return tube_theta_angles
 
