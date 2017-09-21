@@ -1,3 +1,4 @@
+from __future__ import (print_function)
 from lxml import etree as le # python-lxml on rpm based systems
 from string import split,join
 import numpy as np
@@ -241,12 +242,13 @@ class MantidGeom:
         """
         if root is None:
             root = self.__root
+
         if idlist is not None:
             comp = le.SubElement(root, "component", type=type_name,
                                  idlist=idlist)
         else:
             comp = le.SubElement(root, "component", type=type_name)
-        l = comp
+        l=comp
         if blank_location:
             l = le.SubElement(comp, "location")
         return l
@@ -300,7 +302,7 @@ class MantidGeom:
             root_element = self.__root
 
         for key in extra_attrs.keys():
-            extra_attrs[key] = str(extra_attrs[key])  # convert everything to strings
+            extra_attrs[key] = str(extra_attrs[key]) # convert everything to strings
 
         if idlist_type is not None:
             comp = le.SubElement(root_element, "component", type=name,
@@ -323,8 +325,8 @@ class MantidGeom:
         type_element = le.SubElement(self.__root, "type", name=name)
         comp_element = le.SubElement(type_element, "component", type=comp_type)
         
-        if usepolar is True:
-            self.addLocationPolar(comp_element, x, y, z, name)
+        if usepolar is not None:
+            self.addLocationPolar(comp_element, x, y, z, facingSample)
         else:
             self.addLocation(comp_element, x, y, z, rot_x, rot_y, rot_z, facingSample=facingSample,
                 neutronic=neutronic, nx=nx, ny=ny, nz=nz)
@@ -364,19 +366,19 @@ class MantidGeom:
                         
         if rot_y is not None:
             r1 = le.SubElement(pos_loc, "rot", **{"val":str(rot_y), "axis-x":"0",
-                                                  "axis-y": "1", "axis-z": "0"})
+                                                  "axis-y":"1", "axis-z":"0"})
         else:
             r1 = pos_loc
 
         if rot_x is not None:
             r2 = le.SubElement(r1, "rot", **{"val":str(rot_x), "axis-x":"1",
-                                             "axis-y": "0", "axis-z": "0"})
+                                             "axis-y":"0", "axis-z":"0"})
         else:
             r2 = r1
 
         if rot_z is not None:
             r3 = le.SubElement(r2, "rot", **{"val":str(rot_z), "axis-x":"0",
-                                             "axis-y": "0", "axis-z": "1"})
+                                             "axis-y":"0", "axis-z":"1"})
         else:
             r3 = r2
 
@@ -423,21 +425,19 @@ class MantidGeom:
                 le.SubElement(log, "logfile", **{"id":r})
               else:
                 equation=join(processed[1:]).replace(processed[0],"value")
-                le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})  
+                le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})
             log=le.SubElement(pos_loc,"parameter",**{"name":"t-position"})
             try:
-              tf=float(t)               
-              le.SubElement(log, "value", **{"val": t})
+              le.SubElement(log, "value", **{"val":t})
             except:  
               processed=split(str(t))
               if len(processed)==1:
-                le.SubElement(log, "logfile", **{"id": t})
+                le.SubElement(log, "logfile", **{"id":t})
               else:
                 equation=join(processed[1:]).replace(processed[0],"value")
                 le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})        
             log=le.SubElement(pos_loc,"parameter",**{"name":"p-position"})
             try:
-              pf=float(p)               
               le.SubElement(log, "value", **{"val":p})    
             except:  
               processed=split(str(p))
@@ -452,7 +452,6 @@ class MantidGeom:
           if rot_x is not None:
             log=le.SubElement(pos_loc,"parameter",**{"name":"rotx"})
             try:
-              rotxf=float(rot_x)               
               le.SubElement(log, "value", **{"val":rot_x})    
             except:  
               processed=split(str(rot_x))
@@ -464,7 +463,6 @@ class MantidGeom:
           if rot_y is not None:
             log=le.SubElement(pos_loc,"parameter",**{"name":"roty"})
             try:
-              rotyf=float(rot_y)               
               le.SubElement(log, "value", **{"val":rot_y})    
             except:  
               processed=split(str(rot_y))
@@ -476,7 +474,6 @@ class MantidGeom:
           if rot_z is not None:
             log=le.SubElement(pos_loc,"parameter",**{"name":"rotz"})
             try:
-              rotzf=float(rot_z)               
               le.SubElement(log, "value", **{"val":rot_z})    
             except:  
               processed=split(str(rot_z))
@@ -551,7 +548,7 @@ class MantidGeom:
         theta, phi. The axis is a 3-tuple of x, y, z.
         """
         type_element = le.SubElement(self.__root, "type",
-                                     **{"name": name, "is": is_type})
+                                     **{"name":name, "is":is_type})
         #cylinder = le.SubElement(type_element, "cylinder", id="cyl-approx")
         cylinder = le.SubElement(type_element, "cylinder", id=algebra)
         le.SubElement(cylinder, "centre-of-bottom-base",
@@ -575,7 +572,7 @@ class MantidGeom:
         lbb_pt, rfb_pt are 3-tuple of x, y, z.
         """
         type_element = le.SubElement(self.__root, "type",
-                                     **{"name": name, "is": is_type})
+                                     **{"name":name, "is":is_type})
         cuboid = le.SubElement(type_element, "cuboid", id=shape_id)
         le.SubElement(cuboid, "left-front-bottom-point", x=str(lfb_pt[0]),
                       y=str(lfb_pt[1]), z=str(lfb_pt[2]))
@@ -680,7 +677,7 @@ class MantidGeom:
               should contain list of parameter name, logfile string
               and optionally extractSingleValueAs (default mean)
         """
-        component = le.SubElement(self.__root, "component", type=component_name)
+        component = le.SubElement(self.__root, "component", type = component_name)
         distance = float(distance)
         le.SubElement(component, "location", z=str(distance))
         for arg in args:
@@ -688,7 +685,7 @@ class MantidGeom:
             if len(arg) == 2:
                 le.SubElement(log, "logfile", id=arg[1])
             elif len(arg) == 3:
-                le.SubElement(log, "logfile", **{"id":arg[1], "extract-single-value-as": arg[2]})
+                le.SubElement(log, "logfile", **{"id":arg[1], "extract-single-value-as":arg[2]})
             else:
                 raise IndexError("Will not be able to parse:", arg)
 
