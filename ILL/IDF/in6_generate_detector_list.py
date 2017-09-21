@@ -74,8 +74,9 @@ UPPER_ANGLE = 11.5
 
 
 def write_line(box_number, theta_angle, detector_ids, height_angle):
-    OUTPUT_FILE.write(str(box_number) + '\t\t' + str(theta_angle) + '\t' + str(detector_ids).replace(' ', '').replace('[', '')
-                      .replace(']', ' ').ljust(16) + '\t' + str(height_angle) + '\n')
+    return str(box_number) + '\t\t' + str(theta_angle) + '\t' + \
+           str(detector_ids).replace(' ', '').replace('[', '').replace(']', ' ').ljust(16) + '\t' + \
+           str(height_angle) + '\n'
 
 
 def average_angle_for_box(n_detectors, n_detectors_middle, n_detectors_upper_lower):
@@ -102,12 +103,16 @@ if __name__ == '__main__':
 
     # Sort detector list
     detectors = CORRECT_THETA_ANGLES
-    # DETECTORS = LAMP_THETA_ANGLES
+    # detectors = LAMP_THETA_ANGLES
     detectors = list(set(detectors))
     detectors = sorted(detectors, key=float)
 
     box = 1  # box number start
     d_id = 1  # detector id start, others are monitors
+
+    lower_bank = ""
+    middle_bank = ""
+    top_bank = ""
 
     OUTPUT_FILE = open(OUTPUT_FILENAME, 'w')
     OUTPUT_FILE.write('Box # \tTheta \tDetector ID \t\tPhi \n')
@@ -125,7 +130,7 @@ if __name__ == '__main__':
             number_of_detectors_upper_lower = 0
             middle_box_angle, upper_lower_box_angle, detectors = \
                 average_angle_for_box(detectors, number_of_detectors_middle, number_of_detectors_upper_lower)
-            write_line(box, middle_box_angle, [d_id, d_id + 1, d_id + 2, d_id + 3], MIDDLE_ANGLE)
+            middle_bank += write_line(box, middle_box_angle, [d_id, d_id + 1, d_id + 2, d_id + 3], MIDDLE_ANGLE)
             box += 1
             d_id += 4
         elif 17 < angle < 44:
@@ -135,15 +140,15 @@ if __name__ == '__main__':
                 average_angle_for_box(detectors, number_of_detectors_middle, number_of_detectors_upper_lower)
 
             # Upper
-            write_line(box, upper_lower_box_angle, [d_id, d_id + 3, d_id + 6], UPPER_ANGLE)
+            top_bank += write_line(box, upper_lower_box_angle, [d_id, d_id + 3, d_id + 6], UPPER_ANGLE)
             box += 1
             d_id += 1
             # Middle
-            write_line(box, middle_box_angle, [d_id, d_id + 3, d_id + 6, d_id + 8], MIDDLE_ANGLE)
+            middle_bank += write_line(box, middle_box_angle, [d_id, d_id + 3, d_id + 6, d_id + 8], MIDDLE_ANGLE)
             box += 1
             d_id += 1
             # Lower
-            write_line(box, upper_lower_box_angle, [d_id, d_id + 3, d_id + 6], LOWER_ANGLE)
+            lower_bank += write_line(box, upper_lower_box_angle, [d_id, d_id + 3, d_id + 6], LOWER_ANGLE)
             box += 1
             d_id += 1
 
@@ -155,15 +160,15 @@ if __name__ == '__main__':
                 average_angle_for_box(detectors, number_of_detectors_middle, number_of_detectors_upper_lower)
 
             # Upper
-            write_line(box, upper_lower_box_angle, [d_id, d_id + 3, d_id + 6, d_id + 9], UPPER_ANGLE)
+            top_bank += write_line(box, upper_lower_box_angle, [d_id, d_id + 3, d_id + 6, d_id + 9], UPPER_ANGLE)
             box += 1
             d_id += 1
             # Middle
-            write_line(box, middle_box_angle, [d_id, d_id + 3, d_id + 6, d_id + 9], MIDDLE_ANGLE)
+            middle_bank += write_line(box, middle_box_angle, [d_id, d_id + 3, d_id + 6, d_id + 9], MIDDLE_ANGLE)
             box += 1
             d_id += 1
             # Lower
-            write_line(box, upper_lower_box_angle, [d_id, d_id + 3, d_id + 6, d_id + 9], LOWER_ANGLE)
+            lower_bank += write_line(box, upper_lower_box_angle, [d_id, d_id + 3, d_id + 6, d_id + 9], LOWER_ANGLE)
             box += 1
             d_id += 1
 
@@ -171,23 +176,27 @@ if __name__ == '__main__':
         elif angle > 102:  # 3 upper/lower/middle
             number_of_detectors_middle = 3
             number_of_detectors_upper_lower = 3
-            middle_box_angle, upper_lower_box_angle, DETECTORS = average_angle_for_box(detectors,
+            middle_box_angle, upper_lower_box_angle, detectors = average_angle_for_box(detectors,
                                                                                        number_of_detectors_middle,
                                                                                        number_of_detectors_upper_lower)
 
             # Upper
-            write_line(box, upper_lower_box_angle, [d_id, d_id + 3, d_id + 6], UPPER_ANGLE)
+            top_bank += write_line(box, upper_lower_box_angle, [d_id, d_id + 3, d_id + 6], UPPER_ANGLE)
             box += 1
             d_id += 1
             # Middle
-            write_line(box, middle_box_angle, [d_id, d_id + 3, d_id + 6], MIDDLE_ANGLE)
+            middle_bank += write_line(box, middle_box_angle, [d_id, d_id + 3, d_id + 6], MIDDLE_ANGLE)
             box += 1
             d_id += 1
             # Lower
-            write_line(box, upper_lower_box_angle, [d_id, d_id + 3, d_id + 6], LOWER_ANGLE)
+            lower_bank += write_line(box, upper_lower_box_angle, [d_id, d_id + 3, d_id + 6], LOWER_ANGLE)
             box += 1
             d_id += 1
 
             d_id += 6
+
+    OUTPUT_FILE.write(lower_bank)
+    OUTPUT_FILE.write(middle_bank)
+    OUTPUT_FILE.write(top_bank)
 
     print("Detector list written to:", OUTPUT_FILENAME)

@@ -1,5 +1,8 @@
 from lxml import etree as le # python-lxml on rpm based systems
 from string import split,join
+import numpy as np
+from itertools import groupby
+from operator import itemgetter
 
 INCH_TO_METRE = 0.0254
 DEG_TO_RAD = 0.0174533 # degrees to radians according to idl
@@ -169,14 +172,35 @@ class MantidGeom:
                     efixed_comp = le.SubElement(basecomponent, "parameter", name="Efixed")
                     le.SubElement(efixed_comp, "value", val=str(energy[i][j]))
 
-    def addDetectorPixelsIdList(self, name, r=[], names=[]):
-
-        component = le.SubElement(self.__root, "idlist",
-                                  idname=name)
-        for i in range(len(r)):
-            for j in range(len(r[i])):
-                if str(r[i][j]) != "nan":
-                    le.SubElement(component, "id", val=str(names[i][j]))
+    def addDetectorPixelsIdList(self, name, r=[], names=[], elg="single_list"):
+        """
+        Add the detector IDs
+        :param name: name of the component owning the detector pixes
+        :param r: (list of list) distances from sample
+        :param names: (list of list) pixel ID's
+        :param elg: element grouping, 'single_list' creates one element per pixel,
+         'multiple_ranges' creates one element for every range of physical pixels
+        """
+        if elg=="single_list":
+            component = le.SubElement(self.__root, "idlist",
+                                      idname=name)
+            for i in range(len(r)):
+                for j in range(len(r[i])):
+                    # nan indicates unphysical pixel
+                    if (str(r[i][j]) != "nan"):
+                        le.SubElement(component, "id", val=str(names[i][j]))
+        elif elg=="multiple_ranges":
+            # find ID's of pixels with physical distances
+            pxids = names.flatten()[np.where(~np.isnan(r.flatten()))[0]]
+            # Split pxids into continous chunks of pixel ID's
+            idlist = list()
+            for k, g in groupby(enumerate(pxids), lambda (i, x): i-x):
+                chunk = map(itemgetter(1), g)
+                idlist += [chunk[0], chunk[-1], None]
+            # Create one element for every continous chunks
+            self.addDetectorIds(name, idlist)
+        else:
+            raise NotImplementedError("invalid element grouping scheme")
 
     def addMonitors(self, distance=[], names=[], neutronic=False):
         """

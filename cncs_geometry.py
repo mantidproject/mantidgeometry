@@ -24,15 +24,18 @@ if __name__ == "__main__":
     from helper import MantidGeom
     from sns_ncolumn import readFile
 
+
+
+    #For bad line endings use:    dos2unix -c Mac -n Distances2017A.txt  CNCS_geom_2017A.txt
     try:
         geom_input_file = sys.argv[1]
     except IndexError:
-        geom_input_file = "SNS/CNCS/CNCS_geom_2016B.txt"
+        geom_input_file = "SNS/CNCS/CNCS_geom_2017B.txt"
         
     # Set header information
-    comment = "Created by Michael Reuter"
+    comment = "Created by Andrei Savici"
     # Time needs to be in UTC?
-    valid_from = "2016-07-14 00:00:00"
+    valid_from = "2017-08-07 10:00:00"
 
     # Get geometry information file
     inst_name = "CNCS"

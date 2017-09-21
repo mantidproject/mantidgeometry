@@ -4,6 +4,8 @@
 #
 
 import math
+import numpy as np
+from string import maketrans
 HAS_LXML = True
 try:
     from lxml import etree as le # python-lxml on rpm based systems
@@ -21,53 +23,33 @@ class Vector:
 
     LENGTH = 3
 
-    def __init__(self, x=None, y=None, z=None):
-        # set the data
-        if y is None and z is None:
-            if x is None:
-                self.__data = [0.]*Vector.LENGTH
-            else:
-                try:
-                    self.__data = x.__data[:]
-                except AttributeError, e:
-                    if len(x) != Vector.LENGTH:
-                        msg = "Expected 3 values, found %d" % len(x)
-                        raise RuntimeError(msg)
-                    self.__data = x[:Vector.LENGTH]
-        else:
-            self.__data = [x, y, z]
+    def __init__(self, *values):
+        self.data = np.array(values, dtype=np.float).flatten()
 
-        # convert the values to floats
-        self.__data = [float(num) for num in self.__data]
+        # check the length
+        if self.data.size != Vector.LENGTH:
+            msg = "Expected %d values, found %d" % (Vector.LENGTH, self.__data.size)
+            raise RuntimeError(msg)
 
         # sanity check the numbers
-        for num in self.__data:
-            if math.isnan(num):
-                raise RuntimeError("Encountered NaN")
+        if np.any(np.isnan(self.data)):
+            raise RuntimeError("Encountered NaN")
 
-    x = property(lambda self: self.__data[0])
-    y = property(lambda self: self.__data[1])
-    z = property(lambda self: self.__data[2])
+    x = property(lambda self: self.data[0])
+    y = property(lambda self: self.data[1])
+    z = property(lambda self: self.data[2])
 
     def cross(self, other):
         """
         Calculate the cross product of this with another vector.
         """
-        result = [0.]*Vector.LENGTH
-        result[0] = self.y*other.z - self.z*other.y
-        result[1] = self.z*other.x - self.x*other.z
-        result[2] = self.x*other.y - self.y*other.x
-
-        return Vector(result)
+        return Vector(np.cross(self.data, Vector(other).data))
 
     def dot(self, other):
         """
         Calculate the dot product of this with another vector.
         """
-        result = 0.
-        for (a, b) in zip (self.__data, other.__data):
-            result += a*b
-        return result
+        return np.dot(self.data, Vector(other).data)
 
     def normalize(self):
         """
@@ -79,13 +61,11 @@ class Vector:
         length = self.length # cache value
         if abs(length) < TOLERANCE:
             raise RuntimeError("Zero vector of zero length")
-        if abs(length -1.) > TOLERANCE:
-            self.__data = [it/length for it in self.__data]
+        if abs(length - 1.) > TOLERANCE:
+            self.data /= length
 
         # set near zeros to zero
-        for i in range(len(self.__data)):
-            if abs(self.__data[i]) < TOLERANCE:
-                self.__data[i] = 0.
+        self.data[np.abs(self.data) < TOLERANCE] = 0.
 
         return self
 
@@ -95,92 +75,45 @@ class Vector:
         """
         if abs(self.length-1.) > TOLERANCE:
             return False
-        x_is_zero = abs(self.__data[0]) <TOLERANCE
-        y_is_zero = abs(self.__data[1]) <TOLERANCE
-        z_is_zero = abs(self.__data[2]) <TOLERANCE
 
-        def sign(number):
-            """
-            Specialized version of sign intended to be used with +/-1 only
-            """
-            return number/abs(number)
-
-        # x = +/-1
-        if abs(abs(self.__data[0])-1.) <TOLERANCE:
-            if y_is_zero and z_is_zero:
+        for unit_vec in (UNIT_X, UNIT_Y, UNIT_Z):
+            if np.allclose(self.data, unit_vec, atol=TOLERANCE):
                 if resetValues:
-                    self.__data[0] = sign(self.__data[0])
-                    self.__data[1] = 0.
-                    self.__data[2] = 0.
-                return True
-        # y = +/-1
-        if abs(abs(self.__data[1])-1.) <TOLERANCE:
-            if x_is_zero and z_is_zero:
-                if resetValues:
-                    self.__data[0] = 0.
-                    self.__data[1] = sign(self.__data[1])
-                    self.__data[2] = 0.
-                return True
-        # z = +/-1
-        if abs(abs(self.__data[2])-1.) <TOLERANCE:
-            if x_is_zero and y_is_zero:
-                if resetValues:
-                    self.__data[0] = 0.
-                    self.__data[1] = 0.
-                    self.__data[2] = sign(self.__data[2])
+                    self.data = unit_vec
                 return True
 
-        # otherwise no
         return False
 
     def __getitem__(self, key):
-        return self.__data[key]
+        return self.data[key]
 
     def __eq__(self, other):
-        other = Vector(other)
-        if not self.x == other.x:
-            return False
-        if not self.y == other.y:
-            return False
-        if not self.z == other.z:
-            return False
-        return True
+        try:
+            return np.alltrue(self.data == other.data)
+        except AttributeError:
+            other = Vector(other)
+            return self == other
 
     def __add__(self, other):
-        temp = Vector()
-        for i in range(Vector.LENGTH):
-            temp.__data[i] = self.__data[i] + other.__data[i]
-        return temp
+        return Vector(self.data + other.data)
 
     def __sub__(self, other):
-        temp = Vector()
-        for i in range(Vector.LENGTH):
-            temp.__data[i] = self.__data[i] - other.__data[i]
-        return temp
+        return Vector(self.data - other.data)
 
     def __div__(self, other):
-        other = float(other) # only allow divide by a scalar
-        temp = Vector(self)
-        for i in range(Vector.LENGTH):
-            temp.__data[i] /= float(other)
-        return temp
+        return Vector(self.data / other) # only allow divide by a scalar
 
     def __mul__(self, other):
-        other = float(other) # only allow multiply by a scalar
-        temp = Vector(self)
-        for i in range(Vector.LENGTH):
-            temp.__data[i] *= float(other)
-        return temp
+        return Vector(self.data * other) # only allow multiply by a scalar
 
     def __rmul__(self, other):
         return self * other
 
     def __repr__(self):
-        temp = [str(it) for it in self.__data]
-        return "(%s)" % (", ".join(temp))
+        return self.data.__repr__()
 
     def __len__(self):
-        return Vector.LENGTH
+        return self.data.size
 
     length = property(lambda self: math.sqrt(self.dot(self)))
 
@@ -188,15 +121,15 @@ UNIT_X = Vector(1.,0.,0.)
 UNIT_Y = Vector(0.,1.,0.)
 UNIT_Z = Vector(0.,0.,1.)
 
-def getAngle(y, x, debug=False):
+def getAngle(y, x, debug=False, onlyPositive=True):
     """
-    Returns the angle in radians using atan2.
+    Returns the angle in radians using atan2 (y=sin, x=cos)
     """
     if debug:
         print "getAngle(%f, %f)=" % (y, x),
     angle = math.atan2(y, x)
-    #if angle < 0:
-    #    angle += 2*math.pi
+    if onlyPositive and angle < 0.:
+        angle += 2.*math.pi
     if debug:
         print math.degrees(angle)
     return angle
@@ -269,10 +202,112 @@ def __genRotationDict(rotation):
         result["axis-z"] = axis[2]
     return result
 
+ATOL_ORIENTATION = 1.e-15
+def checkRotation(rotation):
+    '''Determine if the supplied matrix adheres to the rules of a rotation matrix'''
+    # determinant mush be +/- 1
+    determinant = np.abs(np.linalg.det(rotation))
+    if np.abs(determinant) - 1. > 1.e-15:
+        raise RuntimeError('Determinant must be +-1. Found %f' % determinant)
+
+    # rotation matrix is orthogonal (inverse == transpose)
+    inverse = np.linalg.inv(rotation)
+    transpose = np.transpose(rotation)
+    if not np.allclose(inverse, transpose, atol=ATOL_ORIENTATION):
+        raise RuntimeError(str(inverse) + ' != ' + str(transpose))
+
+def generateRotation(axis, angle, radians=True):
+    if not radians:
+        angle = np.radian(angle)
+
+    sqr_a = axis.x*axis.x
+    sqr_b = axis.y*axis.y
+    sqr_c = axis.z*axis.z
+    len2  = sqr_a+sqr_b+sqr_c
+
+    k2    = math.cos(angle)
+    k1    = (1.0-k2)/len2
+    k3    = math.sin(angle)/math.sqrt(len2)
+    k1ab  = k1*axis.x*axis.y
+    k1ac  = k1*axis.x*axis.z
+    k1bc  = k1*axis.y*axis.z
+    k3a   = k3*axis.x
+    k3b   = k3*axis.y
+    k3c   = k3*axis.z
+
+    rotation = np.matrix([[k1*sqr_a+k2, k1ab-k3c, k1ac+k3b],
+                          [k1ab+k3c, k1*sqr_b+k2, k1bc-k3a],
+                          [k1ac-k3b, k1bc+k3a, k1*sqr_c+k2]],
+                         dtype=np.float)
+    rotation[np.abs(rotation) < 1.e-15] = 0.
+
+    checkRotation(rotation)
+    return rotation
+
+def calcEuler(rotation, convention):
+    R=rotation
+    angles = np.zeros(3, dtype=np.float)
+    XYZ=np.array([[1,0,0],[0,1,0],[0,0,1]], dtype=np.float) # identity matrix
+    #decode the convention: code X=0, Y=1, Z=2
+    convention=convention.upper().translate(maketrans("XYZ","012"))
+    first,second,last=int(convention[0]),int(convention[1]),int(convention[2])
+    tb = 1 if (first+second+last==3) else 0
+    par12 = 1 if ((last-second)%3 ==1) else -1
+    par01 = 1 if ((second-first)%3 ==1) else -1
+    s3=(1-tb-tb*par12)*R[(last+tb*par12)%3,(last-par12)%3]
+    c3=(tb-(1-tb)*par12)*R[(last+tb*par12)%3,(last+par12)%3]
+    angles[2]=getAngle(s3,c3)
+    R1R2=np.dot(R, generateRotation(Vector(XYZ[last]),-1.*angles[2]))
+    s1=par01*R1R2[(first-par01)%3,(first+par01)%3]
+    c1=R1R2[second,second]
+    s2=par01*R1R2[first,3-first-second]
+    c2=R1R2[first,first]
+    angles[1]=getAngle(s2,c2)
+    angles[0]=getAngle(s1,c1)
+    #note equivalent solution o1-180,-o2,o3-180 for ABA
+    #note equivalent solution o1-180,180-o2,o3-180 for ABC
+    angles[abs(angles) < 1.e-5] = 0.
+    return angles
+
+#https://en.wikipedia.org/wiki/Euler_angles
+def getYZY(rotation):
+    angles = calcEuler(rotation, 'YZY')
+
+    # if the z-rotation is missing, just set
+    # everything to the first y-rotation
+    if angles[1] == 0.:
+        angles = np.array([0., 0., angles[0]+angles[2]])
+
+    # make sure that everything has angle <= 2pi
+    angles = angles % (2. * np.pi)
+    angles[np.abs(angles) < 1.e-15] = 0.
+
+    return angles
+
+def getZYZ(rotation):
+    angles = calcEuler(rotation, 'ZYZ')
+
+    # if the y-rotation is missing, just set
+    # everything to the first z-rotation
+    if angles[1] == 0.:
+        angles = np.array([0., 0., angles[0]+angles[2]])
+
+    # make sure that everything has angle <= 2pi
+    angles = angles % (2. * np.pi)
+    angles[np.abs(angles) < 1.e-15] = 0.
+
+    return angles
+
 def makeLocation(instr, det, name, center, rotations, tol_ang=TOLERANCE):
     """
     Make a location appropriate for an instrument component.
     """
+    # set angles to zero if they aren' already
+    for i, rot in enumerate(rotations):
+        if abs(rot[0]) < 1.e-15:
+            rotations[i] = [0., rot[1]]
+
+    # location includes first rotation
     sub = instr.addLocation(det,
                             x=center[0], y=center[1], z=center[2],
                             name=name, rot_y=rotations[0][0])
@@ -313,7 +348,7 @@ class Rectangle:
             raise RuntimeError("The Points are in the incorrect order"+specific)
 
 
-        # Parallelogram opposite side from p1 to p4 is parallel and 
+        # Parallelogram opposite side from p1 to p4 is parallel and
         # equal lengths.
         left = p2-p1
         right = p4-p3
@@ -364,7 +399,7 @@ class Rectangle:
     def __calcOrientation(self, p1, p2, p3, p4):
         """
         Calculates the orientation matrix for these points.
-        @return  The 9 element orientation matrix for these points. 
+        @return  The 9 element orientation matrix for these points.
         """
         # calculate the direction vectors
         xvec =  .5*(p4 + p3) - self.__center
@@ -382,87 +417,26 @@ class Rectangle:
         #print "y dot z =", yvec.dot(zvec)
 
         # xvec should change most in x direction
-        self.__orient = []
-        self.__orient.append(xvec)
-        self.__orient.append(yvec)
-        self.__orient.append(zvec)
+        self.__orient = np.array([xvec.data,yvec.data,zvec.data],
+                                 dtype=np.float)
 
     def __euler_rotations_zyz(self):
-        """
-        The Euler angles are about the z (alpha), then unrotated y (beta),
-        then unrotated z (gamma). This is described in equations and pretty 
-        pictures in Arfken pages 199-200.
-
-        George Arfken, Mathematical methods for physicists, 3rd edition
-        Academic Press, 1985
-        """
-        # calculate beta
-        beta = getAngle(UNIT_Z.cross(self.__orient[2]).length,
-                        UNIT_Z.dot(self.__orient[2]))
-
-        if abs(math.sin(beta)) < self._tol_ang: # special case for numerics
-            # since alpha and gamma are coincident, just force gamma to be zero
-            gamma = 0.
-
-            # calculate alpha
-            cos_beta = UNIT_Z.dot(self.__orient[2])
-            if cos_beta == 1. or cos_beta == -1.:
-                alpha = getAngle(UNIT_X.dot(self.__orient[1]),
-                                 UNIT_Y.dot(self.__orient[1]))
-            else:
-                msg = "Equations aren't worked out for cos(beta)=%f" % cos_beta
-                raise RuntimeError(msg)
-
-        else: # go with the traditional route
-            # calculate alpha
-            alpha = getAngle(UNIT_Z.dot(self.__orient[1]),
-                             UNIT_Z.dot(self.__orient[0]))
-
-            # calculate gamma
-            gamma = getAngle(UNIT_Y.dot(self.__orient[2]),
-                             -1.*UNIT_X.dot(self.__orient[2]))
+        angles = np.degrees(getZYZ(self.__orient))
 
         # output for each: rotation angle (in degrees), axis of rotation
-        alpha_rot = [math.degrees(alpha), (0., 0., 1.)]
-        beta_rot  = [math.degrees(beta),  (0., 1., 0.)]
-        gamma_rot = [math.degrees(gamma), (0., 0., 1.)]
+        alpha_rot = [angles[0], (0., 0., 1.)]
+        beta_rot  = [angles[1], (0., 1., 0.)]
+        gamma_rot = [angles[2], (0., 0., 1.)]
+
         return (alpha_rot, beta_rot, gamma_rot)
 
     def __euler_rotations_yzy(self):
-        """
-        This is very similar to __euler_roatations_zyz except the rotations 
-        are about the y (alpha), then unrotated z (beta), then unrotated 
-        y (gamma).
-        """
-        rotated_x = self.__orient[0]
-        rotated_y = self.__orient[1]
-        rotated_z = self.__orient[2]
+        angles = np.degrees(getYZY(self.__orient))
 
-        # calculate beta
-        beta = getAngle(UNIT_Y.cross(rotated_y).length,
-                        UNIT_Y.dot(rotated_y))
+        alpha_rot = [-1.*angles[0], (0., 1., 0.)]
+        beta_rot  = [-1.*angles[1], (0., 0., 1.)]
+        gamma_rot = [-1.*angles[2], (0., 1., 0.)]
 
-        if abs(math.sin(beta)) < self._tol_ang: # special case for numerics
-            print "small beta:", beta, math.sin(beta)
-            # since alpha and gamma are coincident, just force gamma to be zero
-            gamma = 0.
-
-            # calculate alpha
-            alpha = getAngle(UNIT_Z.dot(rotated_x),
-                             UNIT_Z.dot(rotated_z))
-        else:
-            # calculate alpha
-            alpha = getAngle(UNIT_Y.dot(rotated_z),
-                             -1.*UNIT_Y.dot(rotated_x))
-
-            # calculate gamma
-            gamma = getAngle(UNIT_Z.dot(rotated_y),
-                             UNIT_X.dot(rotated_y))
-
-        # output for each: rotation angle (in degrees), axis of rotation
-        alpha_rot = [-1.*math.degrees(alpha), (0., 1., 0.)]
-        beta_rot  = [-1.*math.degrees(beta),  (0., 0., 1.)]
-        gamma_rot = [-1.*math.degrees(gamma), (0., 1., 0.)]
         return (alpha_rot, beta_rot, gamma_rot)
 
     def __width(self):
