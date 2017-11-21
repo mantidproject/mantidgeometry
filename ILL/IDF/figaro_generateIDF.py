@@ -8,27 +8,23 @@ from helper import MantidGeom
 # using metre as unit
 instrumentName = 'Figaro'
 validFrom = "2017-01-31 23:59:59"
-detectorHeight = 0.25
-detectorWidth = 0.5
-tubeWidth = 0.0069
-tubeHeight = 0.25
-tubeWallThickness = 0.0005
 numberOfTubes = 64
+pixelWidth = 0.0074
+detectorWidth = pixelWidth * numberOfTubes
 numberOfPixelsPerTube = 256
-pixelWidth = tubeWidth
-pixelHeight = tubeHeight / numberOfPixelsPerTube
-monitor2_source = -0.338  # instrument/Theta/monitor2_position; other possibility: take slit2 as source
-detValue = 1.0  # minimum default sample - detector distance
+pixelHeight = 0.0012
+detectorHeight = pixelHeight * numberOfPixelsPerTube
+zSource = -5.497 # Chopperpair centre. Will be changed by the LoadILLReflectometry.
+zDetector = 1.0  # minimum default sample - detector distance
 # 2 Monitors
 zMon1 = 0.0181  # ?
 zMon2 = -0.338  # from Nexus file Theta.monitor2_position
 # definition of the rectangular detector
 # ATM the pixel counts are integrated over the horizontal rows.
-tubeSeparation = tubeWidth + tubeWallThickness
 xstart = repr(0)
-xstep = repr(detectorWidth)
-xpixels = "1"
-ystart = repr(-detectorHeight / 2)
+xstep = repr(pixelWidth * numberOfTubes)
+xpixels = repr(1)
+ystart = repr(-detectorHeight / 2 + pixelHeight / 2)
 ystep = repr(pixelHeight)
 ypixels = repr(numberOfPixelsPerTube)
 # definition of a cuboid pixel
@@ -58,7 +54,7 @@ comment = """ This is the instrument definition file of the figaro reflectometer
        Dead-time 34 ns
 
        It consists of 64 horizontal tubes, each has a height of 7.4 mm
-       It consists of 256 pixels. each about 1.2 mm wide
+       It consists of 256 pixels, each about 1.2 mm wide
 
        Beam area at sample position 40 mm x 10 mm (width x height)
        Scattering plane is vertical
@@ -71,7 +67,7 @@ comment = """ This is the instrument definition file of the figaro reflectometer
 figaro = MantidGeom(instrumentName, comment=comment, valid_from=validFrom)
 figaro.addSnsDefaults()
 figaro.addComment("SOURCE")
-figaro.addComponentILL("chopper1", 0.0, 0.0, monitor2_source, "Source")
+figaro.addComponentILL("chopper1", 0.0, 0.0, zSource, "Source")
 figaro.addComment("Sample position")
 figaro.addComponentILL("sample_position", 0.0, 0.0, 0.0, "SamplePos")
 figaro.addComment("MONITORS")
@@ -83,7 +79,7 @@ figaro.addComment("MONITOR IDs")
 figaro.addMonitorIds(["100000", "100001"])
 figaro.addComment("DETECTORS")
 figaro.addComment("64 tubes form the detector")
-figaro.addComponentRectangularDetector("detector", 0.0, 0.0, detValue, idstart="1", idfillbyfirst="x",
+figaro.addComponentRectangularDetector("detector", 0.0, 0.0, zDetector, idstart="1", idfillbyfirst="x",
                                     idstepbyrow="1")
 figaro.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 figaro.addRectangularDetector("detector", "pixel", xstart, xstep, xpixels, ystart, ystep, ypixels)
