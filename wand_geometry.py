@@ -18,6 +18,11 @@ def convert(value):
 if __name__ == "__main__":
     from lxml import etree as le
     from helper import MantidGeom
+    import numpy as np
+    try:
+        np.set_printoptions(legacy='1.13')
+    except TypeError:
+        pass
 
     # Set header information
     comment = "Created by Ross Whitfield"
@@ -40,9 +45,9 @@ if __name__ == "__main__":
                                 root=doc_handle)
         log = le.SubElement(bank, "parameter", **{"name": "y"})
         le.SubElement(log, "logfile",
-                      **{"id": "HB2C:Mot:detz.RBV",
-                         "eq": "value/100",
-                         "extract-single-value-as": "mean"})  # detz is in cm
+                      **{"id": "HB2C:Mot:detz.RBV", # detz is in cm
+                         "eq": "rint(value*1000)/100000", # Round to 0.01mm and convert to metres
+                         "extract-single-value-as": "mean"})
 
         det_type = "panel"
         angle = (NUM_DETS-i-1)*15+7.5  # Mantid
@@ -59,7 +64,7 @@ if __name__ == "__main__":
         log = le.SubElement(location, "parameter", **{"name": "t-position"})
         le.SubElement(log, "logfile",
                       **{"id": "HB2C:Mot:s2.RBV",
-                         "eq": str(angle)+"+value",
+                         "eq": str(angle)+"+rint(value*1000)/1000", # Round to 1/1000 of a degree
                          "extract-single-value-as": "mean"})
         log = le.SubElement(location, "parameter", **{"name": "roty"})
         le.SubElement(log, "logfile",
@@ -76,7 +81,7 @@ if __name__ == "__main__":
                         type_name="wire")
 
     det.addComment("20CM WIRE 512 PIXELS")
-    det.addPixelatedTube("wire", NUM_PIXELS_PER_TUBE, -TUBE_SIZE)
+    det.addPixelatedTube("wire", NUM_PIXELS_PER_TUBE, TUBE_SIZE)
 
     det.addComment("PIXEL FOR WIRE")
     det.addCylinderPixel("pixel", (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
