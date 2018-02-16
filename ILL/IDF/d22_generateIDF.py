@@ -75,4 +75,3 @@ d22.addComponentRectangularDetector(detector0, 0., 0., zPos, idstart=id0, idfill
 d22.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
 d22.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d22.addCuboidPixel(pixelName, [-x, -y, z], [x, y, z], [-x, -y, thickness], [x, -y, z], shape_id="pixel-shape")
-d22.writeGeom(instrumentName + "_Definition.xml")
