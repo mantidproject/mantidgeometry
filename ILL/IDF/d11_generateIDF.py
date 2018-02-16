@@ -25,11 +25,11 @@ zPos = 1.2
 # start identification numbers
 id0 = repr(0)
 # rectangular detector
-xstart = repr(pixelWidth * (numberPixelsHorizontal - 1) / 2)
-xstep = repr(-pixelWidth)
+xstart = repr(-pixelWidth * (numberPixelsHorizontal - 1) / 2)
+xstep = repr(pixelWidth)
 xpixels = repr(numberPixelsHorizontal)
-ystart = repr(pixelHeight * (numberPixelsVertical - 1) / 2)
-ystep = repr(-pixelHeight)
+ystart = repr(-pixelHeight * (numberPixelsVertical - 1) / 2)
+ystep = repr(pixelHeight)
 ypixels = repr(numberPixelsVertical)
 # Choose either FF = "x", SR = repr(numberPixelsRearHorizontal) or FF = "y", SR = repr(numberPixelsRearVertical)
 FF = "y"  # idfillbyfirst

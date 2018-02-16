@@ -37,22 +37,22 @@ id2 = repr(200000)  # front left detector
 id3 = repr(300000)  # front bottom detector
 id4 = repr(400000)  # front top detector
 # rectangular detector
-xstart = repr(pixelWidth * (numberPixelsRearHorizontal - 1) / 2)
-xstep = repr(-pixelWidth)
+xstart = repr(-pixelWidth * (numberPixelsRearHorizontal - 1) / 2)
+xstep = repr(pixelWidth)
 xpixels = repr(numberPixelsRearHorizontal)
-ystart = repr(pixelHeight * (numberPixelsRearVertical - 1) / 2)
-ystep = repr(-pixelHeight)
+ystart = repr(-pixelHeight * (numberPixelsRearVertical - 1) / 2)
+ystep = repr(pixelHeight)
 ypixels = repr(numberPixelsRearVertical)
 pixelsFront = repr(numberPixelsFront)
-startFront = repr(pixelHeight * (numberPixelsFront - 1) / 2)
+startFront = repr(-pixelHeight * (numberPixelsFront - 1) / 2)
 # Choose either FF = "x", SR = repr(numberPixelsRearHorizontal) or FF = "y", SR = repr(numberPixelsRearVertical)
 FF = "y"  # idfillbyfirst
 SR = repr(numberPixelsRearVertical)  #idstepbyrow
-detector0 = "rear_detector"
-detector1 = "front_right"
-detector2 = "front_left"
-detector3 = "front_bottom"
-detector4 = "front_top"
+detector0 = "back_detector"
+detector1 = "front_detector_right"
+detector2 = "front_detector_left"
+detector3 = "front_detector_bottom"
+detector4 = "front_detector_top"
 
 comment = """ This is the instrument definition file of the D33 Massive dynamic q-range small-angle diffractometer
        at the ILL.
@@ -114,7 +114,7 @@ d33.addComment("DETECTORS")
 d33.addComment("REAR DETECTOR")
 d33.addComponentRectangularDetector(detector0, 0., 0., zPosRear, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR)
 d33.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
-d33.addComment("4 FRONT DETECTORS")
+d33.addComment("4 FRONT DETECTORS, from detector to sample in +Z direction")
 d33.addComment("RIGHT")
 d33.addComponentRectangularDetector(detector1, dF+dR, 0., zFront, idstart=id1, idfillbyfirst=FF,
                                     idstepbyrow=SR, rotz=90.)
@@ -131,4 +131,4 @@ d33.addComponentRectangularDetector(detector4, 0., dR+dF, zFront, idstart=id4, i
 d33.addRectangularDetector(detector4, pixelName, xstart, xstep, xpixels, startFront, ystep, pixelsFront)
 d33.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d33.addCuboidPixel(pixelName, [-x, -y, z], [x, y, z], [-x, -y, thickness], [x, -y, z], shape_id="pixel-shape")
-d33.writeGeom("D33_Definition.xml")
+d33.writeGeom("/home/cs/reimund/mantid/instrument/D33_Definition.xml")
