@@ -87,4 +87,3 @@ d11.addComponentRectangularDetector(detector0, 0., 0., zPos, idstart=id0, idfill
 d11.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
 d11.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d11.addCuboidPixel(pixelName, [-x, -y, z], [x, y, z], [-x, -y, thickness], [x, -y, z], shape_id="pixel-shape")
-d11.writeGeom(instrumentName + "_Definition.xml")
