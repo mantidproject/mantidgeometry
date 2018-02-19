@@ -12,14 +12,9 @@ python ~/workspace/PyTests/src/print_nexus_sample.py '*.nxs'
 
 '''
 
-import nxs, os, sys
-import numpy as np
+import nxs, sys
 import glob
-'''
 
-
-
-'''
 
 def show(filename):
 
@@ -42,7 +37,7 @@ def show(filename):
     f.closedata()
     
     # /entry0/D33
-    f.opengroup('D22')
+    f.opengroup('D22') # or 'D33'
     # /entry0/D33/selector
     f.opengroup('selector')
     # /entry0/D33/selector/wavelength 
@@ -57,10 +52,7 @@ def show(filename):
     print ':', f.getdata(),
     # /entry0
     f.closedata()
-    
-    
-        
-    # /
+
     f.closegroup()
     f.close()
     
