@@ -75,11 +75,11 @@ class MantidGeom:
         """
         self.__root.append(le.Comment(comment))
 
-    def addModerator(self, distance):
+    def addModerator(self, distance, name="moderator"):
         """
         This adds the moderator position for the instrument
         """
-        source = le.SubElement(self.__root, "component", type="moderator")
+        source = le.SubElement(self.__root, "component", type=name)
         try:
           distance = float(distance)
           if distance > 0:
@@ -97,7 +97,7 @@ class MantidGeom:
             le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})
 
         le.SubElement(self.__root, "type",
-                      **{"name":"moderator", "is":"Source"})
+                      **{"name":name, "is":"Source"})
 
     def addCuboidModerator(self, distance,width=0.12,height=0.12,depth=0.06):
         """
@@ -334,6 +334,7 @@ class MantidGeom:
         else:
             self.addLocation(comp_element, x, y, z, rot_x, rot_y, rot_z, facingSample=facingSample,
                 neutronic=neutronic, nx=nx, ny=ny, nz=nz)
+        return comp_element
 
     def addRectangularDetector(self, name, type, xstart, xstep, xpixels, ystart, ystep, ypixels):
         """
@@ -514,6 +515,28 @@ class MantidGeom:
                     le.SubElement(location_element, "neutronic", x=str(x))
                 else:
                     le.SubElement(location_element, "neutronic", x="0.0")
+
+    def addWANDDetector(self, name, num_tubes, tube_width, air_gap, radius, type_name="tube"):
+        """
+        This was created for WAND at HFIR
+
+        Same as addNPack but curved around Y with some radius
+        """
+        type_element = le.SubElement(self.__root, "type", name=name)
+        le.SubElement(type_element, "properties")
+
+        component = le.SubElement(type_element, "component", type=type_name)
+
+        effective_tube_width = tube_width + air_gap
+
+        pack_start = (effective_tube_width / 2.0) * (1 - num_tubes)
+
+        for i in range(num_tubes):
+            tube_name = type_name + "%d" % (i + 1)
+            x = pack_start + (i * effective_tube_width) # Mantid
+            x = -(pack_start + (i * effective_tube_width)) # Flipped
+            angle = x/radius/2
+            location_element = le.SubElement(component, "location", name=tube_name, x=str(-x*np.cos(angle)), z=str(-x*np.sin(angle)))
 
     def addPixelatedTube(self, name, num_pixels, tube_height,
                          type_name="pixel", neutronic=False, neutronicIsPhysical=False):
@@ -896,3 +919,6 @@ class MantidGeom:
                           y=str(yy2*0.8+center[1]),
                           z="0.0")
         le.SubElement(type_element, "algebra", val="body : "+hole_list[:-3])
+
+    def getRoot(self):
+        return self.__root
