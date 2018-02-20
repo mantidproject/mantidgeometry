@@ -270,9 +270,6 @@ class MantidGeom:
         if isType is "SamplePos":
             le.SubElement(self.__root, "type",
                           **{"name": type_name, "is": "SamplePos"})
-        if isType is "Slit":
-            le.SubElement(self.__root, "type",
-                          **{"name": type_name, "is": "Slit"})
 
 
     def addComponentRectangularDetector(self, type_name, x, y, z, idstart, idfillbyfirst, idstepbyrow, root=None):
