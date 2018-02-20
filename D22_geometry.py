@@ -1,6 +1,4 @@
 
-import sys
-sys.path.insert(1, "../../")
 from helper import MantidGeom
 
 # using metre as unit
