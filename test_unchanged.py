@@ -5,266 +5,244 @@ import logging
 import os
 import subprocess
 import sys
-import lxml # required for everything
-import h5py # required for BASIS
 
-__version__ = "0.1.0"
-LOGLEVELS = ["DEBUG", "INFO", "WARNING"]
+__version__ = "0.1.1"
+LOGLEVELS = ["INFO", "WARNING", "DEBUG"]
 # mapping of instrument names here into what is in mantid
-INSTR_MAP = {"PG3":"POWGEN"}
+INSTR_MAP = {"PG3": "POWGEN"}
 
-def findGeoms(direc):
-    logging.info("Searching for files in " + direc)
-    choices = os.listdir(direc)
-    logging.debug("choices: " + str(choices))
-    filenames = []
-    for choice in choices:
-        filename = os.path.join(direc, choice)
-        if os.path.isdir(filename):
-            continue
-        if filename.endswith("_geometry.py"):
-            filenames.append(filename)
-    logging.debug("filenames: " + str(filenames))
-    return filenames
+__original_idf = '_Definition_master.xml'
+__idf = '_Definition.xml'
+
+__key_last_modified = 'last-modified='
+__key_valid_to = 'valid-to'
+
+
+def findGeoms():
+    logging.debug('Found following IDF generator Python files: ')
+    names = []
+    for root, dirs, files in os.walk('./'):
+        files = [f for f in files if f.endswith('_geometry.py') or f.endswith('_generateIDF.py')]
+        for name in files:
+            name = os.path.join(root, name)
+            names.append(name)
+            logging.debug(name)
+    return names
+
 
 def toOutputNames(filename):
-    (direc, filename) = os.path.split(filename)
+    direc, filename = os.path.split(filename)
 
     instr = filename.split("_")[0]
     instr = instr.upper()
 
-    golden = "%s_Definition_master.xml" % instr
-    result = "%s_Definition.xml" % instr
-
-    golden = os.path.join(direc, golden)
-    result = os.path.join(direc, result)
+    golden = os.path.join(direc, instr + __original_idf)
+    result = os.path.join(direc, instr + __idf)
 
     # fix up the instrument name to match what is in mantid
     if instr in INSTR_MAP.keys():
         instr = INSTR_MAP[instr]
 
-    return (golden, result, instr)
+    return golden, result, instr
 
-
-def findSourceDirec():
-    direc = sys.argv[0]
-    logging.debug("findSourceDirec 0:" + direc)
-    direc = os.path.split(direc)[0]
-    logging.debug("findSourceDirec 1:" + direc)
-    direc = os.path.abspath(direc)
-    logging.debug("findSourceDirec 2:" + direc)
-    return direc
 
 def findMantidInstrFile(mantiddir, instr):
     # get all files in the directory
     all_files = os.listdir(mantiddir)
     if len(all_files) <= 0:
-        raise RuntimeError("Failed to find any files in '%s'" % mantiddir)
+        raise RuntimeError("Failed to find any files in " + mantiddir)
 
     # reduce to just the ones that are IDFs for this instrument
-    candidates=[]
+    candidates = []
     for filename in all_files:
         if filename.startswith(instr) and filename.endswith(".xml") and \
                 "Definition" in filename:
             candidates.append(os.path.join(mantiddir, filename))
 
     # pop them open and look for the valid-to information
-    VALID_TO='valid-to'
     datemap={}
     for filename in candidates:
-        handle = open(filename, 'r')
+        handle = open(filename)
         for line in handle:
-            if VALID_TO in line:
+            if __key_valid_to in line:
                 break
-        if not VALID_TO in line:
-            raise RuntimeError("Failed to find 'valid-to' tag in '%s'" % filename)
-        line = line[line.index(VALID_TO)+len(VALID_TO):].strip()
-        line = line[line.index('=') + 1:].strip()
-        line = line[1:].strip()
-        line = line.split()[0]
-        datemap[line] = filename
+            if not __key_valid_to in line:
+                raise RuntimeError("Failed to find 'valid-to' tag in " + filename)
+            line = line[line.index(__key_valid_to)+len(__key_valid_to):].strip()
+            line = line[line.index('=') + 1:].strip()
+            line = line[1:].strip()
+            line = line.split()[0]
+            datemap[line] = filename
 
     # return the one that has the latest valid-to date
     dates = datemap.keys()
     dates.sort()
     return datemap[dates[-1]]
 
+
 def copyFromMantid(mantiddir, instr, goldenfile):
     mantidfile = findMantidInstrFile(mantiddir, instr)
     shutil.copy(mantidfile, goldenfile)
 
-def runGeom(pyscript, outfile, goldenfile, generateGolden):
+
+def runGeom(pyscript, goldenfile, outfile, generateGolden):
     logging.info("*****"+pyscript+"*****")
-    if os.path.exists(outfile):
-        logging.debug("Removing output file '%s'" % outfile)
-        os.unlink(outfile)
-    if generateGolden and os.path.exists(goldenfile):
-        logging.debug("Removing golden file '%s'" % goldenfile)
-        os.unlink(goldenfile)
     cmd = "python %s" % pyscript
-    proc = subprocess.Popen(cmd, shell=True,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, err) = proc.communicate() # waits for process to finish
-    retcode = proc.wait()
-    (out, err) = (out.strip(), err.strip())
-
-    if retcode:
-        if len(out) > 0:
-            logging.warning("----output----")
-            logging.warning(out)
-        if len(err) > 0:
-            logging.warning("----error-----")
-            logging.warning(err)
-        if retcode == 2: # two means skip
-            print 'Skipped creating', outfile
-            return
+    try:
+        proc = subprocess.Popen(cmd, shell=True,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = proc.communicate()
+        retcode = proc.wait()
+        if retcode:
+            if len(out) > 0:
+                logging.warning("----output----")
+                logging.warning(out)
+            if len(err) > 0:
+                logging.warning("----error-----")
+                logging.warning(err)
+            if retcode == 2:
+                logging.info(' Skip creating ' + outfile)
+                return
+            else:
+                logging.error(cmd + " returned " + str(retcode))
         else:
-            raise RuntimeError("'%s' returned %d" % (cmd, retcode))
-    else:
-        if len(out) > 0:
-            logging.debug("----output----")
-            logging.debug(out)
-        if len(err) > 0:
-            logging.debug("----error-----")
-            logging.debug(err)
+            if len(out) > 0:
+                logging.debug("----output----")
+                logging.debug(out)
+            if len(err) > 0:
+                logging.debug("----error-----")
+                logging.debug(err)
+    except ValueError:
+        logging.error(" Cannot run " + pyscript)
 
-    finalfile = outfile
     if generateGolden:
-        logging.info("Renaming '%s' to '%s'" % (outfile, goldenfile))
-        if not os.path.exists(outfile):
-            raise RuntimeError("Failed to find file '%s'" % outfile)
-        os.rename(outfile, goldenfile)
-        finalfile=goldenfile
+        if os.path.exists(goldenfile):
+            logging.debug(" Removing golden file " + goldenfile)
+            os.remove(goldenfile)
+        if os.path.exists(outfile):
+            os.rename(outfile, goldenfile)
+            logging.info(" Created " + goldenfile)
 
-    print "Created '%s'" % finalfile
 
 def getModified(instrTag):
-    LAST_MOD='last-modified="'
+    if __key_last_modified in instrTag:
+        start = instrTag.index(__key_last_modified) + len(__key_last_modified)
+        end = instrTag.index('"', start + 1)
+        modified = __key_last_modified+instrTag[start:end+1]
+        newline = instrTag.replace(modified, "")
+    else:
+        raise RuntimeError("Failed to find " + __key_last_modified + " in " + instrTag)
+    return modified, newline[1:]
 
-    if not LAST_MOD in instrTag:
-        raise RuntimeError("Failed to find '%s' in '%s'" % (LAST_MOD, instrTag))
 
-    start = instrTag.index(LAST_MOD) + len(LAST_MOD)
-    end = instrTag.index('"', start)
-    return LAST_MOD+instrTag[start:end+1]
-
-def compareGeom(golden, outfile, headerDecoration):
+def compareGeom(golden, outfile):
     if not os.path.exists(golden):
-        logging.warning("Failed to find the orignal geometry '%s' - not comparing" % golden)
+        logging.warning(" Failed to find the original geometry " + golden + " - not comparing")
         return
     if not os.path.exists(outfile):
-        logging.warning("Failed to find the new geometry '%s'" % outfile)
+        logging.warning(" Failed to find the new geometry " + outfile)
         return
 
-    oldData = open(golden, 'r').readlines()
-    newData = open(outfile, 'r').readlines()
+    oldData = open(golden).readlines()
+    newData = open(outfile).readlines()
 
     # do the "quick" check to see if anything has been changed
     diff = difflib.unified_diff(oldData, newData, golden, outfile, n=0)
+
     leftDiff = 0
     rightDiff = 0
-    oldModified=None
-    newModified=None
-    for line in diff:
-        if line.startswith('-') or line.startswith('+'):
-            if not (line.startswith('---') or line.startswith('+++')):
-                if 'last-modified' in line:
-                    modified = getModified(line)
-                    newline = line.replace(modified, "")
-                    if line.startswith('-'):
-                        oldModified = (modified, newline[1:])
-                    else:
-                        newModified = (modified, newline[1:])
-                        if oldModified is None or oldModified[1] != newModified[1]:
-                            leftDiff += 1
-                            rightDiff += 1
-                else:
-                    if line.startswith('-'):
-                        leftDiff += 1
-                    if line.startswith('+'):
-                        rightDiff += 1
+    oldModified = None
+    oldDate = None
+    newDate = None
 
-    # log the modified dates according to the file
-    if oldModified is not None:
-        logging.info(golden+" "+oldModified[0])
+    for line in diff:
+        if line.startswith('-<instrument'):
+            oldDate, oldModified = getModified(line)
+        elif line.startswith('+<instrument'):
+            newDate, newModified = getModified(line)
+            if oldModified != newModified:
+                leftDiff += 1
+                rightDiff += 1
+        else:
+            if line.startswith('-') and not line.startswith('---'):
+                leftDiff += 1
+            if line.startswith('+') and not line.startswith('+++'):
+                rightDiff += 1
+
+    if oldDate is not None:
+        logging.info(" Compare " + golden + " " + oldDate)
     else:
-        logging.info(golden+" oldModified is None")
-    logging.info(outfile+" "+newModified[0])
+        logging.info(golden+" oldDate is None")
+    if newDate is not None:
+        logging.info(" With " + outfile + " " + newDate)
+    else:
+        logging.info(outfile+" newDate is None")
 
     # only print diff if there is a meaningful one
     if (leftDiff+rightDiff) > 0:
-        if headerDecoration:
-            print "========================================"
-        print "%d lines removed and %d lines added" % (leftDiff, rightDiff)
+        logging.info(" ========================================")
+        logging.info(" " + str(leftDiff) + " line(s) removed and " + str(rightDiff) + " line(s) added")
         # rerun and write out
         diff = difflib.unified_diff(oldData, newData, golden, outfile)
         sys.stdout.writelines(diff)
     else:
-        print "%s and %s match" % (os.path.split(golden)[1], \
-                                   os.path.split(outfile)[1])
+        logging.info(" " + os.path.split(golden)[1] + " and " + os.path.split(outfile)[1] + " match")
 
 
 if __name__ == "__main__":
-    # set up optparse
-    import optparse # deprecated since v2.7 and should switch to argparse
-    parser = optparse.OptionParser(description="Verify that definition files haven't changed",
-                                   usage="%prog [options]")
-    parser.add_option("-l", "--loglevel", dest="loglevel", default="WARNING",
-                    help="Specify the log level (" + ", ".join(LOGLEVELS)+ ")")
-    parser.add_option("-v", "--version", dest="version", action="store_true",
-                      help="Print the version information and exit")
-    parser.add_option("", "--copy-from-mantid", dest="mantidloc", default=None,
-                      help="Copy the most recent geometry files from mantid instrument directory")
-    parser.add_option("", "--setup", dest="setup", action="store_true",
-                      help="Run all of the geometries from the unchanged repository")
-    parser.add_option("", "--diffonly", dest="diffonly", action="store_true",
-                      help="Don't run the geometries, only calculate the differences")
-    parser.add_option("", "--script", dest="script",
-                      help="Script file to run")
+    import argparse
+    parser = argparse.ArgumentParser(description="Verify that definition files haven't changed")
+    parser.add_argument("-l", "--loglevel", default="WARNING",
+                        help="Specify the log level (" + ", ".join(LOGLEVELS) + "), default is WARNING")
+    parser.add_argument("-v", "--version", action="store_true",
+                        help="Print the version information and exit")
+    parser.add_argument("--copy-from-mantid", dest="mantidloc", default=None,
+                        help="Copy the most recent geometry files from mantid instrument directory")
+    parser.add_argument("--setup", action="store_true",
+                        help="Run all of the geometries from the unchanged repository")
+    parser.add_argument("--diffonly", action="store_true",
+                        help="Don't run the geometries, only calculate the differences")
+    parser.add_argument("--script", help="Script file to run")
 
     # parse the command line
-    (options, args) = parser.parse_args()
+    options = parser.parse_args()
 
     # setup logging
-    options.loglevel = options.loglevel.upper()
-    options.loglevel = getattr(logging, options.loglevel.upper(),
-                               logging.WARNING)
     logging.basicConfig(format='%(levelname)s:%(message)s',
                         level=options.loglevel)
 
     # log the options and arguments
-    logging.debug('opts ' + str(options))
-    logging.debug('args ' + str(args))
+    logging.debug('Options: ' + str(options))
 
     # if they want the version just give it back and exit
     if options.version:
-        print sys.argv[0], "version", __version__
+        print(sys.argv[0] + " version " + __version__)
         sys.exit(0)
 
     # where is the actual test script
-    direc = findSourceDirec()
+    directory = os.path.dirname(os.path.realpath(__file__))
 
     # determine what geometries are available
     if options.script is None:
-        filenames = findGeoms(direc)
+        geometries = findGeoms()
     else:
         if not os.path.isabs(options.script):
-            options.script = os.path.join(direc, options.script)
+            options.script = os.path.join(directory, options.script)
             options.script = os.path.abspath(options.script)
-        filenames = [options.script]
+        geometries = [options.script]
 
     # generate the expected geometry file names
     outfiles = {}
-    for filename in filenames:
-        outfiles[filename] = toOutputNames(filename)
+    for geometry in geometries:
+        outfiles[geometry] = toOutputNames(geometries)
 
     # copy the files from a mantid source tree if specified
     if options.mantidloc is not None:
         mantidloc = os.path.abspath(options.mantidloc)
         if not os.path.exists(mantidloc):
-            raise RuntimeError("Specified non-existent instrument directory '%s'" % mantidloc)
+            raise RuntimeError("Specified non-existent instrument directory " + mantidloc)
         if not os.path.isdir(mantidloc):
-            raise RuntimeError("'%s' is not a directory" % mantidloc)
+            raise RuntimeError(mantidloc + " is not a directory")
         import shutil
         for key in outfiles.keys():
             copyFromMantid(mantidloc, outfiles[key][2], outfiles[key][0])
@@ -273,7 +251,8 @@ if __name__ == "__main__":
     # run each one
     if not options.diffonly:
         for key in outfiles.keys():
-            runGeom(key, outfiles[key][1], outfiles[key][0], options.setup)
+            master, output, instrument = outfiles[key]
+            runGeom(key, master, output, options.setup)
 
     # exit early if we are in setup
     if options.setup:
@@ -281,5 +260,5 @@ if __name__ == "__main__":
 
     # calculate and display the differences
     for key in outfiles.keys():
-        (golden, output, instr) = outfiles[key]
-        compareGeom(golden, output, len(filenames)>1)
+        master, output, instrument = outfiles[key]
+        compareGeom(master, output)
