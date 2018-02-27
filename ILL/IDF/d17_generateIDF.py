@@ -76,4 +76,4 @@ d17.addComponentRectangularDetector("detector", 0.0, 0.0, detValue, idstart="1",
 d17.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d17.addRectangularDetector("detector", "pixel", xstart, xstep, xpixels, ystart, ystep, ypixels)
 d17.addCuboidPixel("pixel", [-x, -y, z], [x, y, z], [-x, -y, thickness], [x, -y, z], shape_id="pixel-shape")
-d17.writeGeom("../../D17_Definition.xml")
+d17.showGeom()
