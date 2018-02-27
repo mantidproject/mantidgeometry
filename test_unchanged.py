@@ -234,7 +234,7 @@ if __name__ == "__main__":
     # generate the expected geometry file names
     outfiles = {}
     for geometry in geometries:
-        outfiles[geometry] = toOutputNames(geometries)
+        outfiles[geometry] = toOutputNames(geometry)
 
     # copy the files from a mantid source tree if specified
     if options.mantidloc is not None:
