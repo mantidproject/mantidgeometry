@@ -271,8 +271,8 @@ class MantidGeom:
             le.SubElement(self.__root, "type",
                           **{"name": type_name, "is": "SamplePos"})
 
-
-    def addComponentRectangularDetector(self, type_name, x, y, z, idstart, idfillbyfirst, idstepbyrow, root=None):
+    def addComponentRectangularDetector(self, type_name, x, y, z, idstart, idfillbyfirst, idstepbyrow, rotx=None,
+                                        roty=None,rotz=None, root=None):
         """
 
         Returns: a component argument -> rectangular detector
@@ -283,7 +283,7 @@ class MantidGeom:
 
         comp = le.SubElement(root, "component", type=type_name, idstart=idstart, idfillbyfirst=idfillbyfirst,
                              idstepbyrow=idstepbyrow)
-        self.addLocation(comp, x, y, z)
+        self.addLocation(comp, x, y, z, rot_x=rotx, rot_y=roty, rot_z=rotz)
 
     def makeTypeElement(self, name, extra_attrs={}):
         """

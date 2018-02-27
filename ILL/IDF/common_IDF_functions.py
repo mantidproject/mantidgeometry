@@ -4,7 +4,6 @@
 
 from __future__ import print_function
 from time import gmtime, strftime
-import math
 import numpy
 from scipy.constants import degree
 from shutil import copyfile
