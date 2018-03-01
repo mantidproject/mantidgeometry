@@ -90,4 +90,4 @@ figaro.addComponentRectangularDetector("detector", 0.0, 0.0, zDetector, idstart=
 figaro.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 figaro.addRectangularDetector("detector", "pixel", xstart, xstep, xpixels, ystart, ystep, ypixels)
 figaro.addCuboidPixel("pixel", [-x, -y, z], [x, y, z], [-x, -y, -z], [x, -y, z], shape_id="pixel-shape")
-figaro.showGeom()
+figaro.writeGeom("./ILL/IDF/" + instrumentName.upper() + "_Definition.xml")

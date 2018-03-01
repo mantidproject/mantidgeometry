@@ -131,3 +131,4 @@ d33.addComponentRectangularDetector(detector4, 0., dR+dF, zFront, idstart=id4, i
 d33.addRectangularDetector(detector4, pixelName, xstart, xstep, xpixels, startFront, ystep, pixelsFront)
 d33.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d33.addCuboidPixel(pixelName, [-x, -y, z], [x, y, z], [-x, -y, thickness], [x, -y, z], shape_id="pixel-shape")
+d33.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")
