@@ -531,7 +531,7 @@ class MantidGeom:
         for i in range(num_tubes):
             tube_name = type_name + "%d" % (i + 1)
             x = pack_start + (i * effective_tube_width) # Mantid
-            x = -(pack_start + (i * effective_tube_width)) # Flipped
+            #x = -(pack_start + (i * effective_tube_width)) # Flipped
             angle = x/radius/2
             location_element = le.SubElement(component, "location", name=tube_name, x=str(-x*np.cos(angle)), z=str(-x*np.sin(angle)))
 

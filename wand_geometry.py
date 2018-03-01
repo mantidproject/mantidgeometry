@@ -27,7 +27,7 @@ if __name__ == "__main__":
     # Set header information
     comment = "Created by Ross Whitfield"
     # Time needs to be in UTC?
-    valid_from = "2017-12-01 00:00:00"
+    valid_from = "2018-02-20 00:00:00"
 
     # Get geometry information file
     xml_outfile = INST_NAME+"_Definition.xml"
@@ -51,7 +51,8 @@ if __name__ == "__main__":
 
         det_type = "panel"
         angle = (NUM_DETS-i-1)*15+7.5  # Mantid
-        angle = i*15+7.5  # Flipped
+        angle -= 0.03125*6 # Offset by six pixels
+        #angle = i*15+7.5  # Flipped
 
         type_element = le.SubElement(det.getRoot(), "type",
                                      name="bank"+str(i+1))
