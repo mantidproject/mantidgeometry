@@ -45,8 +45,8 @@ if __name__ == "__main__":
                                 root=doc_handle)
         log = le.SubElement(bank, "parameter", **{"name": "y"})
         le.SubElement(log, "logfile",
-                      **{"id": "HB2C:Mot:detz.RBV", # detz is in cm
-                         "eq": "rint(value*1000)/100000", # Round to 0.01mm and convert to metres
+                      **{"id": "HB2C:Mot:detz.RBV", # detz is in mm
+                         "eq": "rint(value*100)/100000", # Round to 0.01mm and convert to metres
                          "extract-single-value-as": "mean"})
 
         det_type = "panel"
