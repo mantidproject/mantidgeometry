@@ -25,7 +25,7 @@ tube_theta_angles_start = 165.0
 tube_theta_angles_end = 6.25
 
 number_of_pixels = 128
-detector_tube_length = 0.3
+detector_tube_length = 0.3545
 pixel_height = detector_tube_length / number_of_pixels
 """This is the effective radius of a detector tube. The actual dimater of the tubes are
    2.54 mm (1 inch), but the collimators mean they only see 0.05 degrees in sold angle,
@@ -58,8 +58,8 @@ def pixel_height_positions():
 def printHeader():
     print("""<?xml version="1.0" encoding="UTF-8"?>
              <!-- For help on the notation used to specify an Instrument Definition File see http://www.mantidproject.org/IDF -->
-             <instrument xmlns="http://www.mantidproject.org/IDF/1.0" 
-                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             <instrument xmlns="http://www.mantidproject.org/IDF/1.0"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                          xsi:schemaLocation="http://www.mantidproject.org/IDF/1.0 Schema/IDFSchema.xsd"
                          name="{0}"
                          valid-from="1900-01-31 23:59:59"
@@ -131,7 +131,7 @@ def printDetectorInformation():
 
 def printDetectors():
     print("""<type name="detectors">
-               <component type="standard_tube">""")     
+               <component type="standard_tube">""")
 
     tube_angles = tube_theta_angles()
 
