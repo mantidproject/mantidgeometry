@@ -7,6 +7,9 @@ from helper import MantidGeom
 instrumentName = 'D11'
 validFrom = "2017-10-01 23:59:59"
 moderator_source = -2.0
+# 2 Monitors
+zMon1 = -16.7
+zMon2 = -1.2
 # factor: 1, 2
 factor = 2
 # definition of the quadratic detector
@@ -82,6 +85,13 @@ d11.addComment("SOURCE")
 d11.addComponentILL("moderator", 0., 0., moderator_source, "Source")
 d11.addComment("Sample position")
 d11.addComponentILL("sample_position", 0., 0., 0., "SamplePos")
+d11.addComment("MONITORS")
+d11.addMonitors(names=["monitor1", "monitor2"], distance=[zMon1, zMon2])
+d11.addComment("MONITOR SHAPE")
+d11.addComment("FIXME: Do something real here.")
+d11.addDummyMonitor(0.01, 0.03)
+d11.addComment("MONITOR IDs")
+d11.addMonitorIds([repr(100000), repr(100001)])
 d11.addComment("DETECTOR")
 d11.addComponentRectangularDetector(detector0, 0., 0., zPos, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR)
 d11.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
