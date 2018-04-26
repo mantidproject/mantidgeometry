@@ -1,4 +1,5 @@
-
+# cd ILL/IDF
+# python d22_generateIDF.py > D22_Definition.xml
 import sys
 sys.path.insert(1, "../../")
 from helper import MantidGeom
@@ -11,12 +12,12 @@ moderator_source = -2.0
 zMon1 = -16.7
 zMon2 = -1.2
 # definition of the quadratic detector
-numberPixelsVertical = 122
+numberPixelsVertical = 256
 numberPixelsHorizontal = 128
 # definition of a quadratic pixel
 pixelName = "pixel"
 pixelWidth = 0.008
-pixelHeight = 0.008
+pixelHeight = 0.004
 x = pixelWidth / 2.
 y = pixelHeight / 2.
 z = 0.
@@ -61,8 +62,13 @@ comment = """ This is the instrument definition file of the D22 Large dynamic ra
        Default sample dimension is 10 mm x 300 mm
 
        Multi-detector:
-       Size 1024 mm x 980 mm
-       Pixel size 8 x 8 mm^2 ( 128 x 122 pixels )
+       Size 1024 mm x 1024 mm
+       Nominal resolution:
+            128 x 256
+            Pixel size 8 x 4 mm2
+       Low resolution:
+            128 x 128
+            Pixel size 8 x 8 mm2
 
        For more information, please visit
        https://www.ill.eu/instruments-support/instruments-groups/instruments/d22/characteristics/
@@ -85,4 +91,5 @@ d22.addComponentRectangularDetector(detector0, 0., 0., zPos, idstart=id0, idfill
 d22.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
 d22.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d22.addCuboidPixel(pixelName, [-x, -y, z], [x, y, z], [-x, -y, thickness], [x, -y, z], shape_id="pixel-shape")
-d22.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")
+#d22.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")
+d22.showGeom()
