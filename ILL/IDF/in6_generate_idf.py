@@ -4,13 +4,13 @@
 """
 
 from common_IDF_functions import *
-
+import math
 
 def write_in6_source_chopper(output_file):
-    output_file.write('  <component type="fermi_chopper">\n')
-    output_file.write('    <location z="-0.395" />\n')
+    output_file.write('  <component type="suppressor_chopper">\n')
+    output_file.write('    <location z="-0.595" />\n')
     output_file.write('  </component>\n')
-    output_file.write('  <type name="fermi_chopper" is="Source" />\n')
+    output_file.write('  <type name="suppressor_chopper" is="Source" />\n')
 
 
 def write_in6_monitor_positions(output_file):
