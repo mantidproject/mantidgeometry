@@ -5,19 +5,19 @@ sys.path.insert(1, "../../")
 from helper import MantidGeom
 
 # using metre as unit
-instrumentName = 'D22'
+instrumentName = 'D22lr'
 validFrom = "2017-10-01 23:59:59"
 moderator_source = -2.0
 # 2 Monitors
 zMon1 = -16.7
 zMon2 = -1.2
 # definition of the quadratic detector
-numberPixelsVertical = 256
+numberPixelsVertical = 128
 numberPixelsHorizontal = 128
 # definition of a quadratic pixel
 pixelName = "pixel"
 pixelWidth = 0.008
-pixelHeight = 0.004
+pixelHeight = 0.008
 x = pixelWidth / 2.
 y = pixelHeight / 2.
 z = 0.
