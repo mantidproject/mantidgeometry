@@ -1,4 +1,4 @@
-
+# python d33_generateIDF.py > D33_Definition.xml
 import sys
 sys.path.insert(1, "../../")
 from helper import MantidGeom
@@ -16,6 +16,7 @@ factor = 2
 numberPixelsRearVertical = 128
 numberPixelsRearHorizontal = 128 * factor
 numberPixelsFront = 32
+numberPixelsFrontLength = 256
 # definition of a quadratic pixel
 pixelName = "pixel"
 pixelWidth = 0.005 / factor
@@ -47,7 +48,8 @@ pixelsFront = repr(numberPixelsFront)
 startFront = repr(-pixelHeight * (numberPixelsFront - 1) / 2)
 # Choose either FF = "x", SR = repr(numberPixelsRearHorizontal) or FF = "y", SR = repr(numberPixelsRearVertical)
 FF = "y"  # idfillbyfirst
-SR = repr(numberPixelsRearVertical)  #idstepbyrow
+SR = repr(numberPixelsRearVertical)  #idstepbyrow for rear
+SRF = repr(numberPixelsFrontLength) #idstepbyrow for front
 detector0 = "back_detector"
 detector1 = "front_detector_right"
 detector2 = "front_detector_left"
@@ -116,19 +118,20 @@ d33.addComponentRectangularDetector(detector0, 0., 0., zPosRear, idstart=id0, id
 d33.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
 d33.addComment("4 FRONT DETECTORS, from detector to sample in +Z direction")
 d33.addComment("RIGHT")
-d33.addComponentRectangularDetector(detector1, dF+dR, 0., zFront, idstart=id1, idfillbyfirst=FF,
-                                    idstepbyrow=SR, rotz=90.)
+d33.addComponentRectangularDetector(detector1, dF+dR, 0., zFront, idstart=id1, idfillbyfirst="x",
+                                    idstepbyrow=SRF, rotz=90., roty=180.)
 d33.addRectangularDetector(detector1, pixelName, xstart, xstep, xpixels, startFront, ystep, pixelsFront)
 d33.addComment("LEFT")
-d33.addComponentRectangularDetector(detector2, -dR-dF, 0., zFront, idstart=id2, idfillbyfirst=FF,
-                                    idstepbyrow=SR, rotz=90.)
+d33.addComponentRectangularDetector(detector2, -dR-dF, 0., zFront, idstart=id2, idfillbyfirst="x",
+                                    idstepbyrow=SRF, rotz=90., roty=180.)
 d33.addRectangularDetector(detector2, pixelName, xstart, xstep, xpixels, startFront, ystep, pixelsFront)
 d33.addComment("BOTTOM")
-d33.addComponentRectangularDetector(detector3, 0., -dF-dR, zFront, idstart=id3, idfillbyfirst=FF, idstepbyrow=SR)
+d33.addComponentRectangularDetector(detector3, 0., -dF-dR, zFront, idstart=id3, idfillbyfirst=FF, idstepbyrow=SRF)
 d33.addRectangularDetector(detector3, pixelName, xstart, xstep, xpixels, startFront, ystep, pixelsFront)
 d33.addComment("TOP")
-d33.addComponentRectangularDetector(detector4, 0., dR+dF, zFront, idstart=id4, idfillbyfirst=FF, idstepbyrow=SR)
+d33.addComponentRectangularDetector(detector4, 0., dR+dF, zFront, idstart=id4, idfillbyfirst=FF, idstepbyrow=SRF)
 d33.addRectangularDetector(detector4, pixelName, xstart, xstep, xpixels, startFront, ystep, pixelsFront)
 d33.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d33.addCuboidPixel(pixelName, [-x, -y, z], [x, y, z], [-x, -y, thickness], [x, -y, z], shape_id="pixel-shape")
-d33.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")
+#d33.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")
+d33.showGeom()
