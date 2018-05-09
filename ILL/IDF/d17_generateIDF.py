@@ -66,7 +66,7 @@ comment = """ This is the instrument definition file of the D17 reflectometer at
        https://www.ill.eu/instruments-support/instruments-groups/instruments/d17/characteristics/
        """
 d17 = MantidGeom(instrumentName, comment=comment, valid_from=validFrom)
-d17.addSnsDefaults()
+d17.addSnsDefaults(theta_sign_axis='x')
 d17.addComment("SOURCE")
 d17.addComponentILL("chopper1", 0.0, 0.0, chop1_source, "Source")
 d17.addComment("Sample position")
@@ -79,8 +79,8 @@ d17.addDummyMonitor(0.01, 0.03)
 d17.addComment("MONITOR IDs")
 d17.addMonitorIds(["100000", "100001"])
 d17.addComment("2 Slits")
-d17.addComponentILL("slit2", 0.0, 0.0, slit2Centre)
-d17.addComponentILL("slit3", 0.0, 0.0, slit3Centre)
+d17.addComponentILL("slit2", 0.0, 0.0, slit2Centre, isType="")
+d17.addComponentILL("slit3", 0.0, 0.0, slit3Centre, isType="")
 d17.addComment("DETECTORS")
 d17.addComment("64 TUBES FORM ONE DETECTOR")
 d17.addComponentRectangularDetector("detector", 0.0, 0.0, detValue, idstart="1", idfillbyfirst="x",

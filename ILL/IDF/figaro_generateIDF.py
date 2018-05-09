@@ -68,7 +68,7 @@ comment = """ This is the instrument definition file of the figaro reflectometer
        https://www.ill.eu/instruments-support/instruments-groups/instruments/figaro/characteristics/
        """
 figaro = MantidGeom(instrumentName, comment=comment, valid_from=validFrom)
-figaro.addSnsDefaults()
+figaro.addSnsDefaults(theta_sign_axis='y')
 figaro.addComment("SOURCE")
 figaro.addComponentILL("chopper1", 0.0, 0.0, zSource, "Source")
 figaro.addComment("Sample position")
@@ -81,8 +81,8 @@ figaro.addDummyMonitor(0.01, 0.03)
 figaro.addComment("MONITOR IDs")
 figaro.addMonitorIds(["100000", "100001"])
 figaro.addComment("2 Slits")
-figaro.addComponentILL("slit2", 0.0, 0.0, slit2Centre)
-figaro.addComponentILL("slit3", 0.0, 0.0, slit3Centre)
+figaro.addComponentILL("slit2", 0.0, 0.0, slit2Centre, isType="")
+figaro.addComponentILL("slit3", 0.0, 0.0, slit3Centre, isType="")
 figaro.addComment("DETECTORS")
 figaro.addComment("64 tubes form the detector")
 figaro.addComponentRectangularDetector("detector", 0.0, 0.0, zDetector, idstart="1", idfillbyfirst="x",

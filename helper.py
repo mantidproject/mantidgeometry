@@ -52,7 +52,7 @@ class MantidGeom:
         print(le.tostring(self.__root, pretty_print=True,
                              xml_declaration=True))
 
-    def addSnsDefaults(self, indirect=False, default_view=None):
+    def addSnsDefaults(self, indirect=False, default_view=None, theta_sign_axis=None):
         """
         Set the default properties for SNS geometries
         """
@@ -66,6 +66,8 @@ class MantidGeom:
         le.SubElement(reference_element, "along-beam", axis="z")
         le.SubElement(reference_element, "pointing-up", axis="y")
         le.SubElement(reference_element, "handedness", val="right")
+        if theta_sign_axis is not None:
+            le.SubElement(reference_element, "theta-sign", axis=theta_sign_axis)
         if default_view is not None:
             le.SubElement(defaults_element, "default-view", view=default_view)
 
@@ -253,7 +255,7 @@ class MantidGeom:
             l = le.SubElement(comp, "location")
         return l
 
-    def addComponentILL(self, type_name, x, y, z, isType=None, idlist=None, root=None):
+    def addComponentILL(self, type_name, x, y, z, isType=None, root=None):
         """
         Add a component with location to the XML definition.
         """
@@ -264,12 +266,13 @@ class MantidGeom:
 
         self.addLocation(comp, x, y, z)
 
-        if isType is "Source":
-            le.SubElement(self.__root, "type",
-                          **{"name": type_name, "is": "Source"})
-        if isType is "SamplePos":
-            le.SubElement(self.__root, "type",
-                          **{"name": type_name, "is": "SamplePos"})
+        if isType is not None:
+            if isType != '':
+                le.SubElement(self.__root, "type",
+                              **{"name": type_name, "is": isType})
+            else:
+                le.SubElement(self.__root, "type",
+                              **{"name": type_name})
 
     def addComponentRectangularDetector(self, type_name, x, y, z, idstart, idfillbyfirst, idstepbyrow, rotx=None,
                                         roty=None,rotz=None, root=None):
