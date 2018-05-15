@@ -18,7 +18,7 @@ y_num2 = 7
 # primary flight path - negative b/c it is upstream
 L1 = -60.0
 
-def readPositions(filename):
+def readPositionsRight(filename):
     positions = readFile(filename)
     del positions['Position']
     del positions['DetectorNum']
@@ -51,10 +51,54 @@ def readPositions(filename):
             raise ValueError("Inconceivable! i = %d" % i)
 
         if i == 3:
-            banks[bank] = (column, Rectangle(four, one, two, three, tolerance_len=0.006))
+            banks[int(bank)] = (column, Rectangle(four, one, two, three, tolerance_len=0.006))
 
     return banks
 
+def readPositionsLeft(filename):
+    positions = readFile(filename)
+    x = np.array(map(float, positions['X']))
+    y = np.array(map(float, positions['Elevation']))
+    z = np.array(map(float, positions['Z']))
+    positions['position'] = []
+    for x_i,y_i,z_i in zip(x,y,z):
+        positions['position'].append(Vector(x_i, y_i, z_i))
+
+    del positions['X']
+    del positions['Elevation']
+    del positions['Z']
+
+    names = {'D596':79,
+             'D579':76,
+             'D261':73,
+             'D585':70,
+             'D586':67,
+             'D573':64,
+             'D571':61,
+             'D574':58,
+             'D225':55,
+             'D565':52,
+             'D551':48,
+             'D594':43}
+    banks = {}
+    for i, (det, position) in enumerate(zip(positions['Detector'], positions['position'])):
+        bank = names[det[:4]]
+        i = i%4
+        if i == 0:
+            three = position
+        elif i == 1:
+            four = position
+        elif i == 2:
+            one = position
+        elif i == 3:
+            two = position
+        else:
+            raise ValueError("Inconceivable! i = %d" % i)
+
+        if i == 3:
+            banks[bank] = ('A', Rectangle(four, one, two, three, tolerance_len=0.006))
+
+    return banks
 
 if __name__ == "__main__":
     inst_name = "PG3"
@@ -67,7 +111,7 @@ if __name__ == "__main__":
     # boiler plate stuff
     instr = MantidGeom(inst_name,
                        comment="Created by " + ", ".join(authors),
-                       valid_from="2017-05-01 00:00:01")
+                       valid_from="2018-05-05 00:00:01")
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults()
     instr.addComment("SOURCE")
@@ -111,7 +155,15 @@ if __name__ == "__main__":
     # guides - not even copying the text
 
     # read in detectors
-    banks = readPositions("SNS/POWGEN/PG3_geom_2017.csv")
+    banks = readPositionsRight("SNS/POWGEN/PG3_geom_2017.csv")
+    banksL = readPositionsLeft("SNS/POWGEN/PG3_geom_left_2018.csv")
+    for bank in banksL.keys():
+        banks[bank] = banksL[bank]
+    del banksL
+
+    # delete the banks that are no longer installed
+    for bank in [1,5,6,10,32,35,38,28,31,34,37,40]:
+        del banks[bank]
 
     # create columns
     columns = set()
