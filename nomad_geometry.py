@@ -47,10 +47,20 @@ def getCornersSpecial(banknum):
 def getRectangle(bank_num, positions, corners, tolerance_len=0.006):
     # TODO for some reason tolerance is bigger than the default
     try:
-        return Rectangle(positions[corners[0]],
-                         positions[corners[1]],
-                         positions[corners[2]],
-                         positions[corners[3]], tolerance_len=tolerance_len)
+        one = positions[corners[0]]
+        two = positions[corners[1]]
+        three = positions[corners[2]]
+        four = positions[corners[3]]
+        if bank_num in (90,91):
+            if bank_num == 90: # .046875 -> 0.148
+                y_offset = 0.10113
+            elif bank_num == 91: # -.0390625 -> -0.148
+                y_offset = -0.1089375
+            one = Vector(one.x, one.y+y_offset, one.z)
+            two = Vector(two.x, two.y+y_offset, two.z)
+            three = Vector(three.x, three.y+y_offset, three.z)
+            four = Vector(four.x, four.y+y_offset, four.z)
+        return Rectangle(one, two, three, four, tolerance_len=tolerance_len)
     except RuntimeError as e:
         print 'bank', bank_num, corners
         raise e
@@ -240,13 +250,18 @@ if __name__ == "__main__":
     bank_offset += num_banks[4]
     group = instr.makeTypeElement('Group6')
     special = [90,91]
+    # Panels 92,93 were moved into backscattering (pixel numbers reassigned),
+    # then 94,95,96 were slid over without reassigning pixles. This dictionary
+    # handles shuffling those around and should be removed for the next run
+    # cycle
+    shuffled = {94:92, 95:93, 96:94, 92:95, 93:96}
     for i in range(num_banks[5]):
         bank_num = bank_offset+i+1
         bank = "bank%d" % bank_num
         if bank_num in special:
             corners = getCornersSpecial(bank_num)
         else:
-            corners = getCorners(bank_num)
+            corners = getCorners(shuffled.get(bank_num, bank_num))
 
         # corners are mixed up
         if bank_num == 91:
