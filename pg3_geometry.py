@@ -80,6 +80,7 @@ def readPositionsLeft(filename):
              'D565':52,
              'D551':48,
              'D594':43}
+    columns = {43:'NA', 48:'NB', 52:'NC', 55:'ND', 58:'NE', 61:'NF', 64:'NG', 67:'NH', 70:'NI', 73:'NJ', 76:'NK', 79:'NL'}
     banks = {}
     for i, (det, position) in enumerate(zip(positions['Detector'], positions['position'])):
         bank = names[det[:4]]
@@ -96,7 +97,7 @@ def readPositionsLeft(filename):
             raise ValueError("Inconceivable! i = %d" % i)
 
         if i == 3:
-            banks[bank] = ('A', Rectangle(four, one, two, three, tolerance_len=0.006))
+            banks[bank] = (columns[bank], Rectangle(four, one, two, three, tolerance_len=0.006))
 
     return banks
 
@@ -165,15 +166,26 @@ if __name__ == "__main__":
     for bank in [1,5,6,10,32,35,38,28,31,34,37,40]:
         del banks[bank]
 
-    # create columns
+    # create north and south sides
+    sides = {'North':['NA','NB', 'NC', 'ND', 'NE', 'NF', 'NG', 'NH', 'NI', 'NJ', 'NK', 'NL'],
+             'South':['SA','SB', 'SC', 'SD', 'SE', 'SF', 'SG', 'SH', 'SI', 'SJ', 'SK', 'SL']}
+    # add the empty components
+    for name in sides.keys():
+        group = instr.addComponent(name)
+    # add the columns to the groups
+    for side in sides.keys():
+        group = instr.makeTypeElement(side)
+
+        for column in sides[side]:
+            instr.addComponent(column, root=group)
+
+    # create an ordered list of all columns
     columns = set()
     for name in banks.keys():
         column, _ =  banks[name]
         columns.add(column)
     columns = list(columns)
     columns.sort()
-    for name in columns:
-        group = instr.addComponent(str(name))
 
     createdcolumns = dict()
     for name in banks.keys():
@@ -191,32 +203,6 @@ if __name__ == "__main__":
         extra_attrs={"idstart":offset, 'idfillbyfirst':'y', 'idstepbyrow':y_num2}
         det = instr.makeDetectorElement('panel_v2', root=col, extra_attrs=extra_attrs)
         rect.makeLocation(instr, det, name)
-
-    '''
-    # mapping of groups to column names
-    cols = {4:['B'], 3:['C', 'D'], 2:['E', 'F'], 1:['G', 'H', 'I', 'J', 'K', 'L']}
-
-    # add the empty components
-    for i in cols.keys():
-        name = "Group%d" % i
-        group = instr.addComponent(name)#, idlist=name)
-
-    # add the columns to the group
-    for groupNum in cols.keys():
-        name = "Group%d" % groupNum
-        group = instr.makeTypeElement(name)
-
-        for column in cols[groupNum]:
-            name = "Column%d" % ("ABCDEFGHIJKL".index(column) + 1)
-            instr.addComponent(name, root=group)
-
-    # the actual work of adding the detectors
-    corners = CornersFile("SNS/POWGEN/PG3_geom_2014_txt.csv", abs(L1))
-    addGroup(corners, cols[4], ["B2", "B3", "B4", "B5", "B6"])
-    addGroup(corners, cols[3], ['C2', 'C3',  'C4', 'C5', 'C6', 'D2', 'D3', 'D4', 'D5', 'D6'])
-    addGroup(corners, cols[2], ['E2', 'E3', 'E4', 'E5', 'E6', 'F2', 'F3', 'F4', 'F5'])
-    addGroup(corners, cols[1], ['G3', 'G4', 'H3', 'H4', 'I4', 'J4', 'K4'])
-    '''
 
     # add the panel shape
     instr.addComment(" Version 2 Detector Panel (7x154)")
