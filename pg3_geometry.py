@@ -36,6 +36,9 @@ def readPositionsRight(filename):
     del positions['Elevation']
     del positions['Z']
 
+    columnnames = {'SA':1, 'SB':2, 'SC':3, 'SD':4, 'SE':5, 'SF':6,
+                   'SG':7, 'SH':8, 'SI':9, 'SJ':10, 'SK':11, 'SL':12}
+
     banks = {}
     for i, (column, row, bank, position) in enumerate(zip(positions['column'], positions['row'], positions['bank'], positions['position'])):
         i = i%4
@@ -51,6 +54,7 @@ def readPositionsRight(filename):
             raise ValueError("Inconceivable! i = %d" % i)
 
         if i == 3:
+            column = 'Column%d' % columnnames[column]
             banks[int(bank)] = (column, Rectangle(four, one, two, three, tolerance_len=0.006))
 
     return banks
@@ -80,7 +84,7 @@ def readPositionsLeft(filename):
              'D565':52,
              'D551':48,
              'D594':43}
-    columns = {43:'NA', 48:'NB', 52:'NC', 55:'ND', 58:'NE', 61:'NF', 64:'NG', 67:'NH', 70:'NI', 73:'NJ', 76:'NK', 79:'NL'}
+    columnnames = {43:13, 48:14, 52:15, 55:16, 58:17, 61:18, 64:19, 67:20, 70:21, 73:22, 76:23, 79:24}
     banks = {}
     for i, (det, position) in enumerate(zip(positions['Detector'], positions['position'])):
         bank = names[det[:4]]
@@ -97,7 +101,8 @@ def readPositionsLeft(filename):
             raise ValueError("Inconceivable! i = %d" % i)
 
         if i == 3:
-            banks[bank] = (columns[bank], Rectangle(four, one, two, three, tolerance_len=0.006))
+            column = 'Column%d' % columnnames[bank]
+            banks[bank] = (column, Rectangle(four, one, two, three, tolerance_len=0.006))
 
     return banks
 
@@ -167,8 +172,8 @@ if __name__ == "__main__":
         del banks[bank]
 
     # create north and south sides
-    sides = {'North':['NA','NB', 'NC', 'ND', 'NE', 'NF', 'NG', 'NH', 'NI', 'NJ', 'NK', 'NL'],
-             'South':['SA','SB', 'SC', 'SD', 'SE', 'SF', 'SG', 'SH', 'SI', 'SJ', 'SK', 'SL']}
+    sides = {'North':['Column%d' % i for i in range(13,25)],
+             'South':['Column%d' % i for i in range(1,13)]}
     # add the empty components
     for name in sides.keys():
         group = instr.addComponent(name)
