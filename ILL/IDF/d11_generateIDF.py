@@ -1,17 +1,20 @@
+from __future__ import (absolute_import, division, print_function)
 
+import os
+path = os.path.abspath("")
 import sys
-sys.path.insert(1, "../../")
+sys.path.insert(0, path)
 from helper import MantidGeom
 
 # using metre as unit
-instrumentName = 'D11lr'
+instrumentName = 'D11'
 validFrom = "2017-10-01 23:59:59"
 moderator_source = -2.0
 # 2 Monitors
 zMon1 = -16.7
 zMon2 = -1.2
-# factor: 1, 2
-factor = 1
+# factor: 1 (lr), 2
+factor = 2
 # definition of the quadratic detector
 numberPixelsVertical = 128 * factor
 numberPixelsHorizontal = 128 * factor
@@ -97,5 +100,4 @@ d11.addComponentRectangularDetector(detector0, 0., 0., zPos, idstart=id0, idfill
 d11.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
 d11.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d11.addCuboidPixel(pixelName, [-x, -y, z], [x, y, z], [-x, -y, thickness], [x, -y, z], shape_id="pixel-shape")
-#d11.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")
-d11.showGeom()
+d11.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")

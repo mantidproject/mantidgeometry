@@ -1,23 +1,27 @@
-# cd ILL/IDF
-# python d22_generateIDF.py > D22_Definition.xml
+from __future__ import (absolute_import, division, print_function)
+
+import os
+path = os.path.abspath("")
 import sys
-sys.path.insert(1, "../../")
+sys.path.insert(0, path)
 from helper import MantidGeom
 
 # using metre as unit
-instrumentName = 'D22lr'
+instrumentName = 'D22'
 validFrom = "2017-10-01 23:59:59"
 moderator_source = -2.0
 # 2 Monitors
 zMon1 = -16.7
 zMon2 = -1.2
+# Resolutions 1 (lr), 2
+factor = 2
 # definition of the quadratic detector
-numberPixelsVertical = 128
+numberPixelsVertical = 128 * factor
 numberPixelsHorizontal = 128
 # definition of a quadratic pixel
 pixelName = "pixel"
 pixelWidth = 0.008
-pixelHeight = 0.008
+pixelHeight = 0.008 / factor
 x = pixelWidth / 2.
 y = pixelHeight / 2.
 z = 0.
@@ -91,5 +95,4 @@ d22.addComponentRectangularDetector(detector0, 0., 0., zPos, idstart=id0, idfill
 d22.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
 d22.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d22.addCuboidPixel(pixelName, [-x, -y, z], [x, y, z], [-x, -y, thickness], [x, -y, z], shape_id="pixel-shape")
-#d22.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")
-d22.showGeom()
+d22.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")

@@ -1,6 +1,7 @@
-# python d33_generateIDF.py > D33_Definition.xml
+import os
+path = os.path.abspath("")
 import sys
-sys.path.insert(1, "../../")
+sys.path.insert(0, path)
 from helper import MantidGeom
 
 # using metre as unit
@@ -133,5 +134,4 @@ d33.addComponentRectangularDetector(detector4, 0., dR+dF, zFront, idstart=id4, i
 d33.addRectangularDetector(detector4, pixelName, xstart, xstep, xpixels, startFront, ystep, pixelsFront)
 d33.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d33.addCuboidPixel(pixelName, [-x, -y, z], [x, y, z], [-x, -y, thickness], [x, -y, z], shape_id="pixel-shape")
-#d33.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")
-d33.showGeom()
+d33.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")
