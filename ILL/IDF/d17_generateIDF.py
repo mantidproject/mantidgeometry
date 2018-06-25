@@ -68,7 +68,7 @@ comment = """ This is the instrument definition file of the D17 reflectometer at
        https://www.ill.eu/instruments-support/instruments-groups/instruments/d17/characteristics/
        """
 d17 = MantidGeom(instrumentName, comment=comment, valid_from=validFrom)
-d17.addSnsDefaults()
+d17.addSnsDefaults(theta_sign_axis='x')
 d17.addComment("SOURCE")
 d17.addComponentILL("chopper1", 0.0, 0.0, chop1_source, "Source")
 d17.addComment("Sample position")

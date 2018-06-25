@@ -27,7 +27,7 @@ if __name__ == "__main__":
     # Set header information
     comment = "Created by Ross Whitfield"
     # Time needs to be in UTC?
-    valid_from = "2018-02-20 00:00:00"
+    valid_from = "2018-04-01 00:00:00"
 
     # Get geometry information file
     xml_outfile = INST_NAME+"_Definition.xml"
@@ -50,7 +50,7 @@ if __name__ == "__main__":
                          "extract-single-value-as": "mean"})
 
         det_type = "panel"
-        angle = (NUM_DETS-i-1)*15+7.5  # Mantid
+        angle = (i)*15+7.5  # Mantid
         angle -= 0.03125*6 # Offset by six pixels
         #angle = i*15+7.5  # Flipped
 
@@ -96,7 +96,7 @@ if __name__ == "__main__":
         id_list.append(i * PIXELS_PER_BANK)
         id_list.append((i+1) * PIXELS_PER_BANK - 1)
         id_list.append(None)
-        det.addDetectorIds('bank'+str(i+1), id_list)
+        det.addDetectorIds('bank'+str(NUM_DETS-i), id_list)
 
     det.addComment("MONITOR IDs")
     det.addMonitorIds(["-1"])

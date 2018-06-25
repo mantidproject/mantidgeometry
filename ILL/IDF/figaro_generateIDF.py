@@ -69,7 +69,7 @@ comment = """ This is the instrument definition file of the figaro reflectometer
        https://www.ill.eu/instruments-support/instruments-groups/instruments/figaro/characteristics/
        """
 figaro = MantidGeom(instrumentName, comment=comment, valid_from=validFrom)
-figaro.addSnsDefaults()
+figaro.addSnsDefaults(theta_sign_axis='y')
 figaro.addComment("SOURCE")
 figaro.addComponentILL("chopper1", 0.0, 0.0, zSource, "Source")
 figaro.addComment("Sample position")
