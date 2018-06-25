@@ -1,7 +1,9 @@
 from __future__ import (absolute_import, division, print_function)
 
+import os
+path = os.path.abspath("")
 import sys
-sys.path.insert(1, "../../")
+sys.path.insert(0, path)
 from helper import MantidGeom
 
 # using metre as unit
@@ -79,8 +81,10 @@ d17.addDummyMonitor(0.01, 0.03)
 d17.addComment("MONITOR IDs")
 d17.addMonitorIds(["100000", "100001"])
 d17.addComment("2 Slits")
-d17.addComponentILL("slit2", 0.0, 0.0, slit2Centre, isType="")
-d17.addComponentILL("slit3", 0.0, 0.0, slit3Centre, isType="")
+d17.addComponentILL("slit2", 0.0, 0.0, slit2Centre)
+d17.makeTypeElement("slit2")
+d17.addComponentILL("slit3", 0.0, 0.0, slit3Centre)
+d17.makeTypeElement("slit3")
 d17.addComment("DETECTORS")
 d17.addComment("64 TUBES FORM ONE DETECTOR")
 d17.addComponentRectangularDetector("detector", 0.0, 0.0, detValue, idstart="1", idfillbyfirst="x",

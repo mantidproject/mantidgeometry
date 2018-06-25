@@ -1,19 +1,27 @@
+from __future__ import (absolute_import, division, print_function)
 
+import os
+path = os.path.abspath("")
 import sys
-sys.path.insert(1, "../../")
+sys.path.insert(0, path)
 from helper import MantidGeom
 
 # using metre as unit
 instrumentName = 'D22'
 validFrom = "2017-10-01 23:59:59"
 moderator_source = -2.0
+# 2 Monitors
+zMon1 = -16.7
+zMon2 = -1.2
+# Resolutions 1 (lr), 2
+factor = 2
 # definition of the quadratic detector
-numberPixelsVertical = 122
+numberPixelsVertical = 128 * factor
 numberPixelsHorizontal = 128
 # definition of a quadratic pixel
 pixelName = "pixel"
 pixelWidth = 0.008
-pixelHeight = 0.008
+pixelHeight = 0.008 / factor
 x = pixelWidth / 2.
 y = pixelHeight / 2.
 z = 0.
@@ -58,8 +66,13 @@ comment = """ This is the instrument definition file of the D22 Large dynamic ra
        Default sample dimension is 10 mm x 300 mm
 
        Multi-detector:
-       Size 1024 mm x 980 mm
-       Pixel size 8 x 8 mm^2 ( 128 x 122 pixels )
+       Size 1024 mm x 1024 mm
+       Nominal resolution:
+            128 x 256
+            Pixel size 8 x 4 mm2
+       Low resolution:
+            128 x 128
+            Pixel size 8 x 8 mm2
 
        For more information, please visit
        https://www.ill.eu/instruments-support/instruments-groups/instruments/d22/characteristics/
@@ -70,6 +83,13 @@ d22.addComment("SOURCE")
 d22.addComponentILL("moderator", 0., 0., moderator_source, "Source")
 d22.addComment("Sample position")
 d22.addComponentILL("sample_position", 0., 0., 0., "SamplePos")
+d22.addComment("MONITORS")
+d22.addMonitors(names=["monitor1", "monitor2"], distance=[zMon1, zMon2])
+d22.addComment("MONITOR SHAPE")
+d22.addComment("FIXME: Do something real here.")
+d22.addDummyMonitor(0.01, 0.03)
+d22.addComment("MONITOR IDs")
+d22.addMonitorIds([repr(100000), repr(100001)])
 d22.addComment("DETECTOR")
 d22.addComponentRectangularDetector(detector0, 0., 0., zPos, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR)
 d22.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)

@@ -1,12 +1,13 @@
 from __future__ import (absolute_import, division, print_function)
 
+import os
+path = os.path.abspath("")
 import sys
-
-sys.path.insert(1, "../../")
+sys.path.insert(0, path)
 from helper import MantidGeom
 
 # using metre as unit
-instrumentName = 'Figaro'
+instrumentName = 'FIGARO'
 validFrom = "2017-01-31 23:59:59"
 numberOfTubes = 64
 pixelWidth = 0.0074
@@ -81,8 +82,10 @@ figaro.addDummyMonitor(0.01, 0.03)
 figaro.addComment("MONITOR IDs")
 figaro.addMonitorIds(["100000", "100001"])
 figaro.addComment("2 Slits")
-figaro.addComponentILL("slit2", 0.0, 0.0, slit2Centre, isType="")
-figaro.addComponentILL("slit3", 0.0, 0.0, slit3Centre, isType="")
+figaro.addComponentILL("slit2", 0.0, 0.0, slit2Centre)
+figaro.makeTypeElement("slit2")
+figaro.addComponentILL("slit3", 0.0, 0.0, slit3Centre)
+figaro.makeTypeElement("slit3")
 figaro.addComment("DETECTORS")
 figaro.addComment("64 tubes form the detector")
 figaro.addComponentRectangularDetector("detector", 0.0, 0.0, zDetector, idstart="1", idfillbyfirst="x",
