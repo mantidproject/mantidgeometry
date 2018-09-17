@@ -52,10 +52,10 @@ def printHeader():
       </reference-frame>
     </defaults>
 
-    <component type="moderator">
-      <location z="-2" />
+    <component type="frame-overlap_chopper">
+      <location z="-2.10945" />
     </component>
-    <type name="moderator" is="Source"></type>
+    <type name="frame-overlap_chopper" is="Source"></type>
 
     <!--MONITORS-->
     <component type="monitors" idlist="monitors">

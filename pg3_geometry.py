@@ -18,7 +18,7 @@ y_num2 = 7
 # primary flight path - negative b/c it is upstream
 L1 = -60.0
 
-def readPositions(filename):
+def readPositionsRight(filename):
     positions = readFile(filename)
     del positions['Position']
     del positions['DetectorNum']
@@ -36,6 +36,9 @@ def readPositions(filename):
     del positions['Elevation']
     del positions['Z']
 
+    columnnames = {'SA':1, 'SB':2, 'SC':3, 'SD':4, 'SE':5, 'SF':6,
+                   'SG':7, 'SH':8, 'SI':9, 'SJ':10, 'SK':11, 'SL':12}
+
     banks = {}
     for i, (column, row, bank, position) in enumerate(zip(positions['column'], positions['row'], positions['bank'], positions['position'])):
         i = i%4
@@ -51,10 +54,57 @@ def readPositions(filename):
             raise ValueError("Inconceivable! i = %d" % i)
 
         if i == 3:
-            banks[bank] = (column, Rectangle(four, one, two, three, tolerance_len=0.006))
+            column = 'Column%d' % columnnames[column]
+            banks[int(bank)] = (column, Rectangle(four, one, two, three, tolerance_len=0.006))
 
     return banks
 
+def readPositionsLeft(filename):
+    positions = readFile(filename)
+    x = np.array(map(float, positions['X']))
+    y = np.array(map(float, positions['Elevation']))
+    z = np.array(map(float, positions['Z']))
+    positions['position'] = []
+    for x_i,y_i,z_i in zip(x,y,z):
+        positions['position'].append(Vector(x_i, y_i, z_i))
+
+    del positions['X']
+    del positions['Elevation']
+    del positions['Z']
+
+    names = {'D596':79,
+             'D579':76,
+             'D261':73,
+             'D585':70,
+             'D586':67,
+             'D573':64,
+             'D571':61,
+             'D574':58,
+             'D225':55,
+             'D565':52,
+             'D551':48,
+             'D594':43}
+    columnnames = {43:13, 48:14, 52:15, 55:16, 58:17, 61:18, 64:19, 67:20, 70:21, 73:22, 76:23, 79:24}
+    banks = {}
+    for i, (det, position) in enumerate(zip(positions['Detector'], positions['position'])):
+        bank = names[det[:4]]
+        i = i%4
+        if i == 0:
+            three = position
+        elif i == 1:
+            four = position
+        elif i == 2:
+            one = position
+        elif i == 3:
+            two = position
+        else:
+            raise ValueError("Inconceivable! i = %d" % i)
+
+        if i == 3:
+            column = 'Column%d' % columnnames[bank]
+            banks[bank] = (column, Rectangle(four, one, two, three, tolerance_len=0.006))
+
+    return banks
 
 if __name__ == "__main__":
     inst_name = "PG3"
@@ -67,7 +117,7 @@ if __name__ == "__main__":
     # boiler plate stuff
     instr = MantidGeom(inst_name,
                        comment="Created by " + ", ".join(authors),
-                       valid_from="2017-05-01 00:00:01")
+                       valid_from="2018-05-05 00:00:01")
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults()
     instr.addComment("SOURCE")
@@ -111,17 +161,36 @@ if __name__ == "__main__":
     # guides - not even copying the text
 
     # read in detectors
-    banks = readPositions("SNS/POWGEN/PG3_geom_2017.csv")
+    banks = readPositionsRight("SNS/POWGEN/PG3_geom_2017.csv")
+    banksL = readPositionsLeft("SNS/POWGEN/PG3_geom_left_2018.csv")
+    for bank in banksL.keys():
+        banks[bank] = banksL[bank]
+    del banksL
 
-    # create columns
+    # delete the banks that are no longer installed
+    for bank in [1,5,6,10,32,35,38,28,31,34,37,40]:
+        del banks[bank]
+
+    # create north and south sides
+    sides = {'North':['Column%d' % i for i in range(13,25)],
+             'South':['Column%d' % i for i in range(1,13)]}
+    # add the empty components
+    for name in sides.keys():
+        group = instr.addComponent(name)
+    # add the columns to the groups
+    for side in sides.keys():
+        group = instr.makeTypeElement(side)
+
+        for column in sides[side]:
+            instr.addComponent(column, root=group)
+
+    # create an ordered list of all columns
     columns = set()
     for name in banks.keys():
         column, _ =  banks[name]
         columns.add(column)
     columns = list(columns)
     columns.sort()
-    for name in columns:
-        group = instr.addComponent(str(name))
 
     createdcolumns = dict()
     for name in banks.keys():
@@ -139,32 +208,6 @@ if __name__ == "__main__":
         extra_attrs={"idstart":offset, 'idfillbyfirst':'y', 'idstepbyrow':y_num2}
         det = instr.makeDetectorElement('panel_v2', root=col, extra_attrs=extra_attrs)
         rect.makeLocation(instr, det, name)
-
-    '''
-    # mapping of groups to column names
-    cols = {4:['B'], 3:['C', 'D'], 2:['E', 'F'], 1:['G', 'H', 'I', 'J', 'K', 'L']}
-
-    # add the empty components
-    for i in cols.keys():
-        name = "Group%d" % i
-        group = instr.addComponent(name)#, idlist=name)
-
-    # add the columns to the group
-    for groupNum in cols.keys():
-        name = "Group%d" % groupNum
-        group = instr.makeTypeElement(name)
-
-        for column in cols[groupNum]:
-            name = "Column%d" % ("ABCDEFGHIJKL".index(column) + 1)
-            instr.addComponent(name, root=group)
-
-    # the actual work of adding the detectors
-    corners = CornersFile("SNS/POWGEN/PG3_geom_2014_txt.csv", abs(L1))
-    addGroup(corners, cols[4], ["B2", "B3", "B4", "B5", "B6"])
-    addGroup(corners, cols[3], ['C2', 'C3',  'C4', 'C5', 'C6', 'D2', 'D3', 'D4', 'D5', 'D6'])
-    addGroup(corners, cols[2], ['E2', 'E3', 'E4', 'E5', 'E6', 'F2', 'F3', 'F4', 'F5'])
-    addGroup(corners, cols[1], ['G3', 'G4', 'H3', 'H4', 'I4', 'J4', 'K4'])
-    '''
 
     # add the panel shape
     instr.addComment(" Version 2 Detector Panel (7x154)")

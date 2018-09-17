@@ -47,10 +47,20 @@ def getCornersSpecial(banknum):
 def getRectangle(bank_num, positions, corners, tolerance_len=0.006):
     # TODO for some reason tolerance is bigger than the default
     try:
-        return Rectangle(positions[corners[0]],
-                         positions[corners[1]],
-                         positions[corners[2]],
-                         positions[corners[3]], tolerance_len=tolerance_len)
+        one = positions[corners[0]]
+        two = positions[corners[1]]
+        three = positions[corners[2]]
+        four = positions[corners[3]]
+        if bank_num in (90,91):
+            if bank_num == 90: # .046875 -> 0.148
+                y_offset = 0.10113
+            elif bank_num == 91: # -.0390625 -> -0.148
+                y_offset = -0.1089375
+            one = Vector(one.x, one.y+y_offset, one.z)
+            two = Vector(two.x, two.y+y_offset, two.z)
+            three = Vector(three.x, three.y+y_offset, three.z)
+            four = Vector(four.x, four.y+y_offset, four.z)
+        return Rectangle(one, two, three, four, tolerance_len=tolerance_len)
     except RuntimeError as e:
         print 'bank', bank_num, corners
         raise e
@@ -74,13 +84,25 @@ def readEngineeringPositions(filename):
     return positions
 
 def readSurveyPositions(filename):
-    # pixelid, x, y, z
-    positions = readFile(filename, hasLabels=False, headerLines=4)
-    id = np.array(map(float, positions[0]))
-    id = np.array(map(int, id))
-    x = np.array(map(float, positions[1]))
-    y = np.array(map(float, positions[2]))
-    z = np.array(map(float, positions[3]))
+    # label1, label2, z, x, y
+    positions = readFile(filename, hasLabels=False, headerLines=1)
+
+    label = positions[0]
+    #id = np.array(map(float, positions[0]))
+    #id = np.array(map(int, id))
+    x = np.array(map(float, positions[3]))
+    y = np.array(map(float, positions[4]))
+    z = np.array(map(float, positions[2]))
+
+    # this is an intentional truncation of the information in the file
+    # the values of the front and back planes do not make sense together
+    # arbitrarily pick one of the sets
+    id = []
+    id.extend(getCornersSpecial(90))
+    id.extend(getCornersSpecial(91))
+    id.extend(getCorners(92))
+    id.extend(getCorners(93))
+    id.extend(getCorners(94))
 
     positions = {}
     for i, x_i,y_i,z_i in zip(id, x,y,z):
@@ -96,7 +118,7 @@ if __name__ == "__main__":
     # boiler plate stuff
     instr = MantidGeom(inst_name,
                        comment=" Created by Peter Peterson",
-                       valid_from="2017-02-01 00:00:01")
+                       valid_from="2017-06-05 00:00:01")
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults()
     instr.addComment("SOURCE")
@@ -119,36 +141,11 @@ if __name__ == "__main__":
     ####################
     # read the positions of the pixels that was provided
     positions = readEngineeringPositions('SNS/NOMAD/NOM_detpos.txt')
-    '''
-    positionsSurvey = readSurveyPositions('SNS/NOMAD/pixelpos.dat')
-    # update the engineering positons with ones derived from survey
-    special = [74752, 74879, 75775, 75648, # bank 74
-               95232, 95359, 96255, 96128, # bank 94
-               96256, 96383, 97279, 97152] # bank 95
-    for i in special:
-        if i not in positionsSurvey:
-            continue
-        print '*****', i
-        print positions[i], 'eng'
-        print positionsSurvey[i], 'survey'
-    updated_pos = np.zeros(len(positions.keys())).astype(bool)
-    for i in positions.keys():
-        if i in positionsSurvey and i not in special:
-            distance = (positions[i]-positionsSurvey[i]).length
-            if abs(distance) > 0.01:
-                print 'move', i, 'by', distance
-            positions[i] = positionsSurvey[i]
-            updated_pos[i] = True
-    print 'updated', updated_pos
 
-    #print positions[3071], 'eng 3071'
-    #print positions[3072], 'eng 3072'
-    #print positions[3073], 'eng 3073'
-    #print positions2[3072], 'survey'
-    #print '********************'
-    #print '3071', positions2.get(3071, positions[3071]), 'meld'
-    #print '3072', positions2.get(3072, positions[3072]), 'meld'
-    '''
+    # update engineering postions with values from survey - survey values are worse
+    #positionsSurvey = readSurveyPositions('SNS/NOMAD/NOMAD_survey_20180530_group6.csv')
+    #for i, key in enumerate(positionsSurvey.keys()):
+    #    positions[key] = positionsSurvey[key]
 
     num_banks = [14, 23, 14,12, 18, 18]
 
@@ -240,13 +237,18 @@ if __name__ == "__main__":
     bank_offset += num_banks[4]
     group = instr.makeTypeElement('Group6')
     special = [90,91]
+    # Panels 92,93 were moved into backscattering (pixel numbers reassigned),
+    # then 94,95,96 were slid over without reassigning pixles. This dictionary
+    # handles shuffling those around and should be removed for the next run
+    # cycle
+    shuffled = {94:92, 95:93, 96:94, 92:95, 93:96}
     for i in range(num_banks[5]):
         bank_num = bank_offset+i+1
         bank = "bank%d" % bank_num
         if bank_num in special:
             corners = getCornersSpecial(bank_num)
         else:
-            corners = getCorners(bank_num)
+            corners = getCorners(shuffled.get(bank_num, bank_num))
 
         # corners are mixed up
         if bank_num == 91:
