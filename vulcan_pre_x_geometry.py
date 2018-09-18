@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-
+# Note: This class shall be designed to be used in IPython notebook friendly
 from helper import INCH_TO_METRE, DEG_TO_RAD, MantidGeom
 from rectangle import Rectangle, Vector, getEuler, makeLocation
-from lxml import etree as le # python-lxml on rpm based systems
+from sns_ncolumn import readFile
 from math import cos, sin, radians, pi
 import numpy as np
-from sns_ncolumn import readFile
 
 # size of the panels from original pixel sizes
 x_extent = 154*.005
@@ -57,7 +56,9 @@ def readPositions(filename):
 
 
 def generate_tube_pixels():
-    """
+    """ generate pixel XML in IDF tube in 8-pack
+
+    Example:
       <location y="-0.59526090625" name="pixel1"/>
       ... ...  
       <location y="0.59526090625" name="pixel128"/>
@@ -73,6 +74,100 @@ def generate_tube_pixels():
     print delta_y
 
     return
+
+
+class WestEastGroup(object):
+    """
+    """
+    def __init__(self):
+        """
+        """
+        return
+
+    def _setup_banks(self):
+        """
+        """
+        return
+
+    def export_idf_str(self):
+        """
+        """
+        return ''
+
+
+class EightPacksGroup(object):
+    """
+    """
+    pixel_size['x'] = 1.  # meter
+    pixel_size['y'] = 1.2 # meter
+    def __init__(self, num_8packs, start_pid, position, twotheta):
+        """
+        """
+
+        return
+
+    def _setup_8packs(self):
+        """
+        """
+
+        return
+
+    def export_idf_str(self):
+        """
+        """
+
+        return ''
+
+
+class EightPack(object):
+    """
+    """
+    def __init__(self, start_pid, position, twotheta):
+        """
+        """
+        return
+
+    def info(self):
+        """
+        """
+        return
+
+    def form_string(self):
+        """
+        """
+        return
+
+
+class GenerateIDFPreVulcanX(object):
+    """
+    """
+    def __init__(self, begin_date, end_date):
+        """
+        """
+        return
+
+    def create_idf(self, user_name=None):
+        """
+        """
+
+        return
+
+    def help(self):
+        """
+        """
+        print ('What do you want to do?')
+
+        return
+
+    def print_info(self):
+        """
+        """
+        print ('whatever')
+
+        return
+
+
+
 
 if __name__ == "__main__":
 
