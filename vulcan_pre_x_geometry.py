@@ -11,69 +11,11 @@ x_extent = 154*.005
 y_extent = 7*.0543
 
 # number of pixels in each direction - v2
-x_num2 = 154
-y_num2 = 7
+# x_num2 = 154
+# y_num2 = 7
 
 # primary flight path - negative b/c it is upstream
-L1 = -60.0
 
-def readPositions(filename):
-    positions = readFile(filename)
-    del positions['Position']
-    del positions['DetectorNum']
-
-    x = np.array(map(float, positions['X']))
-    y = np.array(map(float, positions['Elevation']))
-    z = np.array(map(float, positions['Z'])) - 60.
-    positions['bank'] = np.array(map(int, positions['bank']))
-
-    positions['position'] = []
-    for x_i,y_i,z_i in zip(x,y,z):
-        positions['position'].append(Vector(x_i, y_i, z_i))
-
-    del positions['X']
-    del positions['Elevation']
-    del positions['Z']
-
-    banks = {}
-    for i, (column, row, bank, position) in enumerate(zip(positions['column'], positions['row'], positions['bank'], positions['position'])):
-        i = i%4
-        if i == 0:
-            one = position
-        elif i == 1:
-            two = position
-        elif i == 2:
-            three = position
-        elif i == 3:
-            four = position
-        else:
-            raise ValueError("Inconceivable! i = %d" % i)
-
-        if i == 3:
-            banks[bank] = (column, Rectangle(four, one, two, three, tolerance_len=0.006))
-
-    return banks
-
-
-def generate_tube_pixels():
-    """ generate pixel XML in IDF tube in 8-pack
-
-    Example:
-      <location y="-0.59526090625" name="pixel1"/>
-      ... ...  
-      <location y="0.59526090625" name="pixel128"/>
-    """
-    delta_y = 0.77216 / 256.
-    y_start = -0.77216 * 0.5 + 0.5 * delta_y
-
-    tube_def = ''
-    for index in range(256):
-        tube_def += '<location y="{0:.10f}" name="pixel{1}"/>\n'.format((y_start + delta_y * index), index+1)
-
-    print tube_def
-    print delta_y
-
-    return
 
 
 class WestEastGroup(object):
@@ -95,11 +37,39 @@ class WestEastGroup(object):
         return ''
 
 
+class WestEastBank(object):
+    """ Single module for pre-VULCAN-X west/east bank with 154 x 7 pixels
+    """
+    NUM_ROWS = 7
+    NUM_COLUMNS = 154
+
+
+
+class WestEastPixel(object):
+    """
+    Pixel information (old) west/east bank
+    """
+    size_x = 0.005  # meter
+    size_y = 0.543  # meter
+
+    def __init__(self):
+        """
+        initialization
+        """
+        return
+
+    @property
+    def dimension(self):
+        """
+        dimension of the pixels
+        :return:  dimension in x and y respectively
+        """
+        return WestEastPixel.size_x, WestEastPixel.size_y
+
+
 class EightPacksGroup(object):
     """
     """
-    pixel_size['x'] = 1.  # meter
-    pixel_size['y'] = 1.2 # meter
     def __init__(self, num_8packs, start_pid, position, twotheta):
         """
         """
@@ -138,13 +108,150 @@ class EightPack(object):
         return
 
 
+class EightPackTube(object):
+    """
+    Class to describe a tube that consists of an 8-packs
+    :param object:
+    :return:
+    """
+    def __init__(self, num_pixels):
+        """ Initialization
+        :param num_pixels:
+        :param self:
+        :return:
+        """
+        self._num_pixels = num_pixels
+
+        self._pixels_dict = self._create_pixels()
+
+        return
+
+    def _create_pixels(self):
+        """
+        create pixels with location
+        :return:
+        """
+        # y_start = -0.77216 * 0.5 + 0.5 * pixel_y_length
+        # tube_def += '<location y="{0:.10f}" name="pixel{1}"/>\n'.format((y_start + pixel_y_length * index), index + 1)
+
+        pixel_x_length, pixel_y_length = EightPackPixel.dimension
+        if self._num_pixels % 2 == 0:
+            # event number: start from the first pixel's center
+            y_start = - self._num_pixels / 2 * pixel_y_length + 0.5 * pixel_y_length
+        else:
+            # odd number: from center of middle pixel to first pixel's center
+            y_start = - self._num_pixels / 2 * pixel_y_length
+        # END-IF
+
+        # set up the pixels
+        tube_pixel_dict = dict()
+        for pixel_id in range(1, self._num_pixels + 1):
+            pixel_pos_i = y_start + (pixel_id - 1) * pixel_y_length
+            pixel_i = EightPackPixel(pixel_id, pixel_pos_i)
+            tube_pixel_dict[pixel_id] = pixel_i
+        # END-FOR
+
+        return tube_pixel_dict
+
+    def generate_idf(self):
+        """ generate pixel XML in IDF tube in 8-pack
+
+        Example:
+          <location y="-0.59526090625" name="pixel1"/>
+          ... ...
+          <location y="0.59526090625" name="pixel128"/>
+        """
+        tube_def = ''
+        for pixel_id in sorted(self._pixels_dict.keys()):
+            tube_def += '<location y="{0:.10f}" name="pixel{1}"/>\n'.format(self._pixels_dict[pixel_id].pos_y, pixel_id)
+        # END-FOR
+
+        return tube_def
+
+
+class EightPackPixel(object):
+    """
+    class to describe a pixel in a detector of 8 packs
+    """
+    size_x = 0.77216 / 256.  # meter
+    size_y = 0.77216 / 256.  # meter
+
+    def __init__(self, pixel_id, loc_y):
+        """ initialization
+        :param pixel_id: in-tube pixel ID
+        :param loc_y: in-tube pixel location (Y)
+        """
+        self._pixel_id = pixel_id
+        self._location_y = loc_y
+
+        return
+
+    @property
+    def dimension(self):
+        """
+        dimension of the pixels (size x and size y)
+        :return:
+        """
+        return EightPackPixel.size_x, EightPackPixel.size_y
+
+    @property
+    def pixel_id(self):
+        """
+        In-tube pixel ID
+        :return:
+        """
+        return self.pixel_id
+
+    @property
+    def pos_y(self):
+        """
+        In-tube pixel position Y
+        :return:
+        """
+        return self._location_y
+
+# END-CLASS(EightPackPixel)
+
+
 class GenerateIDFPreVulcanX(object):
     """
     """
+    VULCAN_L1 = 43.0   # meter
+
     def __init__(self, begin_date, end_date):
+        """ Initialization
+        :param begin_date: beginning date of this instrument: "2017-05-01 00:00:01"
+        :param end_date:
         """
-        """
+        self._instrument_name = 'VULCAN'
+
+        authors = ["Wenduo Zhou"]
+
+        # boiler plate stuff
+        self._vulcan = MantidGeom(inst_name,
+                                  comment="Created by " + ", ".join(authors),
+                                  valid_from=begin_date)
+
+        self._vulcan.addComment("DEFAULTS")
+        self._vulcan.addSnsDefaults()
+
         return
+
+    def create_instrument(self):
+        """
+        create the instrument
+        :return:
+        """
+        # source
+        self._vulcan.addComment("SOURCE")
+        self._vulcan.addModerator(GenerateIDFPreVulcanX.VULCAN_L1)
+        # sample
+        self._vulcan.addComment("SAMPLE")
+        self._vulcan.addSamplePosition()
+        # monitor
+        self._vulcan.addComment("MONITORS")
+        self._vulcan.addMonitors(distance=[-1.5077], names=["monitor1"])
+
 
     def create_idf(self, user_name=None):
         """
@@ -177,25 +284,24 @@ if __name__ == "__main__":
 
     inst_name = "VULCAN"
     xml_outfile = inst_name+"_Definition.xml"
-    authors = ["Peter Peterson",
-               "Stuart Campbell",
-               "Vickie Lynch",
-               "Janik Zikovsky"]
-
-    # boiler plate stuff
-    instr = MantidGeom(inst_name,
-                       comment="Created by " + ", ".join(authors),
-                       valid_from="2017-05-01 00:00:01")
-    instr.addComment("DEFAULTS")
-    instr.addSnsDefaults()
-    instr.addComment("SOURCE")
-    instr.addModerator(L1)
-    instr.addComment("SAMPLE")
-    instr.addSamplePosition()
+    # authors = ["Peter Peterson",
+    #            "Stuart Campbell",
+    #            "Vickie Lynch",
+    #            "Janik Zikovsky"]
+    #
+    # # boiler plate stuff
+    # instr = MantidGeom(inst_name,
+    #                    comment="Created by " + ", ".join(authors),
+    #                    valid_from="2017-05-01 00:00:01")
+    # instr.addComment("DEFAULTS")
+    # instr.addSnsDefaults()
+    # instr.addComment("SOURCE")
+    # instr.addModerator(L1)
+    # instr.addComment("SAMPLE")
+    # instr.addSamplePosition()
 
     # monitors
-    instr.addComment("MONITORS")
-    instr.addMonitors(distance=[-1.5077], names=["monitor1"])
+
     #instr.addMonitors([L1+59., L1+62.5, L1+64], ["monitor1", "monitor2", "monitor3"])
 
     # choppers - copied verbatium from TS-geometry
