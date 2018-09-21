@@ -1,4 +1,14 @@
 #!/usr/bin/env python
+"""
+TODO LIST:
+
+1. test whether idlist and idstart can be put to eight packs (manually manipulate)
+2. test create group with 8 packs
+
+
+"""
+
+
 # Note: This class shall be designed to be used in IPython notebook friendly
 from helper import INCH_TO_METRE, DEG_TO_RAD, MantidGeom
 from rectangle import Rectangle, Vector, getEuler, makeLocation

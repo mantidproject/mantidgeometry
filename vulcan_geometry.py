@@ -17,6 +17,19 @@ class VulcanGeomIDF(MantidGeom):
 
         return
 
+    def add_8pack_group(self, num_8packs, start_pid, pid_gap, center_r, center_2theta, ):
+        """
+        add a group with 8 packs
+        :return:
+        """
+        # 1. add component with type = "Group3"
+
+        # 2. define of type "Group3" ... polar coordinate with rotation
+        # 2a. define component bank4 with idstart, r, 2theta and etc.
+
+        # 3. define type "bank4"
+        # 3a. define components
+
     def add_eight_pack(self):
         """
         modified from N pack
