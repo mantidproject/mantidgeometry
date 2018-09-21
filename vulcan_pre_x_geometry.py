@@ -223,7 +223,7 @@ class EightPackPixel(object):
 # END-CLASS(EightPackPixel)
 
 
-class GenerateIDFPreVulcanX(object):
+class PreVulcanXIDFGenerator(object):
     """
     """
     VULCAN_L1 = 43.0   # meter
@@ -238,7 +238,7 @@ class GenerateIDFPreVulcanX(object):
         authors = ["Wenduo Zhou"]
 
         # boiler plate stuff
-        self._vulcan = MantidGeom(inst_name,
+        self._vulcan = MantidGeom(self._instrument_name,
                                   comment="Created by " + ", ".join(authors),
                                   valid_from=begin_date)
 
@@ -254,7 +254,7 @@ class GenerateIDFPreVulcanX(object):
         """
         # source
         self._vulcan.addComment("SOURCE")
-        self._vulcan.addModerator(GenerateIDFPreVulcanX.VULCAN_L1)
+        self._vulcan.addModerator(PreVulcanXIDFGenerator.VULCAN_L1)
         # sample
         self._vulcan.addComment("SAMPLE")
         self._vulcan.addSamplePosition()
@@ -262,10 +262,21 @@ class GenerateIDFPreVulcanX(object):
         self._vulcan.addComment("MONITORS")
         self._vulcan.addMonitors(distance=[-1.5077], names=["monitor1"])
 
+        # add component of 8 packs
+        self._vulcan.addComponent(type_name='EightPackGroup')
+        root_x = self._vulcan.makeTypeElement('EightPackGroup')
+        root_bank4 = self._vulcan.addComponent(type_name='bank4', idlist='bank4', root=root_x)
+        self._vulcan.addComment('This detector is at 155 degree')
+        self._vulcan.addLocationRTP(root_bank4, r='2.0', t='150.', p='0', rot_x='0.', rot_y='150.',
+                                    rot_z='0', name=None)
+
+        return
 
     def create_idf(self, user_name=None):
+        """ generate IDF from instrument
         """
-        """
+        xml_outfile = '/tmp/vulcan_temp.xml'
+        self._vulcan.writeGeom(xml_outfile)
 
         return
 
@@ -283,14 +294,13 @@ class GenerateIDFPreVulcanX(object):
 
         return
 
+# END-CLASS-
 
 
-
-if __name__ == "__main__":
-
-    generate_tube_pixels()
-
-    exit(1) 
+def reference_main():
+    # generate_tube_pixels()
+    #
+    # exit(1)
 
     inst_name = "VULCAN"
     xml_outfile = inst_name+"_Definition.xml"
@@ -434,3 +444,21 @@ if __name__ == "__main__":
     # write out the file
     instr.writeGeom(xml_outfile)
     #instr.showGeom()
+
+
+def main_idf_generator():
+    """ main IDF generator
+    Returns:
+    """
+
+    idf_generator = PreVulcanXIDFGenerator('2017-0601', '2019-01-01')
+    idf_generator.create_instrument()
+    idf_generator.create_idf('whatever')
+
+    return
+
+
+if __name__ == "__main__":
+
+    main_idf_generator()
+
