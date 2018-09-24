@@ -30,31 +30,87 @@ class VulcanGeomIDF(MantidGeom):
         # 3. define type "bank4"
         # 3a. define components
 
-    def add_eight_pack(self):
+        return
+
+    """
+    <!--STANDARD 8-PACK-->
+    <type name="eightpack">
+    <properties/>
+    <component type="tube">
+      <location x="0.0145075"  name="tube1"/>
+      <location x="0.0103625"  name="tube2"/>
+      <location x="0.0062175"  name="tube3"/>
+      <location x="0.0020725"  name="tube4"/>
+      <location x="-0.0020725" name="tube5"/>
+      <location x="-0.0062175" name="tube6"/>
+      <location x="-0.0103625" name="tube7"/>
+      <location x="-0.0145075" name="tube8"/>
+    </component>
+    </type>
+    """
+    @staticmethod
+    def add_eight_pack_type(root, pixel_width=0.004145):
         """
-        modified from N pack
+        Add a type definition for 8 pack
         :return:
         """
-        type_element = le.SubElement(self.__root, "type", name=name)
+        # define type as root
+        type_element = le.SubElement(root, "type", name='eightpack')
         le.SubElement(type_element, "properties")
 
-        component = le.SubElement(type_element, "component", type=type_name)
+        # add component
+        component_root = le.SubElement(type_element, "component", type='tube')
 
-        effective_tube_width = tube_width + air_gap
+        x_pos = -3.5 * pixel_width
+        # even and odd y position of tube
+        z_pos_list = [-0.009999,  0.00999]    # TODO - 2018-09-23 - find out the difference between Y
+        for tube_id in range(1, 9):
+            # loop from tube 0 to tube 9
+            tube_name = 'tube{}'.format(tube_id)
+            z_pos = z_pos_list[(tube_id+1) % 2]
+            le.SubElement(component_root, 'location', x='{}'.format(x_pos), z='{}'.format(z_pos),
+                          name=tube_name)
+            x_pos += pixel_width
+        # END-FOR
 
-        pack_start = (effective_tube_width / 2.0) * (1 - num_tubes)
+        return
 
-        for i in range(8):
-            tube_name = "tube%d" % (i + 1)
-            x = pack_start + (i * effective_tube_width)
-            location_element = le.SubElement(component, "location", name=tube_name, x=str(x))
-            if (neutronic):
-                if (neutronicIsPhysical):
-                    le.SubElement(location_element, "neutronic", x=str(x))
-                else:
-                    le.SubElement(location_element, "neutronic", x="0.0")
+    """
+    <!--STANDARD 1.2m 128 PIXEL TUBE-->
+    <type name="tube" outline="yes">
+    <properties/>
+    <component type="pixeltwo">
+    <location y="-0.3845718750" name="pixel1"/>
+    <location y="-0.3815556250" name="pixel2"/>
+    <location y="-0.3785393750" name="pixel3"/>
+    <location y="-0.3755231250" name="pixel4"/>
+    <location y="-0.3725068750" name="pixel5"/>
+    <location y="-0.3694906250" name="pixel6"/>
+    <location y="-0.3664743750" name="pixel7"/>
+    """
+    @staticmethod
+    def add_tube_type(root, pixel_height, num_pixels):
+        """
+        add a tube (of eight packs) type definition
+        :param root:
+        :param pixel_height:
+        :param num_pixels:
+        :return:
+        """
+        # define type as root
+        type_element = le.SubElement(root, "type", name='tube', outline='yes')
+        le.SubElement(type_element, "properties")
 
-            self.add_tube(i, delta_z)
+        # add component
+        component_root = le.SubElement(type_element, 'component', type='pixeltwo')
+
+        y_pos = -(num_pixels/2 + 0.5) * pixel_height
+        for pixel_id in range(1, num_pixels+1):
+            # loop from tube 0 to tube 9
+            pixel_name = 'pixel{}'.format(pixel_id)
+            le.SubElement(component_root, 'location', y='{}'.format(y_pos),
+                          name=pixel_name)
+            y_pos += pixel_height
         # END-FOR
 
         return
