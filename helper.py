@@ -11,7 +11,7 @@ XMLNS = "http://www.mantidproject.org/IDF/1.0"
 XSI = "http://www.w3.org/2001/XMLSchema-instance"
 SCHEMA_LOC = "http://www.mantidproject.org/IDF/1.0 http://schema.mantidproject.org/IDF/1.0/IDFSchema.xsd"
 
-class MantidGeom:
+class MantidGeom(object):
 
     def __init__(self, instname, comment=None, valid_from=None, valid_to=None):
         from datetime import datetime
@@ -35,6 +35,9 @@ class MantidGeom:
                     self.__root.append(le.Comment(bit))
             else:
                 self.__root.append(le.Comment(comment))
+
+    def get_root(self):
+        return self.__root
 
     def writeGeom(self, filename):
         """

@@ -1,3 +1,5 @@
+from __future__ import (print_function)
+from lxml import etree as le  # python-lxml on rpm based systems
 from helper import MantidGeom
 
 
@@ -102,9 +104,9 @@ class VulcanGeomIDF(MantidGeom):
         le.SubElement(type_element, "properties")
 
         # add component
-        component_root = le.SubElement(type_element, 'component', type='pixeltwo')
+        component_root = le.SubElement(type_element, 'component', type='pixel')
 
-        y_pos = -(num_pixels/2 + 0.5) * pixel_height
+        y_pos = -(num_pixels/2 - 0.5) * pixel_height
         for pixel_id in range(1, num_pixels+1):
             # loop from tube 0 to tube 9
             pixel_name = 'pixel{}'.format(pixel_id)
@@ -115,3 +117,93 @@ class VulcanGeomIDF(MantidGeom):
 
         return
 
+    def add_banks_type(self, root, name, components):
+        """
+
+        Args:
+            root:
+            name: example: detectors
+            components: example: ['bank1', 'bank4']
+
+        Returns:
+
+        """
+        bank_root = le.SubElement(root, 'type', name=name)
+
+        for component_name in components:
+            comp_root = le.SubElement(bank_root, 'component', type=component_name)
+            le.SubElement(comp_root, 'location')
+
+        return
+
+    def add_bank(self, root, name, component_name, x, y, z, rot):
+        """
+
+        Args:
+            root:
+            name:
+            component_name:
+            x:
+            y:
+            z:
+            rot:
+
+        Returns:
+
+        """
+        # type
+        pack_root = le.SubElement(root, 'type', name=name)
+        # component
+        component = le.SubElement(pack_root, 'component', type=component_name)
+        # add location
+        self.addLocation(root=component, x=x, y=y, z=z, rot_y=rot, rot_z=rot)
+
+        return
+
+    def add_n_8packs_type(self, root, name, num_tubes, tube_x):
+        """
+
+        Args:
+            name:
+            num_tubes:
+            tube_x:
+
+        Returns:
+
+        """
+        packs_root = le.SubElement(root, 'type', name=name)
+        le.SubElement(packs_root, 'properties')
+
+        comp_root = le.SubElement(packs_root, 'component', type='tube')
+
+        tube_x_pos = (-num_tubes/2)*tube_x + tube_x * 0.5
+        for tube_index in range(1, num_tubes + 1):
+            le.SubElement(comp_root, 'location', name='tube{}'.format(tube_index), x='{}'.format(tube_x_pos))
+            tube_x_pos += tube_x
+        # END-FOR
+
+        return
+
+    def add_cylinder_pixel(self, root, axis, radius=0.0047, height=0.0063578125):
+        """
+
+        Args:
+            axis:
+            radius:
+            height:
+
+        Returns:
+
+        """
+        pixel_root = le.SubElement(root, 'type', **{'is': 'detector', 'name': 'pixel'})
+        # cylinder
+        cylinder_root = le.SubElement(pixel_root, 'cylinder', id='cyl-approx')
+
+        le.SubElement(cylinder_root, 'centre-of-bottom-base', p='0.0', r='0.0', t='0.0')
+        le.SubElement(cylinder_root, 'axis', x=str(axis[0]), y=str(axis[1]), z=str(axis[2]))
+        le.SubElement(cylinder_root, 'radius', val='{}'.format(radius))
+        le.SubElement(cylinder_root, 'height', val='{}'.format(height))
+
+        le.SubElement(pixel_root, 'algebra', val='cyl-approx')
+
+        return
