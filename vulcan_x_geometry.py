@@ -118,29 +118,19 @@ class SimulationVulcanXIDFGenerator(object):
         self._vulcan.addComment('Cylinder Pixel In Tube')
         self._vulcan.add_cylinder_pixel(self._geom_root, axis=(0, 1, 0), radius=0.0047, height=0.0063578125)
 
-        """ NEXT!
-          <!--DETECTOR IDs-->
-  <idlist idname="detectors">
-    <id end="26111" start="0"/>
-  </idlist>
-  <!--MONITOR IDs-->
-  <idlist idname="monitors">
-  </idlist>
-  <!--DETECTOR PARAMETERS-->
-  <component-link name="detectors">
-    <parameter name="tube_pressure">
-      <value units="atm" val="6.0"/>
-    </parameter>
-    <parameter name="tube_thickness">
-      <value units="metre" val="0.0008"/>
-    </parameter>
-    <parameter name="tube_temperature">
-      <value units="K" val="290.0"/>
-    </parameter>
-  </component-link>
+        # define detector IDs
+        self._vulcan.addComment('DETECTOR IDs')
+        assert 26111 == 34 * 128 * 2 - 1, 'blabla'
+        num_dets = 26112 / 2 - 1
+        self._vulcan.define_id_list(self._geom_root, id_name='detectors', start_id=0, end_id=num_dets)
 
-        """
+        # define monitor IDs
+        self._vulcan.addComment('MONITOR IDs')
+        self._vulcan.define_id_list(self._geom_root, id_name='monitors', start_id=None, end_id=None)
 
+        # define detector parameters
+        self._vulcan.addComment('DETECTOR PARAMETERS')
+        self._vulcan.define_detector_parameters(self._geom_root)
 
         return
 

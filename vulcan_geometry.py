@@ -34,22 +34,6 @@ class VulcanGeomIDF(MantidGeom):
 
         return
 
-    """
-    <!--STANDARD 8-PACK-->
-    <type name="eightpack">
-    <properties/>
-    <component type="tube">
-      <location x="0.0145075"  name="tube1"/>
-      <location x="0.0103625"  name="tube2"/>
-      <location x="0.0062175"  name="tube3"/>
-      <location x="0.0020725"  name="tube4"/>
-      <location x="-0.0020725" name="tube5"/>
-      <location x="-0.0062175" name="tube6"/>
-      <location x="-0.0103625" name="tube7"/>
-      <location x="-0.0145075" name="tube8"/>
-    </component>
-    </type>
-    """
     @staticmethod
     def add_eight_pack_type(root, pixel_width=0.004145):
         """
@@ -77,19 +61,6 @@ class VulcanGeomIDF(MantidGeom):
 
         return
 
-    """
-    <!--STANDARD 1.2m 128 PIXEL TUBE-->
-    <type name="tube" outline="yes">
-    <properties/>
-    <component type="pixeltwo">
-    <location y="-0.3845718750" name="pixel1"/>
-    <location y="-0.3815556250" name="pixel2"/>
-    <location y="-0.3785393750" name="pixel3"/>
-    <location y="-0.3755231250" name="pixel4"/>
-    <location y="-0.3725068750" name="pixel5"/>
-    <location y="-0.3694906250" name="pixel6"/>
-    <location y="-0.3664743750" name="pixel7"/>
-    """
     @staticmethod
     def add_tube_type(root, pixel_height, num_pixels):
         """
@@ -185,15 +156,12 @@ class VulcanGeomIDF(MantidGeom):
         return
 
     def add_cylinder_pixel(self, root, axis, radius=0.0047, height=0.0063578125):
-        """
-
-        Args:
-            axis:
-            radius:
-            height:
-
-        Returns:
-
+        """ add a cylinder pixel
+        :param root:
+        :param axis:
+        :param radius:
+        :param height:
+        :return:
         """
         pixel_root = le.SubElement(root, 'type', **{'is': 'detector', 'name': 'pixel'})
         # cylinder
@@ -207,3 +175,36 @@ class VulcanGeomIDF(MantidGeom):
         le.SubElement(pixel_root, 'algebra', val='cyl-approx')
 
         return
+
+    def define_id_list(self, root, id_name, start_id, end_id):
+        """ add an entry as the ID list
+        :param XML root:
+        :param id_name:
+        :param start_id:
+        :param end_id:
+        :return:
+        """
+        id_list_root = le.SubElement(root, 'idlist', idname=id_name)
+        if start_id is not None and end_id is not None:
+            le.SubElement(id_list_root, 'id', start='{}'.format(start_id), end='{}'.format(end_id))
+
+        return
+
+    def define_detector_parameters(self, root):
+        """ (Hard code) define the detector's parameters
+        :param root:
+        :return:
+        """
+        comp_link_root = le.SubElement(root, 'component-link', name='detectors')
+
+        # tube pressure
+        param_root = le.SubElement(comp_link_root, 'parameter', name='tube_pressure')
+        le.SubElement(param_root, 'value', units='atm', val='6.0')
+
+        # tube thickness
+        param_root = le.SubElement(comp_link_root, 'parameter', name='tube_thickness')
+        le.SubElement(param_root, 'value', units='metre', val='0.0008')
+
+        # tube temperature
+        param_root = le.SubElement(comp_link_root, 'parameter', name='tube_temperature')
+        le.SubElement(param_root, 'value', units='K', val='290.0')
