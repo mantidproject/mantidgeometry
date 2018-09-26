@@ -94,13 +94,14 @@ class SimulationVulcanXIDFGenerator(object):
         self._vulcan.addSamplePosition()
         # monitor
         self._vulcan.addComment("MONITORS")
-        self._vulcan.addMonitors(distance=[-1.5077], names=["monitor1"])
+        self._vulcan.add_monitor_type(self._geom_root)
+        # self._vulcan.addMonitors(distance=[-1.5077], names=["monitor1"])
 
         # add detectors
         self._vulcan.addComment('Define detector banks')
         self._vulcan.addComponent(type_name='detectors', idlist='detectors')
         # define detector type
-        self._vulcan.add_banks_type(root=self._geom_root, name='detectors', components=['bank1', 'bank4'])
+        self._vulcan.add_banks_type(root=self._geom_root, name='detectors', components=['bank1'])  #, 'bank4'])
 
         # west bank
         self._vulcan.addComment('Define West Bank')
@@ -118,11 +119,14 @@ class SimulationVulcanXIDFGenerator(object):
         self._vulcan.addComment('Cylinder Pixel In Tube')
         self._vulcan.add_cylinder_pixel(self._geom_root, axis=(0, 1, 0), radius=0.0047, height=0.0063578125)
 
+        # monitor shape
+        self._vulcan.addComment('MONITOR SHAPE')
+        self._vulcan.add_cylinder_pixel(self._geom_root, axis=(0, 0, 1), radius=0.0047, height=0.008, is_monitor=True)
+
         # define detector IDs
         self._vulcan.addComment('DETECTOR IDs')
-        assert 26111 == 34 * 128 * 2 - 1, 'blabla'
-        num_dets = 26112 / 2 - 1
-        self._vulcan.define_id_list(self._geom_root, id_name='detectors', start_id=0, end_id=num_dets)
+        num_dets = 128 * 34
+        self._vulcan.define_id_list(self._geom_root, id_name='detectors', start_id=0, end_id=num_dets-1)
 
         # define monitor IDs
         self._vulcan.addComment('MONITOR IDs')
@@ -150,6 +154,6 @@ class SimulationVulcanXIDFGenerator(object):
 
 
 if __name__ == '__main__':
-    vulcan_simulator = SimulationVulcanXIDFGenerator('2019-03-01', '2020-12-31')
+    vulcan_simulator = SimulationVulcanXIDFGenerator('2017-03-01 00:00:01', '2020-12-31 00:00:01')
     vulcan_simulator.build_instrument()
     vulcan_simulator.export_idf('vulcan_x_sim.xml')

@@ -155,15 +155,22 @@ class VulcanGeomIDF(MantidGeom):
 
         return
 
-    def add_cylinder_pixel(self, root, axis, radius=0.0047, height=0.0063578125):
+    def add_cylinder_pixel(self, root, axis, radius=0.0047, height=0.0063578125, is_monitor=False):
         """ add a cylinder pixel
         :param root:
         :param axis:
         :param radius:
         :param height:
+        :param is_monitor:
         :return:
         """
-        pixel_root = le.SubElement(root, 'type', **{'is': 'detector', 'name': 'pixel'})
+        if is_monitor:
+            is_type = 'monitor'
+            name = 'monitor'
+        else:
+            is_type = 'detector'
+            name = 'pixel'
+        pixel_root = le.SubElement(root, 'type', **{'is': is_type, 'name': name})
         # cylinder
         cylinder_root = le.SubElement(pixel_root, 'cylinder', id='cyl-approx')
 
@@ -175,6 +182,18 @@ class VulcanGeomIDF(MantidGeom):
         le.SubElement(pixel_root, 'algebra', val='cyl-approx')
 
         return
+
+    def add_monitor_type(self, root):
+        """
+
+        Args:
+            root:
+
+        Returns:
+
+        """
+        type_root = le.SubElement(root, 'type', name='monitors')
+        le.SubElement(type_root, 'component', type='monitor')
 
     def define_id_list(self, root, id_name, start_id, end_id):
         """ add an entry as the ID list
