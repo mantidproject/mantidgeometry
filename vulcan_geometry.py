@@ -71,7 +71,7 @@ class VulcanGeomIDF(MantidGeom):
         :return:
         """
         # define type as root
-        type_element = le.SubElement(root, "type", name='tube', outline='yes')
+        type_element = le.SubElement(root, "type", name='tube{}'.format(num_pixels), outline='yes')
         le.SubElement(type_element, "properties")
 
         # add component
@@ -109,18 +109,15 @@ class VulcanGeomIDF(MantidGeom):
 
     def add_bank(self, root, name, component_name, x, y, z, rot):
         """
-
-        Args:
-            root:
-            name:
-            component_name:
-            x:
-            y:
-            z:
-            rot:
-
-        Returns:
-
+        add a bank
+        :param root:
+        :param name:
+        :param component_name:
+        :param x:
+        :param y:
+        :param z:
+        :param rot: rotation angle in degree
+        :return:
         """
         # type
         pack_root = le.SubElement(root, 'type', name=name)
@@ -131,21 +128,19 @@ class VulcanGeomIDF(MantidGeom):
 
         return
 
-    def add_n_8packs_type(self, root, name, num_tubes, tube_x):
-        """
-
-        Args:
-            name:
-            num_tubes:
-            tube_x:
-
-        Returns:
-
+    def add_n_8packs_type(self, root, name, num_tubes, tube_x, num_tube_pixels):
+        """ add an N x 8packs type
+        :param root:
+        :param name:
+        :param num_tubes:
+        :param tube_x:
+        :param num_tube_pixels: number of tubes in order to s
+        :return:
         """
         packs_root = le.SubElement(root, 'type', name=name)
         le.SubElement(packs_root, 'properties')
 
-        comp_root = le.SubElement(packs_root, 'component', type='tube')
+        comp_root = le.SubElement(packs_root, 'component', type='tube{}'.format(num_tube_pixels))
 
         tube_x_pos = (-num_tubes/2)*tube_x + tube_x * 0.5
         for tube_index in range(1, num_tubes + 1):
