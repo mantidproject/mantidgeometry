@@ -124,7 +124,7 @@ class VulcanGeomIDF(MantidGeom):
         # component
         component = le.SubElement(pack_root, 'component', type=component_name)
         # add location
-        self.addLocation(root=component, x=x, y=y, z=z, rot_y=rot, rot_z=rot)
+        self.addLocation(root=component, x=x, y=y, z=z, rot_y=rot, rot_z=0)
 
         return
 
