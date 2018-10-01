@@ -75,7 +75,7 @@ class VulcanGeomIDF(MantidGeom):
         le.SubElement(type_element, "properties")
 
         # add component
-        component_root = le.SubElement(type_element, 'component', type='pixel')
+        component_root = le.SubElement(type_element, 'component', type='pixel{}tube'.format(num_pixels))
 
         y_pos = -(num_pixels/2 - 0.5) * pixel_height
         for pixel_id in range(1, num_pixels+1):
@@ -150,13 +150,15 @@ class VulcanGeomIDF(MantidGeom):
 
         return
 
-    def add_cylinder_pixel(self, root, axis, radius=0.0047, height=0.0063578125, is_monitor=False):
+    def add_cylinder_pixel(self, root, axis, radius=0.0047, height=0.0063578125, is_monitor=False,
+                           pixel_name=None):
         """ add a cylinder pixel
         :param root:
         :param axis:
         :param radius:
         :param height:
         :param is_monitor:
+        :param pixel_name:
         :return:
         """
         if is_monitor:
@@ -164,7 +166,7 @@ class VulcanGeomIDF(MantidGeom):
             name = 'monitor'
         else:
             is_type = 'detector'
-            name = 'pixel'
+            name = pixel_name
         pixel_root = le.SubElement(root, 'type', **{'is': is_type, 'name': name})
         # cylinder
         cylinder_root = le.SubElement(pixel_root, 'cylinder', id='cyl-approx')

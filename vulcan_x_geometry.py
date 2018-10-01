@@ -10,6 +10,14 @@ VULCAN_L1 = 43.
 PIXEL_WIDTH = 0.004145
 PIXEL_HEIGHT = 0.00301625
 
+PIXEL_FLAT_256_WIDTH = 0.004145
+PIXEL_FLAG_256_HEIGHT = 0.00301625
+PIXEL_FLAG_256_RADIUS = 0.004145 * 0.5
+
+PIXEL_FLAT_512_WIDTH = 1.09982 * 0.01 * 0.5  # 2 front tube distance is 0.433 inch (1.09982 cm)
+PIXEL_FLAT_512_HEIGHT = 1./512.
+PIXEL_FLAT_512_RADIUS = 1.09982 * 0.01 * 0.5 / 2.
+
 
 class VulcanXIDFGenerator(object):
     """
@@ -259,23 +267,32 @@ class SimulationVulcanXIDFGenerator(object):
 
         # 20 x 8 packs
         self._vulcan.addComment('20 x standard 8 packs')
-        self._vulcan.add_n_8packs_type(self._geom_root, name='pack_160tubes', num_tubes=160, tube_x=0.01,
+        self._vulcan.add_n_8packs_type(self._geom_root, name='pack_160tubes', num_tubes=160,
+                                       tube_x=PIXEL_FLAT_512_WIDTH,
                                        num_tube_pixels=512)
 
         # single tube
-        self._vulcan.add_tube_type(self._geom_root, num_pixels=512, pixel_height=0.0063578125)
+        self._vulcan.add_tube_type(self._geom_root, num_pixels=512, pixel_height=PIXEL_FLAT_512_HEIGHT)
 
         # 9 x 8 packs
         self._vulcan.addComment('9 x standard 8 packs')
-        self._vulcan.add_n_8packs_type(self._geom_root, name='pack_72tubes', num_tubes=72, tube_x=0.01,
+        self._vulcan.add_n_8packs_type(self._geom_root, name='pack_72tubes', num_tubes=72,
+                                       tube_x=PIXEL_FLAT_256_WIDTH,
                                        num_tube_pixels=256)
 
         # single tube
-        self._vulcan.add_tube_type(self._geom_root, num_pixels=256, pixel_height=0.0063578125)
+        self._vulcan.add_tube_type(self._geom_root, num_pixels=256, pixel_height=PIXEL_FLAG_256_HEIGHT)
 
         # single pixel
-        self._vulcan.addComment('Cylinder Pixel In Tube')
-        self._vulcan.add_cylinder_pixel(self._geom_root, axis=(0, 1, 0), radius=0.0047, height=0.0063578125)
+        self._vulcan.addComment('Cylinder Pixel In 512 Tube')
+        self._vulcan.add_cylinder_pixel(self._geom_root, axis=(0, 1, 0), radius=PIXEL_FLAT_512_RADIUS,
+                                        height=PIXEL_FLAT_512_HEIGHT,
+                                        pixel_name='pixel{}tube'.format(512))
+
+        self._vulcan.addComment('Cylinder Pixel in 256 Tube')
+        self._vulcan.add_cylinder_pixel(self._geom_root, axis=(0, 1, 0), radius=PIXEL_FLAG_256_RADIUS,
+                                        height=PIXEL_FLAG_256_HEIGHT,
+                                        pixel_name='pixel{}tube'.format(256))
 
         # monitor shape
         self._vulcan.addComment('MONITOR SHAPE')
@@ -422,13 +439,13 @@ def main():
         vulcan_simulator.build_prototype_instrument()
         vulcan_simulator.export_idf('prototype_vulcan_x_sim.xml')
 
-    elif True:
+    elif False:
         # concept of proof for phase 1
         vulcan_simulator = SimulationVulcanXIDFGenerator('2017-03-01 00:00:01', '2020-12-31 00:00:01')
         vulcan_simulator.build_vulcan_x_prototype()
         vulcan_simulator.export_idf('vulcan_x_concept_proof_phase1_sim.xml')
 
-    elif False:
+    elif True:
         # phase 1
         vulcan_simulator = SimulationVulcanXIDFGenerator('2017-03-01 00:00:01', '2020-12-31 00:00:01')
         vulcan_simulator.build_vulcan_x_phase1()
