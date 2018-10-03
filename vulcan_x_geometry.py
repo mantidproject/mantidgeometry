@@ -7,12 +7,30 @@ import math
 GAP = 10
 VULCAN_L1 = 43.
 
+VULCAN_X_L2 = {'bank1': 2.3,
+               'bank2': 2.3,
+               'bank3': 2.07,
+               'bank4': 2.07,
+               'bank5': 2.07,
+               'bank6': 2.53}
+
+VULCAN_X_Phase1_Setup = {'bank1': (-90., 20, 512),
+                         'bank2': (90., 20, 512),
+                         'bank5': (150, 9, 256)}
+
+VULCAN_X_Phase2_Setup = {'bank1': (-90., 20, 512),
+                         'bank2': (90., 20., 512),
+                         'bank3': (120., 18, 512),
+                         'bank4': (150., 18, 512),
+                         'bank5': (-155, 9, 256),
+                         'bank6': (-65., 11, 256)}
+
 PIXEL_WIDTH = 0.004145
 PIXEL_HEIGHT = 0.00301625
 
 PIXEL_FLAT_256_WIDTH = 0.004145
-PIXEL_FLAG_256_HEIGHT = 0.00301625
-PIXEL_FLAG_256_RADIUS = 0.004145 * 0.5
+PIXEL_FLAT_256_HEIGHT = 0.00301625
+PIXEL_FLAT_256_RADIUS = 0.004145 * 0.5
 
 PIXEL_FLAT_512_WIDTH = 1.09982 * 0.01 * 0.5  # 2 front tube distance is 0.433 inch (1.09982 cm)
 PIXEL_FLAT_512_HEIGHT = 1./512.
@@ -26,7 +44,7 @@ class VulcanXIDFGenerator(object):
     # value-tuple: 2theta, detector type, number of eight packs, starting PID, gap PID, pixels in a tube
     DetectorInfoDict = {'Phase 1': {'bank1': (-90., 'eightpack', 20, GAP, 512),
                                     'bank2': (90., 'eightpack', 20, GAP, 512),
-                                    'bank3': (150., 'eightpack',  0, 256)},
+                                    'bank5': (150., 'eightpack',  0, 256)},
                         'Phase Final': {'bank1':  (-90., 'eightpack', 20, GAP, 512),
                                         'bank2': (90., 'eightpack', 20, GAP, 512),
                                         'bank3': (150., 'eightpack',  GAP, 256)}
@@ -252,18 +270,30 @@ class SimulationVulcanXIDFGenerator(object):
 
         # west bank
         self._vulcan.addComment('Define West Bank')
+        bank_name = 'bank1'
+        two_theta = VULCAN_X_Phase1_Setup[bank_name][0]*math.pi/180.
+        x = VULCAN_X_L2[bank_name] * math.sin(two_theta)
+        z = VULCAN_X_L2[bank_name] * math.cos(two_theta)
         self._vulcan.add_bank(root=self._geom_root, name='bank1', component_name='pack_160tubes',
-                              x=2.0, y=0., z=0., rot=90)
+                              x=x, y=0., z=z, rot=VULCAN_X_Phase1_Setup[bank_name][0])
 
         # east bank
         self._vulcan.addComment('Define West Bank')
+        bank_name = 'bank2'
+        two_theta = VULCAN_X_Phase1_Setup[bank_name][0]*math.pi/180.
+        x = VULCAN_X_L2[bank_name] * math.sin(two_theta)
+        z = VULCAN_X_L2[bank_name] * math.cos(two_theta)
         self._vulcan.add_bank(root=self._geom_root, name='bank2', component_name='pack_160tubes',
-                              x=-2.0, y=0., z=0., rot=-90)
+                              x=x, y=0., z=z, rot=VULCAN_X_Phase1_Setup[bank_name][0])
 
         # high angle bank
         self._vulcan.addComment('Define High Angle Bank')
+        bank_name = 'bank5'
+        two_theta = VULCAN_X_Phase1_Setup[bank_name][0]*math.pi/180.
+        x = VULCAN_X_L2[bank_name] * math.sin(two_theta)
+        z = VULCAN_X_L2[bank_name] * math.cos(two_theta)
         self._vulcan.add_bank(root=self._geom_root, name='bank5', component_name='pack_72tubes',
-                              x=2.*math.sin(150.*math.pi/180.), y=0., z=2.*math.cos(150.*math.pi/180.), rot=150.)
+                              x=x, y=0., z=z, rot=VULCAN_X_Phase1_Setup[bank_name][0]*math.pi/180.)
 
         # 20 x 8 packs
         self._vulcan.addComment('20 x standard 8 packs')
@@ -313,7 +343,7 @@ class SimulationVulcanXIDFGenerator(object):
 
         return
 
-    def build_complete_vulcan_x(self):
+    def build_vulcan_x_phase2(self):
         """
         build the IDF for VULCAN-X of phase 1 such that it will have 3 banks: west/east/high angle
         :return:
@@ -333,70 +363,57 @@ class SimulationVulcanXIDFGenerator(object):
         self._vulcan.addComment('Define detector banks')
         self._vulcan.addComponent(type_name='detectors', idlist='detectors')
         # define detector type
-        self._vulcan.add_banks_type(root=self._geom_root, name='detectors', components=['bank1'])  #, 'bank4'])
+        banks_name_list = sorted(VULCAN_X_Phase2_Setup.keys())
+        self._vulcan.add_banks_type(root=self._geom_root, name='detectors', components=banks_name_list)
 
-        # west bank: bank 1
-        self._vulcan.addComment('Define Bank 1/West Bank')
-        self._vulcan.add_bank(root=self._geom_root, name='bank1', component_name='pack_160tubes',
-                              x=2.0, y=0., z=0., rot=90)
+        tube_pixel_pack_dict = dict()
+        for bank_name in banks_name_list:
+            self._vulcan.addComment('Define {}'.format(bank_name.upper()))
 
-        # east bank: bank 2
-        self._vulcan.addComment('Define Bank 2/East Bank')
-        self._vulcan.add_bank(root=self._geom_root, name='bank2', component_name='pack_160tubes',
-                              x=-2.0, y=0., z=0., rot=-90)
+            two_theta_degree, num_8packs, tube_pixel_number = VULCAN_X_Phase2_Setup[bank_name]
+            two_theta = two_theta_degree * math.pi / 180.
+            x = VULCAN_X_L2[bank_name] * math.sin(two_theta)
+            z = VULCAN_X_L2[bank_name] * math.cos(two_theta)
 
-        # bank 3 @ 135
-        bank_angle = 120.
-        self._vulcan.addComment('Define Bank 3')
-        self._vulcan.add_bank(root=self._geom_root, name='bank3', component_name='pack_160tubes',
-                              x=2.0*math.sin(bank_angle*math.pi/180.), y=0., z=2.*math.cos(bank_angle*math.pi/180.),
-                              rot=bank_angle)
+            mcvine_pack_name = 'pack_{}tubes'.format(num_8packs*8)
 
-        # bank 4 @ 155
-        bank_angle = 150.
-        self._vulcan.addComment('Define Bank 4')
-        self._vulcan.add_bank(root=self._geom_root, name='bank4', component_name='pack_160tubes',
-                              x=2.0*math.sin(bank_angle*math.pi/180.), y=0., z=2.*math.cos(bank_angle*math.pi/180.),
-                              rot=bank_angle)
+            self._vulcan.add_bank(root=self._geom_root, name=bank_name, component_name=mcvine_pack_name,
+                                  x=x, y=0., z=z, rot=two_theta_degree)
 
-        # bank 5 (old) high angle bank @ -150
-        bank5_angle = -155.
-        self._vulcan.addComment('Define High Angle Bank at {}'.format(bank5_angle))
-        self._vulcan.add_bank(root=self._geom_root, name='bank5', component_name='pack_72tubes',
-                              x=2.*math.sin(bank5_angle*math.pi/180.), y=0., z=2.*math.cos(bank5_angle*math.pi/180.),
-                              rot=bank5_angle)
+            if tube_pixel_number not in tube_pixel_pack_dict:
+                tube_pixel_pack_dict[tube_pixel_number] = set()
+            tube_pixel_pack_dict[tube_pixel_number].add(num_8packs)
+        # END-FOR
 
-        # bank 6:
-        bank6_angle = -65.
-        self._vulcan.addComment('Define Bank 6 at {}'.format(bank6_angle))
-        self._vulcan.add_bank(root=self._geom_root, name='bank6', component_name='pack_88tubes',
-                              x=2.*math.sin(bank6_angle*math.pi/180.), y=0., z=2.*math.cos(bank6_angle*math.pi/180.),
-                              rot=bank6_angle)
+        # define panels
+        for tube_pixel in tube_pixel_pack_dict.keys():
+            if tube_pixel == 256:
+                pixel_width = PIXEL_FLAT_256_WIDTH
+                pixel_height = PIXEL_FLAT_256_HEIGHT
+                pixel_radius = PIXEL_FLAT_256_RADIUS
+            elif tube_pixel == 512:
+                pixel_width = PIXEL_FLAT_512_WIDTH
+                pixel_height = PIXEL_FLAT_512_HEIGHT
+                pixel_radius = PIXEL_FLAT_512_RADIUS
+            else:
+                raise RuntimeError('Not supported tube type')
+            for pack_number in tube_pixel_pack_dict[tube_pixel]:
+                self._vulcan.addComment('{} x standard 8 packs with {}-pixel tubes'.format(pack_number, tube_pixel))
+                self._vulcan.add_n_8packs_type(self._geom_root, name='pack_{}tubes'.format(pack_number*8),
+                                               num_tubes=pack_number*8,
+                                               tube_x=pixel_width,
+                                               num_tube_pixels=tube_pixel)
+            # END-FOR
 
-        # 20 x 8 packs
-        self._vulcan.addComment('20 x standard 8 packs')
-        self._vulcan.add_n_8packs_type(self._geom_root, name='pack_160tubes', num_tubes=160, tube_x=0.01,
-                                       num_tube_pixels=512)
+            # single tube
+            self._vulcan.add_tube_type(self._geom_root, num_pixels=tube_pixel, pixel_height=pixel_height)
 
-        # single tube
-        self._vulcan.add_tube_type(self._geom_root, num_pixels=512, pixel_height=0.0063578125)
-
-        # 9 x 8 packs
-        self._vulcan.addComment('9 x standard 8 packs')
-        self._vulcan.add_n_8packs_type(self._geom_root, name='pack_72tubes', num_tubes=72, tube_x=0.01,
-                                       num_tube_pixels=256)
-
-        # 11 x 8 packs
-        self._vulcan.addComment('11 x standard 8 packs')
-        self._vulcan.add_n_8packs_type(self._geom_root, name='pack_88tubes', num_tubes=88, tube_x=0.01,
-                                       num_tube_pixels=512)
-
-        # single tube
-        self._vulcan.add_tube_type(self._geom_root, num_pixels=256, pixel_height=0.0063578125)
-
-        # single pixel
-        self._vulcan.addComment('Cylinder Pixel In Tube')
-        self._vulcan.add_cylinder_pixel(self._geom_root, axis=(0, 1, 0), radius=0.0047, height=0.0063578125)
+            # single pixel
+            self._vulcan.addComment('Cylinder Pixel In {}-Pixel Tube'.format(tube_pixel))
+            self._vulcan.add_cylinder_pixel(self._geom_root, axis=(0, 1, 0), radius=pixel_radius,
+                                            height=pixel_height,
+                                            pixel_name='pixel{}tube'.format(tube_pixel))
+        # END-FOR
 
         # monitor shape
         self._vulcan.addComment('MONITOR SHAPE')
@@ -404,8 +421,8 @@ class SimulationVulcanXIDFGenerator(object):
 
         # define detector IDs
         self._vulcan.addComment('DETECTOR IDs')
-        num_pixels = 4 * 20 * 8 * 512 + + 1 * 11 * 8 * 512 + 9 * 8 * 256
-        self._vulcan.define_id_list(self._geom_root, id_name='detectors', start_id=0, end_id=num_pixels - 1)
+        num_pixels = 2 * 20 * 8 * 512 + 9 * 8 * 256
+        self._vulcan.define_id_list(self._geom_root, id_name='detectors', start_id=0, end_id=num_pixels-1)
 
         # define monitor IDs
         self._vulcan.addComment('MONITOR IDs')
