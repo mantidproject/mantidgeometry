@@ -19,10 +19,10 @@ VULCAN_X_Phase1_Setup = {'bank1': (-90., 20, 512),
                          'bank5': (150, 9, 256)}
 
 VULCAN_X_Phase2_Setup = {'bank1': (-90., 20, 512),
-                         'bank2': (90., 20., 512),
+                         'bank2': (90., 20, 512),
                          'bank3': (120., 18, 512),
                          'bank4': (150., 18, 512),
-                         'bank5': (-155, 9, 256),
+                         'bank5': (-155., 9, 256),
                          'bank6': (-65., 11, 256)}
 
 PIXEL_WIDTH = 0.004145
@@ -421,7 +421,15 @@ class SimulationVulcanXIDFGenerator(object):
 
         # define detector IDs
         self._vulcan.addComment('DETECTOR IDs')
-        num_pixels = 2 * 20 * 8 * 512 + 9 * 8 * 256
+        num_pixels = 0
+        for bank_name in sorted(VULCAN_X_Phase2_Setup.keys()):
+            two_theta_degree, num_8packs, num_tube_pixels = VULCAN_X_Phase2_Setup[bank_name]
+            bank_pixel_number = num_8packs * 8 * num_tube_pixels
+            num_pixels += bank_pixel_number
+            print ('{}: {} x 8 x {} = {}'.format(bank_name, num_8packs, num_tube_pixels, bank_pixel_number))
+        print ('Total pixel number = {}'.format(num_pixels))
+        # num_pixels = 2 * 20 * 8 * 512 + 9 * 8 * 256
+
         self._vulcan.define_id_list(self._geom_root, id_name='detectors', start_id=0, end_id=num_pixels-1)
 
         # define monitor IDs
@@ -462,7 +470,7 @@ def main():
         vulcan_simulator.build_vulcan_x_prototype()
         vulcan_simulator.export_idf('vulcan_x_concept_proof_phase1_sim.xml')
 
-    elif True:
+    elif False:
         # phase 1
         vulcan_simulator = SimulationVulcanXIDFGenerator('2017-03-01 00:00:01', '2020-12-31 00:00:01')
         vulcan_simulator.build_vulcan_x_phase1()
@@ -471,8 +479,8 @@ def main():
     else:
         # final phase
         vulcan_simulator = SimulationVulcanXIDFGenerator('2017-03-01 00:00:01', '2020-12-31 00:00:01')
-        vulcan_simulator.build_complete_vulcan_x()
-        vulcan_simulator.export_idf('vulcan_x_complete_sim.xml')
+        vulcan_simulator.build_vulcan_x_phase2()
+        vulcan_simulator.export_idf('vulcan_x_phase2_sim.xml')
 
     # END-IF-ELSE
 
