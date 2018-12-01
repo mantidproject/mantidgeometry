@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 INST_NAME = "SEQUOIA"
 NUM_PIXELS_PER_TUBE = 128
@@ -17,9 +17,12 @@ FLIPY = 180.0 # flip y orientation
 TUBE_PRESSURE = ("tube_pressure", 10.0, "atm")
 TUBE_THICKNESS = ("tube_thickness", 0.0008, "metre")
 TUBE_TEMPERATURE = ("tube_temperature", 290.0, "K")
+# Add choppers or not?
+ADD_CHOPPERS = False
     
 def convert(value):
-    return float(value) / CONVERT_TO_METERS
+    # set string formatting here
+    return '%.8f' % (float(value) / CONVERT_TO_METERS,)
     
 if __name__ == "__main__":
     import sys
@@ -29,10 +32,10 @@ if __name__ == "__main__":
     try:
         geom_input_file = sys.argv[1]
     except IndexError:
-        geom_input_file = "SNS/SEQ/SEQ_geom_19890-.txt"
+        geom_input_file = "SNS/SEQ/SEQ_geom_05142018.txt"
         
     # Set header information
-    comment = "Created by Michael Reuter"
+    comment = "For runs after May 14, 2018"
     # Time needs to be in UTC?
     valid_from = "2012-04-04 14:15:46"
 
@@ -47,11 +50,12 @@ if __name__ == "__main__":
     det.addComment("SOURCE AND SAMPLE POSITION")
     det.addModerator(-20.0114)
     det.addSamplePosition()
-    det.addComment("CHOPPERS")
-    det.addChopper("t0-chopper",-10.51)
-    det.addVerticalAxisT0Chopper("t0-chopper")
-    det.addChopper("fermi-chopper",-2.00180)
-    det.addFermiChopper("fermi-chopper")
+    if ADD_CHOPPERS:
+        det.addComment("CHOPPERS")
+        det.addChopper("t0-chopper",-10.51)
+        det.addVerticalAxisT0Chopper("t0-chopper")
+        det.addChopper("fermi-chopper",-2.00180)
+        det.addFermiChopper("fermi-chopper")
     det.addComment("MONITORS")
     det.addMonitors(names=["monitor1", "monitor2"],
                     distance=["-1.77808", "8.99184"])
@@ -73,12 +77,16 @@ if __name__ == "__main__":
             det.addComponent(row_id_str, row_id_str)
             doc_handle = det.makeTypeElement(row_id_str)
 
-        det.addComponent(location, root=doc_handle)
+        # naming convention for detector packs
+        detpackname = 'pack' + str(i+38)
+        det.addComponent(detpackname, root=doc_handle)
         
         xpos = convert(detinfo["X"][i])
         ypos = convert(detinfo["Y"][i])
         zpos = convert(detinfo["Z"][i])
         roty = float(detinfo["Angle"][i]) + FLIPY
+        # string formatting for rotation angle 
+        roty = '%.8f' % roty
         det_type = "eightpack"
         
         if location.startswith("C"):
@@ -87,7 +95,7 @@ if __name__ == "__main__":
             elif location.endswith("B"):
                 det_type = "eightpack-bottom"
 
-        det.addDetector(xpos, ypos, zpos, ROTX, roty, ROTZ, location, det_type)
+        det.addDetector(xpos, ypos, zpos, ROTX, roty, ROTZ, detpackname, det_type)
 
     det.addComment("STANDARD 8-PACK")
     det.addNPack("eightpack", NUM_TUBES_PER_BANK, TUBE_WIDTH, AIR_GAP_WIDTH)
