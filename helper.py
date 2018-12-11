@@ -576,7 +576,6 @@ class MantidGeom:
         """
         type_element = le.SubElement(self.__root, "type",
                                      **{"name":name, "is":is_type})
-        #cylinder = le.SubElement(type_element, "cylinder", id="cyl-approx")
         cylinder = le.SubElement(type_element, "cylinder", id=algebra)
         le.SubElement(cylinder, "centre-of-bottom-base",
                       r=str(center_bottom_base[0]),
@@ -586,10 +585,29 @@ class MantidGeom:
                       z=str(axis[2]))
         le.SubElement(cylinder, "radius", val=str(pixel_radius))
         le.SubElement(cylinder, "height", val=str(pixel_height))
-        #le.SubElement(type_element, "algebra", val="cyl-approx")
         le.SubElement(type_element, "algebra", val=algebra)
 
         return
+
+    def addCylinderPixelAdvanced(self, name, center_bottom_base, axis, pixel_radius,
+                         pixel_height, algebra, is_type="detector"):
+        """
+        Add a cylindrical pixel. The center_bottom_base and axis are dicts {radius,
+        theta, phi} or {x, y z}.
+        """
+        type_element = le.SubElement(self.__root, "type",
+                                     **{"name":name, "is":is_type})
+        cylinder = le.SubElement(type_element, "cylinder", id=algebra)
+        center_bottom_base = {k:str(v) for k, v in center_bottom_base.items()}
+        axis = {k:str(v) for k, v in axis.items()}
+        le.SubElement(cylinder, "centre-of-bottom-base", **center_bottom_base)
+        le.SubElement(cylinder, "axis", **axis)
+        le.SubElement(cylinder, "radius", val=str(pixel_radius))
+        le.SubElement(cylinder, "height", val=str(pixel_height))
+        le.SubElement(type_element, "algebra", val=algebra)
+
+        return
+
 
     def addCuboidPixel(self, name, lfb_pt, lft_pt, lbb_pt, rfb_pt,
                       is_type="detector", shape_id="shape"):
