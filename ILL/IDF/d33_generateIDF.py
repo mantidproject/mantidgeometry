@@ -17,7 +17,7 @@ factor = 2
 numberPixelsRearVertical = 128
 numberPixelsRearHorizontal = 128 * factor
 numberPixelsFront = 32
-numberPixelsFrontLength = 256
+numberPixelsFrontLength = 128 * factor
 # definition of a quadratic pixel
 pixelName = "pixel"
 pixelWidth = 0.005 / factor
@@ -115,14 +115,16 @@ d33.addComment("MONITOR IDs")
 d33.addMonitorIds([repr(500000), repr(500001)])
 d33.addComment("DETECTORS")
 d33.addComponentILL("detector", 0., 0., 0.)
-dtype = d33.makeTypeElement("detector")
-d33.addComponentRectangularDetector(detector0, 0., 0., zPosRear, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR, root=dtype)
+detector = d33.makeTypeElement("detector")
+d33.addComponentRectangularDetector(detector0, 0., 0., zPosRear, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR, root=detector)
+d33.addComponentILL("front_detector", 0., 0., 0., root=detector)
+front_detector = d33.makeTypeElement("front_detector")
 d33.addComponentRectangularDetector(detector1, dF+dR, 0., zFront, idstart=id1, idfillbyfirst="x",
-                                    idstepbyrow=SRF, rotz=90., roty=180., root=dtype)
+                                    idstepbyrow=SRF, rotz=90., roty=180., root=front_detector)
 d33.addComponentRectangularDetector(detector2, -dR-dF, 0., zFront, idstart=id2, idfillbyfirst="x",
-                                    idstepbyrow=SRF, rotz=90., roty=180., root=dtype)
-d33.addComponentRectangularDetector(detector3, 0., -dF-dR, zFront, idstart=id3, idfillbyfirst=FF, idstepbyrow=SRF, root=dtype)
-d33.addComponentRectangularDetector(detector4, 0., dR+dF, zFront, idstart=id4, idfillbyfirst=FF, idstepbyrow=SRF, root=dtype)
+                                    idstepbyrow=SRF, rotz=90., roty=180., root=front_detector)
+d33.addComponentRectangularDetector(detector3, 0., -dF-dR, zFront, idstart=id3, idfillbyfirst=FF, idstepbyrow=SRF, root=front_detector)
+d33.addComponentRectangularDetector(detector4, 0., dR+dF, zFront, idstart=id4, idfillbyfirst=FF, idstepbyrow=SRF, root=front_detector)
 d33.addComment("REAR DETECTOR")
 d33.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
 d33.addComment("4 FRONT DETECTORS, from detector to sample in +Z direction")
