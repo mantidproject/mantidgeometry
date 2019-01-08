@@ -66,9 +66,9 @@ if __name__ == "__main__":
     for i in range(num_dets):
         location = detinfo["Location"][i]
         # REMOVE ME: when A and E rows are filled
-        if location.startswith("A") or \
-               location.startswith("E"):
-            continue
+        # if location.startswith("A") or \
+        #        location.startswith("E"):
+        #    continue
         
         if row_id != location[0]:
             row_id = location[0]
@@ -136,6 +136,7 @@ if __name__ == "__main__":
     det.addComment("DETECTOR IDs")
     # FIXME: Set to zero when A and E rows are filled
     offset = 37888
+    offset = 0
     for i in range(len(row_id_list)):
         row_id_str = row_id_list[i] + " row"
         det_names = [x for x in detinfo["Location"] if x.startswith(row_id_list[i])]
