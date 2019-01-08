@@ -16,7 +16,7 @@ XRAY_SETUP = {'L1': 2.678898,
               'L2': 0.416,  # arm length
               'PixelNumber': {'1K': (1024, 1024), '2K': (2048, 2048)},
               'PixelSize': {'1K': 0.0004000, '2K': 0.0004000*0.5}
-             }
+              }
 
 
 class HB2BGeometry(helper.MantidGeom):
@@ -32,6 +32,28 @@ class HB2BGeometry(helper.MantidGeom):
         :param valid_to: end date
         """
         super(HB2BGeometry, self).__init__(instname, comment, valid_from, valid_to)
+
+        return
+
+    def add_rectangular_detector(self, x_start, x_step, x_pixels,
+                                 y_start, y_step, y_pixels,
+                                 pixel_size_x, pixel_size_y, pixel_size_z):
+        """
+        """
+        # add detector panel
+        self.addRectangularDetector(name='panel', type='pixel',
+                                    xstart='{}'.format(x_start), xstep='{}'.format(x_step),
+                                    xpixels='{}'.format(x_pixels),
+                                    ystart='{}'.format(y_start), ystep='{}'.format(y_step),
+                                    ypixels='{}'.format(y_pixels))
+
+        # add pixels
+        self.addCuboidPixel(name='pixel', shape_id='pixel-shape',
+                            lfb_pt=(pixel_size_x*0.5, -pixel_size_y*0.5, 0),  # left-front-bottom
+                            lft_pt=(pixel_size_x*0.5, pixel_size_y*0.5, 0),  # left-front-top
+                            lbb_pt=(pixel_size_x*0.5, -pixel_size_y*0.5, -pixel_size_z),  # left-back-bottom
+                            rfb_pt=(-pixel_size_x*0.5, -pixel_size_y*0.5, 0)  # right-front-bottom
+                            )
 
         return
 
@@ -90,11 +112,11 @@ def generate_1bank_2d_idf(instrument_name, geom_setup_dict, pixel_setup, output_
     x_step = - pixel_size_x
     y_start = -(float(pixel_row_count)*0.5 - 0.5) * pixel_size_y
     y_step = pixel_size_y
-    hb2b.addRectangularDetector(name='panel', type='pixel',
-                                xstart='{}'.format(x_start), xstep='{}'.format(x_step),
-                                xpixels='{}'.format(pixel_column_count),
-                                ystart='{}'.format(y_start), ystep='{}'.format(y_step),
-                                ypixels='{}'.format(pixel_row_count))
+    hb2b.add_rectangular_detector(x_start=x_start, x_step=x_step, x_pixels=pixel_column_count,
+                                  y_start=y_start, y_step=y_step, y_pixels=pixel_row_count,
+                                  pixel_size_x=pixel_size_x, pixel_size_y=pixel_size_y,
+                                  pixel_size_z=0.0001)
+
 
     hb2b.write_terminal()
 
