@@ -11,7 +11,7 @@ XMLNS = "http://www.mantidproject.org/IDF/1.0"
 XSI = "http://www.w3.org/2001/XMLSchema-instance"
 SCHEMA_LOC = "http://www.mantidproject.org/IDF/1.0 http://schema.mantidproject.org/IDF/1.0/IDFSchema.xsd"
 
-class MantidGeom:
+class MantidGeom(object):
 
     def __init__(self, instname, comment=None, valid_from=None, valid_to=None):
         from datetime import datetime
@@ -35,6 +35,15 @@ class MantidGeom:
                     self.__root.append(le.Comment(bit))
             else:
                 self.__root.append(le.Comment(comment))
+
+    def write_terminal(self):
+        """
+        write the current content to terminal
+        :return:
+        """
+        print (le.tostring(self.__root, pretty_print=True, xml_declaration=True))
+
+        return
 
     def writeGeom(self, filename):
         """
@@ -246,14 +255,94 @@ class MantidGeom:
             root = self.__root
 
         if idlist is not None:
-            comp = le.SubElement(root, "component", type=type_name,
-                                 idlist=idlist)
+            comp = le.SubElement(root, "component", type=type_name, idlist=idlist)
         else:
             comp = le.SubElement(root, "component", type=type_name)
+
         l=comp
         if blank_location:
             l = le.SubElement(comp, "location")
         return l
+
+    def add_component(self, type_name, idfillbyfirst, idstart, idstepbyrow, root=None):
+        """ add an component
+        :param type_name:
+        :param idfillbyfirst:
+        :param idstart:
+        :param idstepbyrow:
+        :param root:
+        :return:
+        """
+        if root is None:
+            root = self.__root
+
+        comp = le.SubElement(root, 'component', type=type_name,
+                             idfillbyfirst='{}'.format(idfillbyfirst),
+                             idstart='{}'.format(idstart),
+                             idstepbyrow='{}'.format(idstepbyrow))
+
+        return comp
+
+    def add_location(self, location_name, node, location_param_dict):
+        """ add an location
+        :param location_name:
+        :param node
+        :return:
+        """
+        location_node = le.SubElement(node, 'location', name=location_name)
+
+        for param_name in location_param_dict:
+            if 'value' in location_param_dict[param_name]:
+                # write parameter value
+                param_value = location_param_dict[param_name]['value']
+                self.add_parameter(param_name, param_value, location_node)
+            elif 'logfile' in location_param_dict[param_name]:
+                # write logfile
+                log_equation = location_param_dict[param_name]['logfile']
+                log_name = location_param_dict[param_name]['id']
+                self.add_log_file(param_name, log_equation, log_name, location_node)
+            else:
+                raise RuntimeError('Either value or logfile must be in location parameter dict')
+            # END-IF-ELSE
+        # END-FOR
+
+        return location_node
+
+    def add_parameter(self, par_name, par_value, node):
+
+        param_node = le.SubElement(node, 'parameter', name=par_name)
+        le.SubElement(param_node, 'value', val='{}'.format(par_value))
+
+        return param_node
+
+    def add_log_file(self, par_name, log_equation, log_id, root_node):
+
+        log_file_node = le.SubElement(root_node, 'parameter', name=par_name)
+        le.SubElement(log_file_node, 'logfile', eq=log_equation, id=log_id)
+
+        return log_file_node
+
+    """
+      <component idfillbyfirst="x" idstart="1" idstepbyrow="1024" type="arm">
+    <location name="bank1">
+      <parameter name="r-position">
+	      <value val='0.0'/>
+	      <!--logfile eq="1.0*value+0.950" id="cal::arm"/-->
+      </parameter>
+      <parameter name="t-position">
+        <logfile eq="value+0.0" id="cal::2theta"/>
+      </parameter>
+      <parameter name="p-position">
+        <value val="0.0"/>
+      </parameter>
+                          <parameter name="roty">
+                            <logfile eq="value+0.0" id="cal::roty"/>
+                          </parameter>
+    </location>
+  </component>
+
+    
+    """
 
     def addComponentILL(self, type_name, x, y, z, isType=None, root=None):
         """
