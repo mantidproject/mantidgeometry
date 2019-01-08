@@ -79,6 +79,7 @@ if __name__ == "__main__":
 
         # naming convention for detector packs
         detpackname = 'pack' + str(i+38)
+        detpackname = location
         det.addComponent(detpackname, root=doc_handle)
         
         xpos = convert(detinfo["X"][i])
