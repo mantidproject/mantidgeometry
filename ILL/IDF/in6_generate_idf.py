@@ -4,13 +4,13 @@
 """
 
 from common_IDF_functions import *
-
+import math
 
 def write_in6_source_chopper(output_file):
-    output_file.write('  <component type="fermi_chopper">\n')
-    output_file.write('    <location z="-0.395" />\n')
+    output_file.write('  <component type="suppressor_chopper">\n')
+    output_file.write('    <location z="-0.595" />\n')
     output_file.write('  </component>\n')
-    output_file.write('  <type name="fermi_chopper" is="Source" />\n')
+    output_file.write('  <type name="suppressor_chopper" is="Source" />\n')
 
 
 def write_in6_monitor_positions(output_file):
@@ -36,10 +36,10 @@ def write_in6_detector_shape(output_file):
     output_file.write("""<!-- Detector tube shape. Cuboids 32 x 16 mm, 300 mm long -->
                  <type is="detector" name="tube">
                    <cuboid id="pixel-shape">
-                     <left-front-bottom-point y="-0.150" x="-0.016" z="0.0"/>
-                     <left-front-top-point y="0.150" x="-0.016" z="0.0"/>
-                     <left-back-bottom-point y="-0.150" x="-0.0155" z="-0.016"/>
-                     <right-front-bottom-point y="-0.150" x="0.0155" z="0.0"/>
+                     <left-front-bottom-point y="-0.150" x="-0.016" z="0.008"/>
+                     <left-front-top-point y="0.150" x="-0.016" z="0.008"/>
+                     <left-back-bottom-point y="-0.150" x="-0.016" z="-0.008"/>
+                     <right-front-bottom-point y="-0.150" x="0.016" z="0.008"/>
                    </cuboid>
                    <algebra val="pixel-shape"/>
                  </type>""")

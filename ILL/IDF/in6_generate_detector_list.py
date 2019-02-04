@@ -1,7 +1,7 @@
-"""This python script is used to generate a list of detecotr boxes with
+"""This python script is used to generate a list of detector boxes with
    a box number, a theta angle, a list of detector IDs and a phi angle.
 
-   The box number is arbitary, while the detector ID corresponds to the
+   The box number is arbitrary, while the detector ID corresponds to the
    real detector ID. Theta is the angle made to the incoming beam and
    phi is the angle in the x-z plane.
 
