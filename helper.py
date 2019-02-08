@@ -222,7 +222,7 @@ class MantidGeom:
                         le.SubElement(location_element, "neutronic", **ntriad(i,j))
                     else:
                         le.SubElement(location_element, "facing", x="0.0", y="0.0", z="0.0")
-                    efixed_comp = le.SubElement(basecomponent, "parameter", name="Efixed")
+                    efixed_comp = le.SubElement(basecomponent, "parameter", name="EFixed")
                     le.SubElement(efixed_comp, "value", val=str(energy[i][j]))
 
     def addDetectorPixelsIdList(self, name, r=[], names=[], elg="single_list"):
