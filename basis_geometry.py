@@ -171,7 +171,6 @@ def generate_reflection_file(reflection_key):
         analyser_energy = 81.8042051/analyser_wavelength**2
 
         det.addComponent(bank_id, idlist=bank_id, root=handle_silicon)
-        det.addComponent(bank_id, bank_id)
 
         xbank, ybank, zbank = pixels_physical_xyz(i)
         det.addDetectorPixels(bank_id, x=xbank, y=ybank, z=zbank,
