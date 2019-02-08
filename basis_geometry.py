@@ -136,7 +136,7 @@ def generate_reflection_file(reflection_key):
     # Time needs to be in UTC?
     valid_from = "2014-01-01 00:00:00"
 
-    xml_outfile = '{}_Definition_Si{}_.xml'.format(inst_name, reflection_key)
+    xml_outfile = '{}_Definition_Si{}.xml'.format(inst_name, reflection_key)
     nfile = h5py.File(refl['nexus'], 'r')
 
     det = MantidGeom(inst_name, comment=comment, valid_from=valid_from)
