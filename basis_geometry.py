@@ -6,14 +6,27 @@ import h5py
 import math
 import numpy as np
 import os
+import sys
 
-'''
+"""
 Runs with 311 analyzer have "3.2750" as /entry/DASlogs/chopWL/value.
 Runs with 111 analyzer have "6.2712" as /entry/DASlogs/chopWL/value
-'''
-nexusfile = "/SNS/BSS/IPTS-5908/0/32264/NeXus/BSS_32264_event.nxs"
-nexusfile311 = "/SNS/BSS/IPTS-5908/0/40473/NeXus/BSS_40473_event.nxs"
-banks = 4
+"""
+nexus_file_111 = "/SNS/BSS/IPTS-5908/0/32264/NeXus/BSS_32264_event.nxs"
+nexus_file_311 = "/SNS/BSS/IPTS-5908/0/40473/NeXus/BSS_40473_event.nxs"
+
+reflections = {'111': {'nexus': nexus_file_111,
+                       'wavelength': 6.2712,
+                       'ratio_to_irreducible_hkl': 1.0},
+               '333': {'nexus': nexus_file_111,
+                       'wavelength': 6.2712 / 3.0,
+                       'ratio_to_irreducible_hkl': 1.0 / 3.0},
+               '311': {'nexus': nexus_file_311,
+                       'wavelength': 3.2750,
+                       'ratio_to_irreducible_hkl': 1.0}
+              }
+
+n_inelastic_banks = 4
 
 INCH_TO_METRE = 0.0254
 
@@ -21,14 +34,14 @@ TUBE_PRESSURE = ("tube_pressure", 0.0, "atm")
 TUBE_THICKNESS = ("tube_thickness", 0.0008, "metre")
 TUBE_TEMPERATURE = ("tube_temperature", 290.0, "K")
 
-'''
-   INELASTIC
-   Tubes are positioned on the walls of the BASIS cylindrical container,
-   above and below the diffraction detectors.
-   Neighbor pixels are made to be separated by a small gap. This will
-   result in a black grid surrounding each pixel, facilitating identification
-   of each pixel when viewed in Mantid as "cylindrical Y"
-'''
+"""
+INELASTIC
+Tubes are positioned on the walls of the BASIS cylindrical container,
+above and below the diffraction detectors.
+Neighbor pixels are made to be separated by a small gap. This will
+result in a black grid surrounding each pixel, facilitating identification
+of each pixel when viewed in Mantid as 'cylindrical Y'
+"""
 INELASTIC_TUBES_PER_BANK = 64
 # nghost tubes of each bank are not installed in the instrument
 INELASTIC_TUBES_NGHOST = 8
@@ -46,11 +59,16 @@ INELASTIC_TUBE_WIDTH = INELASTIC_TUBE_DISTANCE_TO_SAMPLE * INELASTIC_BANK_THETA_
 # neighbor pixels are separated by a gap
 INELASTIC_PIXEL_RADIUS_GAP_RATIO = 0.1
 INELASTIC_PIXEL_HEIGHT_GAP_RATIO = 0.1
-# initial conditions for each bank when calculating physical positions of pixels
-Y_OFFSET = {0:INELASTIC_TUBE_Y0, 1:-INELASTIC_TUBE_Y0-INELASTIC_TUBE_LENGTH,
-            2:INELASTIC_TUBE_Y0, 3:-INELASTIC_TUBE_Y0-INELASTIC_TUBE_LENGTH}
-THETA_OFFSET = {0:INELASTIC_BANK_THETA_START, 1:INELASTIC_BANK_THETA_START,
-                2:math.pi+INELASTIC_BANK_THETA_START, 3:math.pi+INELASTIC_BANK_THETA_START}
+
+# initial conditions for banks when calculating physical positions of pixels
+Y_OFFSET = {0: INELASTIC_TUBE_Y0,
+            1: -INELASTIC_TUBE_Y0 - INELASTIC_TUBE_LENGTH,
+            2: INELASTIC_TUBE_Y0,
+            3: -INELASTIC_TUBE_Y0 - INELASTIC_TUBE_LENGTH}
+THETA_OFFSET = {0: INELASTIC_BANK_THETA_START,
+                1: INELASTIC_BANK_THETA_START,
+                2: math.pi+INELASTIC_BANK_THETA_START,
+                3: math.pi+INELASTIC_BANK_THETA_START}
 
 # DIFFRACTION
 ELASTIC_BANK_START = 5
@@ -64,50 +82,62 @@ ELASTIC_TUBE_PRESSURE = ("tube_pressure", 30.0, "atm")
 ELASTIC_TUBE_THICKNESS = ("tube_thickness",  (0.01 * INCH_TO_METRE), "metre")
 ELASTIC_TUBE_TEMPERATURE = ("tube_temperature", 290.0, "K")
 
+
 def pixels_physical_xyz(bank_id):
-  '''generate the cartesian positions of each pixel in a given bank
-  Arguments:
-    bank_id (int): 1: Top-left/South, 2:Botton-left/South, 3:Top-right/North, 4:Botton-right/North
-  Returns:
-    (x,y,z): tuple whose components are a list of lists
-  '''
-  xbank=list()
-  ybank=list()
-  zbank=list()
-  ntubes = INELASTIC_TUBES_PER_BANK - INELASTIC_TUBES_NGHOST
-  delta_theta = INELASTIC_BANK_THETA_SPREAD / ntubes
-  pixel_length = INELASTIC_TUBE_LENGTH / INELASTIC_TUBE_NPIXEL
-  for itube in range(ntubes):
-    theta_tube = THETA_OFFSET[bank_id] + itube * delta_theta
-    xtube = INELASTIC_TUBE_DISTANCE_TO_SAMPLE * math.sin(theta_tube)
-    ztube = INELASTIC_TUBE_DISTANCE_TO_SAMPLE * math.cos(theta_tube)
-    xbank.append( [xtube] * INELASTIC_TUBE_NPIXEL )
-    zbank.append( [ztube] * INELASTIC_TUBE_NPIXEL )
-    ytube = list()
-    for ipixel in range(INELASTIC_TUBE_NPIXEL):
-      ytube.append(Y_OFFSET[bank_id] + ipixel * pixel_length)
-    ybank.append(ytube)
-  return [np.array(component) for component in (xbank, ybank, zbank)]
+    r"""
+    Generate the cartesian positions of each pixel in a given bank
 
-if __name__ == "__main__":
+    Parameters
+    ----------
+    bank_id: int
+        1: Top-left/South, 2:Botton-left/South, 3:Top-right/North, 4:Botton-right/North
+    Returns
+    -------
+    tuple
+        (x,y,z): items are a list of lists
+    """
+    xbank=list()
+    ybank=list()
+    zbank=list()
+    ntubes = INELASTIC_TUBES_PER_BANK - INELASTIC_TUBES_NGHOST
+    delta_theta = INELASTIC_BANK_THETA_SPREAD / ntubes
+    pixel_length = INELASTIC_TUBE_LENGTH / INELASTIC_TUBE_NPIXEL
+    for itube in range(ntubes):
+        theta_tube = THETA_OFFSET[bank_id] + itube * delta_theta
+        xtube = INELASTIC_TUBE_DISTANCE_TO_SAMPLE * math.sin(theta_tube)
+        ztube = INELASTIC_TUBE_DISTANCE_TO_SAMPLE * math.cos(theta_tube)
+        xbank.append( [xtube] * INELASTIC_TUBE_NPIXEL)
+        zbank.append( [ztube] * INELASTIC_TUBE_NPIXEL)
+        ytube = list()
+        for ipixel in range(INELASTIC_TUBE_NPIXEL):
+            ytube.append(Y_OFFSET[bank_id] + ipixel * pixel_length)
+        ybank.append(ytube)
+    return [np.array(component) for component in (xbank, ybank, zbank)]
 
-    if not os.path.exists(nexusfile):
-        print('Cannot read information from \'%s\'. Not creating geometry' % nexusfile)
-        import sys
-        sys.exit(2)
 
+def generate_reflection_file(reflection_key):
+    r"""
+
+    Parameters
+    ----------
+    reflection_key: str
+
+    Returns
+    -------
+
+    """
+    refl = reflections[reflection_key]
+    if not os.path.exists(refl['nexus']):
+        message = '{} not found. Not creating geometry'.format(refl['nexus'])
+        raise FileExistsError(message)
     inst_name = "BASIS"
-    short_name = "BSS"
-
     # Set header information
     comment = "Created by Michael Reuter and Jose Borreguero"
     # Time needs to be in UTC?
     valid_from = "2014-01-01 00:00:00"
 
-    xml_outfile = inst_name+"_Definition.xml"
-
-    nfile = h5py.File(nexusfile, 'r')
-    nfile311 = h5py.File(nexusfile311, 'r')
+    xml_outfile = '{}_Si{}_Definition.xml'.format(inst_name, reflection_key)
+    nfile = h5py.File(refl['nexus'], 'r')
 
     det = MantidGeom(inst_name, comment=comment, valid_from=valid_from)
     det.addSnsDefaults(indirect=True)
@@ -125,7 +155,7 @@ if __name__ == "__main__":
     # on the same sides of the arrays for all banks.
     remove_ghosts = slice(-INELASTIC_TUBES_NGHOST)
 
-    for i in range(banks):
+    for i in range(n_inelastic_banks):
         bank_id = "bank%d" % (i+1)
         pixel_id = nfile["/entry/instrument/bank%d/pixel_id" % (i+1)].value[remove_ghosts]
         distance = nfile["/entry/instrument/bank%d/distance" % (i+1)].value[remove_ghosts]
@@ -136,11 +166,8 @@ if __name__ == "__main__":
         azimuthal_angle = nfile["/entry/instrument/bank%d/azimuthal_angle" % (i+1)].value[remove_ghosts]
         azimuthal_angle *= (180.0/math.pi)
 
-        # bank2 uses the 311 reflection
-        if bank_id == 'bank2':
-            analyser_wavelength = nfile311["/entry/instrument/analyzer%d/wavelength" % (i+1)].value[remove_ghosts]
-        else:
-            analyser_wavelength = nfile["/entry/instrument/analyzer%d/wavelength" % (i+1)].value[remove_ghosts]
+        analyser_wavelength = nfile["/entry/instrument/analyzer%d/wavelength" % (i+1)].value[remove_ghosts]
+        analyser_wavelength *= refl['ratio_to_irreducible_hkl']
         analyser_energy = 81.8042051/analyser_wavelength**2
 
         det.addComponent(bank_id, idlist=bank_id, root=handle_silicon)
@@ -149,10 +176,12 @@ if __name__ == "__main__":
         xbank, ybank, zbank = pixels_physical_xyz(i)
         det.addDetectorPixels(bank_id, x=xbank, y=ybank, z=zbank,
                               names=pixel_id, energy=analyser_energy,
-                              nr=distance, ntheta=polar_angle, nphi=azimuthal_angle)
+                              nr=distance, ntheta=polar_angle,
+                              nphi=azimuthal_angle)
 
         det.addDetectorPixelsIdList(bank_id, r=distance, names=pixel_id,
                                     elg="multiple_ranges")
+
 
     # Create the diffraction bank information
     det.addComponent("elastic", "elastic")
@@ -160,9 +189,12 @@ if __name__ == "__main__":
 
     idlist = []
 
-    detector_z = [-2.1474825,-1.704594,-1.108373,-0.4135165,0.3181,1.0218315,1.6330115,2.0993535,2.376999]
-    detector_x = [1.1649855,1.7484015,2.175541,2.408594,2.422933,2.216378,1.8142005,1.247867,0.5687435]
-    detector_y = [-0.001807,-0.001801,-0.0011845,-0.0006885,-0.0013145,-0.001626,-0.001397,0.0003465,-0.0001125]
+    detector_z = [-2.1474825, -1.704594, -1.108373, -0.4135165, 0.3181,
+                  1.0218315, 1.6330115, 2.0993535, 2.376999]
+    detector_x = [1.1649855, 1.7484015, 2.175541, 2.408594, 2.422933,
+                  2.216378, 1.8142005, 1.247867, 0.5687435]
+    detector_y = [-0.001807, -0.001801, -0.0011845, -0.0006885, -0.0013145,
+                  -0.001626, -0.001397, 0.0003465, -0.0001125]
 
     for i in range(ELASTIC_BANK_START, ELASTIC_BANK_END+1):
         bank_name = "bank%d" % i
@@ -177,9 +209,11 @@ if __name__ == "__main__":
         det.addDetector(x_coord, y_coord, z_coord, 0.0, 0., 90.,
                         bank_name, "tube-elastic", facingSample=True)
 
-        idlist.append(ELASTIC_DETECTORID_START + ELASTIC_TUBE_NPIXELS*(i-ELASTIC_BANK_START))
-        idlist.append(ELASTIC_DETECTORID_START + ELASTIC_TUBE_NPIXELS*(i-ELASTIC_BANK_START)
-        + ELASTIC_TUBE_NPIXELS-1)
+        idlist.append(ELASTIC_DETECTORID_START +
+                      ELASTIC_TUBE_NPIXELS*(i-ELASTIC_BANK_START))
+        idlist.append(ELASTIC_DETECTORID_START +
+                      ELASTIC_TUBE_NPIXELS*(i-ELASTIC_BANK_START) +
+                      ELASTIC_TUBE_NPIXELS-1)
         idlist.append(None)
 
     # Diffraction tube information
@@ -193,37 +227,11 @@ if __name__ == "__main__":
 
     # Creating diffraction pixel
     det.addComment("PIXEL FOR DIFFRACTION TUBES")
-    det.addCylinderPixel("pixel-elastic-tube", (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
+    det.addCylinderPixel("pixel-elastic-tube",
+                         (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
                          (ELASTIC_TUBE_WIDTH/2.0),
                          (ELASTIC_TUBE_LENGTH/ELASTIC_TUBE_NPIXELS))
 
-    '''
-    # Creating inelastic pixel
-    # Pixel Height
-    y_pixel_offset = nfile["/entry/instrument/bank1/y_pixel_offset"].value
-    pixel_ysize = y_pixel_offset[1] - y_pixel_offset[0]
-
-    # Pixel Width
-    x_pixel_offset = nfile["/entry/instrument/bank1/x_pixel_offset"].value
-    pixel_xsize = x_pixel_offset[1] - x_pixel_offset[0]
-
-    # Lets just make them bigger for a moment so we can see them
-    pixel_xsize *= 5.0
-    pixel_ysize *= 2.0
-
-    # arbitary value plucked from thin air!
-    detector_depth = 0.01
-
-    left_front_bottom = ((-pixel_xsize/2.0), (-pixel_ysize/2.0), 0.0)
-    left_front_top = ((-pixel_xsize/2.0), (pixel_ysize/2.0), 0.0)
-    left_back_bottom = ((-pixel_xsize/2.0), (-pixel_ysize/2.0), -detector_depth)
-    right_front_bottom = ((pixel_xsize/2.0), (-pixel_ysize/2.0), 0.0)
-
-    det.addComment("PIXEL FOR INELASTIC TUBES")
-    det.addCuboidPixel("pixel", left_front_bottom, left_front_top,
-                       left_back_bottom, right_front_bottom, "detector")
-
-    '''
     det.addComment("PIXEL FOR INELASTIC TUBES")
     det.addCylinderPixel("pixel", (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
                         INELASTIC_TUBE_WIDTH * (1.0-INELASTIC_PIXEL_RADIUS_GAP_RATIO) / 2.0,
@@ -237,9 +245,12 @@ if __name__ == "__main__":
     det.addComment("MONITOR IDs")
     det.addMonitorIds(["-1"])
 
-    #det.showGeom()
     det.writeGeom(xml_outfile)
 
     # Always clean after yourself
     nfile.close()
-    nfile311.close()
+
+
+if __name__ == "__main__":
+    for key in reflections:
+        generate_reflection_file(key)

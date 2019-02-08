@@ -247,8 +247,8 @@ class MantidGeom:
             pxids = names.flatten()[np.where(~np.isnan(r.flatten()))[0]]
             # Split pxids into continous chunks of pixel ID's
             idlist = list()
-            for k, g in groupby(enumerate(pxids), key = lambda (i, x): i-x):
-                chunk = map(itemgetter(1), g)
+            for k, g in groupby(enumerate(pxids), key=lambda p: p[0] - p[1]):
+                chunk = list(map(itemgetter(1), g))
                 idlist += [chunk[0], chunk[-1], None]
             # Create one element for every continous chunks
             self.addDetectorIds(name, idlist)
@@ -717,7 +717,7 @@ class MantidGeom:
             raise IndexError("Please specifiy list as [start1, end1, step1, "\
                              +"start2, end2, step2, ...]. If no step is"\
                              +"required, use None.")
-        num_ids = len(idlist) / 3
+        num_ids = int(len(idlist) / 3)
         id_element = le.SubElement(self.__root, "idlist", idname=idname)
         for i in range(num_ids):
             if idlist[(i*3)+2] is None:
