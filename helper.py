@@ -1,15 +1,19 @@
 from __future__ import (print_function)
 from lxml import etree as le # python-lxml on rpm based systems
-from string import split,join
 import numpy as np
 from itertools import groupby
 from operator import itemgetter
+
+# Conversions from 2.7 to 3.x without modifying the code
+split = lambda s: s.split()  # replaces from string import split
+join = lambda t: ' '.join(t)  # replaces from string import join
 
 INCH_TO_METRE = 0.0254
 DEG_TO_RAD = 0.0174533 # degrees to radians according to idl
 XMLNS = "http://www.mantidproject.org/IDF/1.0"
 XSI = "http://www.w3.org/2001/XMLSchema-instance"
 SCHEMA_LOC = "http://www.mantidproject.org/IDF/1.0 http://schema.mantidproject.org/IDF/1.0/IDFSchema.xsd"
+nEA = np.empty(0)  # empty array
 
 class MantidGeom:
 
@@ -51,6 +55,7 @@ class MantidGeom:
         """
         print(le.tostring(self.__root, pretty_print=True,
                              xml_declaration=True))
+
 
     def addSnsDefaults(self, indirect=False, default_view=None, theta_sign_axis=None):
         """
@@ -156,23 +161,68 @@ class MantidGeom:
         le.SubElement(self.__root, "type",
                       **{"name":"sample-position", "is":"SamplePos"})
 
-    def addDetectorPixels(self, name, r=[], theta=[], phi=[], names=[], energy=[]):
-
-        #component = le.SubElement(self.__root, "component",
-        #                          type=name, idlist=name)
-
+    def addDetectorPixels(self, name, r=nEA, theta=nEA, phi=nEA, x=nEA, y=nEA, z=nEA,
+                          nr=nEA, ntheta=nEA, nphi=nEA, nx=nEA, ny=nEA, nz=nEA,
+                          names=nEA, energy=nEA):
+        """
+        Create a list of detectors by passing real and, optionally, neutronic coordinates.
+        Real coordinates can be passed either as polar (r, theta, phi)
+        or cartesian (x, y, z). Analogously for the neutronic coordinates.
+        :param name: name of the component
+        :param r: array of radii for real detector positions
+        :param theta: array of polar angles in real space
+        :param phi: array of azimuthal angles in real space
+        :param x: array of cartesian X-coordinates in real space
+        :param y: array of cartesian Y-coordinates in real space
+        :param z: array of cartesian Z-coordinates in real space
+        :param nr: array of radii for neutronic detector positions
+        :param ntheta: array of polar angles in neutronic space
+        :param nphi: array of azimuthal angles in neutronic space
+        :param nx: array of cartesian X-coordinates in neutronic space
+        :param ny: array of cartesian Y-coordinates in neutronic space
+        :param nz: array of cartesian Z-coordinates in neutronic space
+        :param names: list of pixel names
+        :param energy: energies for each pixel
+        """
         type_element = le.SubElement(self.__root, "type", name=name)
-        #le.SubElement(type_element, "location")
 
-        for i in range(len(r)):
-            for j in range(len(r[i])):
-                if (str(r[i][j]) != "nan"):
+        def triad_factory(symbols, components):
+            """
+            Generates lambda functions to produce **kwargs for le.SubElement  
+            :param symbols: triad of argument keywords for le.SubElement 
+            :param components: lists of neutronic positions
+            :return: lambda object
+            """
+            return lambda i, j: dict(zip(symbols,
+                                       [str(comp[i][j]) for comp in components]))
+
+        # Find polar or cartesian coordinates. Create dictionary with lambda
+        if r.any():
+            first_comp = r
+            triad = triad_factory(['r', 't', 'p'], [r, theta, phi])
+        else:
+            first_comp = x
+            triad = triad_factory(['x', 'y', 'z'], [x, y, z])
+        # Same for neutronic positions
+        if nr.any():
+            first_ncomp = nr
+            ntriad = triad_factory(['r', 't', 'p'], [nr, ntheta, nphi])
+        else:
+            first_ncomp = nx
+            ntriad = triad_factory(['x', 'y', 'z'], [nx, ny, nz])
+
+        # Create the pixels
+        for i in range(len(first_comp)):
+            for j in range(len(first_comp[i])):
+                if not(np.isnan(first_comp[i][j]) or np.isnan(first_ncomp[i][j])):
                     basecomponent = le.SubElement(type_element, "component", type="pixel")
-                    location_element = le.SubElement(basecomponent, "location", r=str(r[i][j]),
-                          t=str(theta[i][j]), p=str(phi[i][j]), name=str(names[i][j]))
-                    le.SubElement(location_element, "facing", x="0.0", y="0.0", z="0.0")
-                    #le.SubElement(basecomponent, "properties")
-                    efixed_comp = le.SubElement(basecomponent, "parameter", name="Efixed")
+                    location_element = le.SubElement(basecomponent, "location",
+                                                     name=str(names[i][j]), **triad(i,j))
+                    if nr.any() or nx.any():
+                        le.SubElement(location_element, "neutronic", **ntriad(i,j))
+                    else:
+                        le.SubElement(location_element, "facing", x="0.0", y="0.0", z="0.0")
+                    efixed_comp = le.SubElement(basecomponent, "parameter", name="EFixed")
                     le.SubElement(efixed_comp, "value", val=str(energy[i][j]))
 
     def addDetectorPixelsIdList(self, name, r=[], names=[], elg="single_list"):
@@ -197,8 +247,8 @@ class MantidGeom:
             pxids = names.flatten()[np.where(~np.isnan(r.flatten()))[0]]
             # Split pxids into continous chunks of pixel ID's
             idlist = list()
-            for k, g in groupby(enumerate(pxids), lambda (i, x): i-x):
-                chunk = map(itemgetter(1), g)
+            for k, g in groupby(enumerate(pxids), key=lambda p: p[0] - p[1]):
+                chunk = list(map(itemgetter(1), g))
                 idlist += [chunk[0], chunk[-1], None]
             # Create one element for every continous chunks
             self.addDetectorIds(name, idlist)
@@ -424,7 +474,7 @@ class MantidGeom:
               rf=float(r)               
               le.SubElement(log, "value", **{"val":r})    
             except Exception as e:
-              print("Excpetion: {}".format(str(e)))
+              print('Exception: ', str(e))
               processed=split(str(r))
               if len(processed)==1:
                 le.SubElement(log, "logfile", **{"id":r})
@@ -667,7 +717,7 @@ class MantidGeom:
             raise IndexError("Please specifiy list as [start1, end1, step1, "\
                              +"start2, end2, step2, ...]. If no step is"\
                              +"required, use None.")
-        num_ids = len(idlist) / 3
+        num_ids = int(len(idlist) / 3)
         id_element = le.SubElement(self.__root, "idlist", idname=idname)
         for i in range(num_ids):
             if idlist[(i*3)+2] is None:
