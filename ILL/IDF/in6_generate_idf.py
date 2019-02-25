@@ -33,7 +33,7 @@ def write_in6_monitor_positions(output_file):
 
 
 def write_in6_detector_shape(output_file):
-    output_file.write("""<!-- Detector tube shape. Cuboids 32 x 16 mm, 300 mm long -->
+    output_file.write("""<!-- Detector tube shape. Cuboids 31 x 16 mm, 300 mm long -->
                  <type is="detector" name="tube">
                    <cuboid id="pixel-shape">
                      <left-front-bottom-point y="-0.150" x="-0.0155" z="0.008"/>
