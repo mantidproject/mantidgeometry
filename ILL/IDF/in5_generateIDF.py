@@ -6,8 +6,8 @@ import numpy as np
 
 
 # # Global variables
-instrumentName='IN5'
-numberOfPixelsPerTube=256
+instrumentName = 'IN5'
+numberOfPixelsPerTube = 256
 firstDetectorId = 1
 radius = 4 # meters
 
@@ -40,7 +40,7 @@ geometry.addComponentILL('sample-position', 0.0, 0.0, 0.0, 'SamplePos')
 geometry.addMonitors(names=['monitor'], distance=[monitorZ])
 geometry.addDummyMonitor(0.01, 0.03)
 geometry.addMonitorIds(['100000'])
-pixelBase = {'x': 0., 'y': 0., 'z': -tubePixelStep / 2.}
+pixelBase = {'x': 0., 'y': -tubePixelStep / 2., 'z': 0.}
 geometry.addCylinderPixelAdvanced(
     'standard_pixel', center_bottom_base=pixelBase,
     axis={'x': 0., 'y': 1., 'z': 0.}, pixel_radius=pixelRadius,
