@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-with_A_and_E = False
-
 INST_NAME = "SEQUOIA"
 NUM_PIXELS_PER_TUBE = 128
 NUM_TUBES_PER_BANK = 8
@@ -42,7 +40,6 @@ if __name__ == "__main__":
     valid_from = "2012-04-04 14:15:46"
 
     # Get geometry information file
-
     detinfo = readFile(geom_input_file)
     num_dets = len(detinfo.values()[0])
     xml_outfile = INST_NAME+"_Definition.xml"
@@ -66,12 +63,10 @@ if __name__ == "__main__":
     row_id_list = []
     doc_handle = None
     for i in range(num_dets):
-        location = detinfo["Location"][i]
-        if not with_A_and_E:
-            if location.startswith("A") or \
-               location.startswith("E"):
-                continue
+        inuse = int(detinfo["InUse"][i])
+        if not inuse: continue
         
+        location = detinfo["Location"][i]
         if row_id != location[0]:
             row_id = location[0]
             row_id_list.append(row_id)
@@ -136,21 +131,29 @@ if __name__ == "__main__":
     det.addDummyMonitor(0.01, 0.03)
 
     det.addComment("DETECTOR IDs")
-    # FIXME: Set to zero when A and E rows are filled
-    if with_A_and_E:
-        offset = 0
-    else:
-        offset = 37888
+    
+    offsets = {}; offset=0
+    packnames = detinfo["Location"]
+    for i in range(num_dets):
+        packname = packnames[i]
+        offsets[packname] = offset
+        offset += PIXELS_PER_BANK
+        continue
+        
     for i in range(len(row_id_list)):
-        row_id_str = row_id_list[i] + " row"
-        det_names = [x for x in detinfo["Location"] if x.startswith(row_id_list[i])]
-        id_list = []
-        for j in range(len(det_names)):
-            id_list.append(j * PIXELS_PER_BANK + offset)
-            id_list.append((j+1) * PIXELS_PER_BANK - 1 + offset)
-            id_list.append(None)
+        rowname = row_id_list[i]
+        row_id_str = rowname + " row"
 
-        offset += (PIXELS_PER_BANK * (j + 1))
+        # 'A1', 'A2', etc if row_id_str is "A row"
+        det_names = [x for x, inuse in zip(detinfo["Location"], detinfo["InUse"])
+                     if x.startswith(row_id_list[i]) and int(inuse)]
+        
+        id_list = []
+        for detname in det_names:
+            offset = offsets[detname]
+            id_list.append(offset)
+            id_list.append(offset + PIXELS_PER_BANK - 1)
+            id_list.append(None)
 
         det.addDetectorIds(row_id_str, id_list)
 
