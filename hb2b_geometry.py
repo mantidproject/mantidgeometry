@@ -95,16 +95,51 @@ def generate_1bank_2d_idf(instrument_name, geom_setup_dict, pixel_setup, output_
     # hb2b.addComment("MONITORS")
     # hb2b.add_monitor_type()
 
-    # arm - component
+    # Build 'arm'
+    # define arm - component
     pixel_row_count, pixel_column_count = geom_setup_dict['PixelNumber'][pixel_setup]
-    arm_loc_dict = {'r-position': {'value': 0.0},
-                    't-position': {'logfile': 'value+0.0', 'id': 'cal::2theta'},
-                    'p-position': {'value': 0.0},
-                    'roty': {'logfile': 'value+0.0', 'id': 'cal::roty'}}
-
+    arm_loc_dict = dict()
+    arm_loc_dict['r-position'] = {'value': 0.0}
+    arm_loc_dict['t-position'] = {'value': 0.0}
+    arm_loc_dict['p-position'] = {'value': 0.0}
+    arm_loc_dict['roty'] = {'logfile': 'value+0.0', 'id': '2theta'}  # roty works as 2theta with experiment
     arm_node = hb2b.add_component(type_name='arm', idfillbyfirst='x', idstart=1, idstepbyrow=pixel_column_count)
     arm_loc_node = hb2b.add_location('bank1', arm_node, arm_loc_dict)
-    hb2b.add_parameter('r-position', 0.0, arm_loc_node)
+
+    # define type: arm
+    # TODO - TONIGHT - Implement add_type
+    arm_type_node = hb2b.add_type(type_name='arm')
+    """
+      <type name="arm">
+	  <component type="panel">
+		  <location>
+			  <parameter name="z">
+	                          <logfile eq="1.0*value+0.416" id="cal::arm"/>
+			  </parameter>
+                           <parameter name="rotx">
+                             <logfile eq="value+0.0" id="cal::flip"/>
+                           </parameter>
+                          <parameter name="roty">
+                            <logfile eq="value+0.0" id="cal::roty"/>
+                          </parameter>
+                          <parameter name="rotz">
+                            <logfile eq="value+0.0" id="cal::spin"/>
+                          </parameter>
+		  </location>
+	  </component>
+  </type>
+    """
+
+    # define component panel under type arm
+    panel_loc_dict = {'z': {'logfile': 'value+{}'.format(geom_setup_dict['L2']), 'id': 'cal::arm'},
+                      'rotx': {'logfile': 'value+0.0', 'id': 'cal::flip'},
+                      'roty': {'logfile': 'value+0.0', 'id': 'cal::roty'},
+                      'rotz': {'logfile': 'value+0.0', 'id': 'cal::spin'},
+                      }
+    panel_node = hb2b.add_component(type_name='panel', parent=arm_type_node)
+    hb2b.add_location(None, panel_node, panel_loc_dict)
+
+    # hb2b.add_parameter('r-position', 0.0, arm_loc_node)
 
     # generate rectangular detector
     pixel_size_x = pixel_size_y = geom_setup_dict['PixelSize'][pixel_setup]
