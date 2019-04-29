@@ -15,15 +15,22 @@ Runs with 111 analyzer have "6.2712" as /entry/DASlogs/chopWL/value
 nexus_file_111 = "/SNS/BSS/IPTS-5908/0/32264/NeXus/BSS_32264_event.nxs"
 nexus_file_311 = "/SNS/BSS/IPTS-5908/0/40473/NeXus/BSS_40473_event.nxs"
 
-reflections = {'111': {'nexus': nexus_file_111,
+reflections = {'generic': {'nexus': nexus_file_111,
+                           'wavelength': 6.2712,
+                           'ratio_to_irreducible_hkl': 1.0,
+                           'efixed': False},
+               '111': {'nexus': nexus_file_111,
                        'wavelength': 6.2712,
-                       'ratio_to_irreducible_hkl': 1.0},
+                       'ratio_to_irreducible_hkl': 1.0,
+                       'efixed': True},
                '333': {'nexus': nexus_file_111,
                        'wavelength': 6.2712 / 3.0,
-                       'ratio_to_irreducible_hkl': 1.0 / 3.0},
+                       'ratio_to_irreducible_hkl': 1.0 / 3.0,
+                       'efixed': True},
                '311': {'nexus': nexus_file_311,
                        'wavelength': 3.2750,
-                       'ratio_to_irreducible_hkl': 1.0}
+                       'ratio_to_irreducible_hkl': 1.0,
+                       'efixed': True}
               }
 
 n_inelastic_banks = 4
@@ -176,7 +183,8 @@ def generate_reflection_file(reflection_key):
         det.addDetectorPixels(bank_id, x=xbank, y=ybank, z=zbank,
                               names=pixel_id, energy=analyser_energy,
                               nr=distance, ntheta=polar_angle,
-                              nphi=azimuthal_angle)
+                              nphi=azimuthal_angle,
+                              output_efixed=refl['efixed'])
 
         det.addDetectorPixelsIdList(bank_id, r=distance, names=pixel_id,
                                     elg="multiple_ranges")

@@ -163,7 +163,7 @@ class MantidGeom:
 
     def addDetectorPixels(self, name, r=nEA, theta=nEA, phi=nEA, x=nEA, y=nEA, z=nEA,
                           nr=nEA, ntheta=nEA, nphi=nEA, nx=nEA, ny=nEA, nz=nEA,
-                          names=nEA, energy=nEA):
+                          names=nEA, energy=nEA, output_efixed=True):
         """
         Create a list of detectors by passing real and, optionally, neutronic coordinates.
         Real coordinates can be passed either as polar (r, theta, phi)
@@ -222,8 +222,9 @@ class MantidGeom:
                         le.SubElement(location_element, "neutronic", **ntriad(i,j))
                     else:
                         le.SubElement(location_element, "facing", x="0.0", y="0.0", z="0.0")
-                    efixed_comp = le.SubElement(basecomponent, "parameter", name="EFixed")
-                    le.SubElement(efixed_comp, "value", val=str(energy[i][j]))
+                    if output_efixed:
+                        efixed_comp = le.SubElement(basecomponent, "parameter", name="EFixed")
+                        le.SubElement(efixed_comp, "value", val=str(energy[i][j]))
 
     def addDetectorPixelsIdList(self, name, r=[], names=[], elg="single_list"):
         """
