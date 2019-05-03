@@ -32,7 +32,7 @@ class MantidGeom:
                                     },
                                  nsmap={None: XMLNS, "xsi": XSI}
                                  )
-        self.__root.attrib['{{{pre}}}schemaLocation'.format(pre=XSI)] = SCHEMA_LOC 
+        self.__root.attrib['{{{pre}}}schemaLocation'.format(pre=XSI)] = SCHEMA_LOC
         if comment is not None:
             if type(comment) == list or type(comment) == tuple:
                 for bit in comment:
@@ -57,7 +57,7 @@ class MantidGeom:
                              xml_declaration=True))
 
 
-    def addSnsDefaults(self, indirect=False, default_view=None, theta_sign_axis=None):
+    def addSnsDefaults(self, indirect=False, default_view=None, theta_sign_axis='x'):
         """
         Set the default properties for SNS geometries
         """
@@ -66,14 +66,14 @@ class MantidGeom:
         le.SubElement(defaults_element, "angle", unit="degree")
         if (indirect):
           le.SubElement(defaults_element, "indirect-neutronic-positions")
-        
+
         reference_element = le.SubElement(defaults_element, "reference-frame")
         le.SubElement(reference_element, "along-beam", axis="z")
         le.SubElement(reference_element, "pointing-up", axis="y")
         le.SubElement(reference_element, "handedness", val="right")
-        if theta_sign_axis is not None:
+        if theta_sign_axis:
             le.SubElement(reference_element, "theta-sign", axis=theta_sign_axis)
-        if default_view is not None:
+        if default_view:
             le.SubElement(defaults_element, "default-view", view=default_view)
 
     def addComment(self, comment):
@@ -157,7 +157,7 @@ class MantidGeom:
             if coord_type is "spherical":
                 le.SubElement(source, "location", r=str(location[0]),
                               t=str(location[1]), p=str(location[2]))
-                    
+
         le.SubElement(self.__root, "type",
                       **{"name":"sample-position", "is":"SamplePos"})
 
@@ -188,8 +188,8 @@ class MantidGeom:
 
         def triad_factory(symbols, components):
             """
-            Generates lambda functions to produce **kwargs for le.SubElement  
-            :param symbols: triad of argument keywords for le.SubElement 
+            Generates lambda functions to produce **kwargs for le.SubElement
+            :param symbols: triad of argument keywords for le.SubElement
             :param components: lists of neutronic positions
             :return: lambda object
             """
@@ -258,19 +258,19 @@ class MantidGeom:
 
     def addMonitors(self, distance=[], names=[], neutronic=False):
         """
-        Add a list of monitors to the geometry. 
+        Add a list of monitors to the geometry.
         """
         if len(distance) != len(names):
             raise IndexError("Distance and name list must be same size!")
-        
+
         component = le.SubElement(self.__root, "component",
                                   type="monitors", idlist="monitors")
         le.SubElement(component, "location")
-        
+
         type_element = le.SubElement(self.__root, "type", name="monitors")
         basecomponent = le.SubElement(type_element, "component",
                                       **{"type":"monitor"})
-        
+
         for i in range(len(distance)):
             try:
                 zi=float(distance[i]) # check if float
@@ -346,7 +346,7 @@ class MantidGeom:
         for key in extra_attrs.keys():
             extra_attrs[key] = str(extra_attrs[key])  # convert everything to strings
         return le.SubElement(self.__root, "type", name=name, **extra_attrs)
-            
+
     def makeDetectorElement(self, name, idlist_type=None, root=None, extra_attrs={}, location=[0.0, 0.0, 0.0]):
         """
         Return a component element.
@@ -379,7 +379,7 @@ class MantidGeom:
         """
         type_element = le.SubElement(self.__root, "type", name=name)
         comp_element = le.SubElement(type_element, "component", type=comp_type)
-        
+
         if usepolar is not None:
             self.addLocationPolar(comp_element, x, y, z, facingSample)
         else:
@@ -419,7 +419,7 @@ class MantidGeom:
             pos_loc = le.SubElement(root, "location", x=str(x), y=str(y), z=str(z), name=name)
         else:
             pos_loc = le.SubElement(root, "location", x=str(x), y=str(y), z=str(z))
-                        
+
         if rot_y is not None:
             r1 = le.SubElement(pos_loc, "rot", **{"val":str(rot_y), "axis-x":"0",
                                                   "axis-y":"1", "axis-z":"0"})
@@ -472,8 +472,8 @@ class MantidGeom:
             pos_loc = le.SubElement(root, "location")
             log=le.SubElement(pos_loc,"parameter",**{"name":"r-position"})
             try:
-              rf=float(r)               
-              le.SubElement(log, "value", **{"val":r})    
+              rf=float(r)
+              le.SubElement(log, "value", **{"val":r})
             except Exception as e:
               print('Exception: ', str(e))
               processed=split(str(r))
@@ -485,59 +485,59 @@ class MantidGeom:
             log=le.SubElement(pos_loc,"parameter",**{"name":"t-position"})
             try:
               le.SubElement(log, "value", **{"val":t})
-            except:  
+            except:
               processed=split(str(t))
               if len(processed)==1:
                 le.SubElement(log, "logfile", **{"id":t})
               else:
                 equation=join(processed[1:]).replace(processed[0],"value")
-                le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})        
+                le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})
             log=le.SubElement(pos_loc,"parameter",**{"name":"p-position"})
             try:
-              le.SubElement(log, "value", **{"val":p})    
-            except:  
+              le.SubElement(log, "value", **{"val":p})
+            except:
               processed=split(str(p))
               if len(processed)==1:
                 le.SubElement(log, "logfile", **{"id":p})
               else:
                 equation=join(processed[1:]).replace(processed[0],"value")
-                le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})  
+                le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})
           #add rotx, roty, rotz
           #Regardless of what order rotx, roty and rotz is specified in the IDF,
-          #the combined rotation is equals that obtained by applying rotx, then roty and finally rotz. 
+          #the combined rotation is equals that obtained by applying rotx, then roty and finally rotz.
           if rot_x is not None:
             log=le.SubElement(pos_loc,"parameter",**{"name":"rotx"})
             try:
-              le.SubElement(log, "value", **{"val":rot_x})    
-            except:  
+              le.SubElement(log, "value", **{"val":rot_x})
+            except:
               processed=split(str(rot_x))
               if len(processed)==1:
                 le.SubElement(log, "logfile", **{"id":rot_x})
               else:
                 equation=join(processed[1:]).replace(processed[0],"value")
-                le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})  
+                le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})
           if rot_y is not None:
             log=le.SubElement(pos_loc,"parameter",**{"name":"roty"})
             try:
-              le.SubElement(log, "value", **{"val":rot_y})    
-            except:  
+              le.SubElement(log, "value", **{"val":rot_y})
+            except:
               processed=split(str(rot_y))
               if len(processed)==1:
                 le.SubElement(log, "logfile", **{"id":rot_y})
               else:
                 equation=join(processed[1:]).replace(processed[0],"value")
-                le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})  
+                le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})
           if rot_z is not None:
             log=le.SubElement(pos_loc,"parameter",**{"name":"rotz"})
             try:
-              le.SubElement(log, "value", **{"val":rot_z})    
-            except:  
+              le.SubElement(log, "value", **{"val":rot_z})
+            except:
               processed=split(str(rot_z))
               if len(processed)==1:
                 le.SubElement(log, "logfile", **{"id":rot_z})
               else:
                 equation=join(processed[1:]).replace(processed[0],"value")
-                le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})  
+                le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})
 
     def addNPack(self, name, num_tubes, tube_width, air_gap, type_name="tube",
                  neutronic=False, neutronicIsPhysical=False):
@@ -554,7 +554,7 @@ class MantidGeom:
         component = le.SubElement(type_element, "component", type=type_name)
 
         effective_tube_width = tube_width + air_gap
-        
+
         pack_start = (effective_tube_width / 2.0) * (1 - num_tubes)
 
         for i in range(num_tubes):
@@ -601,9 +601,9 @@ class MantidGeom:
         """
         type_element = le.SubElement(self.__root, "type", outline="yes",
                                      name=name)
-                                     
+
         le.SubElement(type_element, "properties")
-        
+
         component = le.SubElement(type_element, "component", type=type_name)
 
         pixel_width = tube_height / num_pixels
@@ -692,9 +692,9 @@ class MantidGeom:
         le.SubElement(cylinder, "axis", x="0.0", y="0.0", z="1.0")
         le.SubElement(cylinder, "radius", val=str(radius))
         le.SubElement(cylinder, "height", val=str(height))
-        
+
         le.SubElement(type_element, "algebra", val="cyl-approx")
-    
+
     def addCuboidMonitor(self,width,height,depth):
         """
         Add a cuboid monitor
@@ -728,7 +728,7 @@ class MantidGeom:
                 le.SubElement(id_element, "id", start=str(idlist[(i*3)]),
                               step=str(idlist[(i*3)+2]),
                               end=str(idlist[(i*3)+1]))
-        
+
     def addMonitorIds(self, ids=[]):
         """
         Add the monitor IDs.
@@ -748,7 +748,7 @@ class MantidGeom:
         for arg in args:
             if len(arg) != 3:
                 raise IndexError("Will not be able to parse:", arg)
-            
+
             par = le.SubElement(complink, "parameter", name=arg[0])
             le.SubElement(par, "value", val=str(arg[1]), units=str(arg[2]))
 
@@ -820,7 +820,7 @@ class MantidGeom:
         le.SubElement(cuboid, "right-front-bottom-point",
                       x=str(hole[0]),y=str(hole[1]),z="0.0")
         le.SubElement(type_element, "algebra", val="body (# hole)")
-        
+
 
     def addDoubleDiskChopper(self, name, center=(0.17, 0.0),
                              hole=(0.04,0.02), radius=0.2,
@@ -856,7 +856,7 @@ class MantidGeom:
 
     def addFermiChopper(self, name, radius=0.05, height=0.065,width=0.061,is_type="chopper"):
         """
-         Add a Fermi chopper 
+         Add a Fermi chopper
         """
         y0=-height/2.0
         x0=-width/2.0
@@ -873,10 +873,10 @@ class MantidGeom:
         le.SubElement(cuboid, "left-back-bottom-point", x=str(-x0),y=str(y0),z=str(-radius))
         le.SubElement(cuboid, "right-front-bottom-point",x=str(x0),y=str(y0),z=str(radius))
         le.SubElement(type_element, "algebra", val="body (# hole)")
-        
+
     def addVerticalAxisT0Chopper(self, name, radius=0.175, height=0.090,width_out=0.095,width_in=0.085,is_type="chopper"):
         """
-         Add a Vertical Axis T0 chopper 
+         Add a Vertical Axis T0 chopper
         """
         y0=-height/2.0
         #x0=-width/2.0
@@ -922,7 +922,7 @@ class MantidGeom:
         le.SubElement(hex_2, "left-back-bottom-point",
                       x=str(-x0_i),y=str(y0),z=str(0))
         le.SubElement(hex_2, "left-back-top-point",
-                      x=str(-x0_i),y=str(-y0),z=str(0))              
+                      x=str(-x0_i),y=str(-y0),z=str(0))
         le.SubElement(type_element, "algebra", val="body (# (hole1 : hole2))")
 
     def addCorrelationChopper(self, name, center=(-0.28, 0.0),
