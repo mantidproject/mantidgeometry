@@ -276,10 +276,13 @@ class MantidGeom(object):
         if root is None:
             root = self.__root
 
-        comp = le.SubElement(root, 'component', type=type_name,
-                             idfillbyfirst='{}'.format(idfillbyfirst),
-                             idstart='{}'.format(idstart),
-                             idstepbyrow='{}'.format(idstepbyrow))
+        if idfillbyfirst is None:
+            comp = le.SubElement(root, 'component', type=type_name)
+        else:
+            comp = le.SubElement(root, 'component', type=type_name,
+                                 idfillbyfirst='{}'.format(idfillbyfirst),
+                                 idstart='{}'.format(idstart),
+                                 idstepbyrow='{}'.format(idstepbyrow))
 
         return comp
 
@@ -289,9 +292,16 @@ class MantidGeom(object):
         :param node
         :return:
         """
-        location_node = le.SubElement(node, 'location', name=location_name)
+        arg_dict = dict()
+        if location_name is None:
+            pass
+            # location_node = le.SubElement(node, 'location')
+        else:
+            arg_dict['name'] = location_name
+            # location_node = le.SubElement(node, 'location', name=location_name)
+        location_node = le.SubElement(node, 'location', **arg_dict)
 
-        for param_name in location_param_dict:
+        for param_name in sorted(location_param_dict.keys()):
             if 'value' in location_param_dict[param_name]:
                 # write parameter value
                 param_value = location_param_dict[param_name]['value']
@@ -321,6 +331,15 @@ class MantidGeom(object):
         le.SubElement(log_file_node, 'logfile', eq=log_equation, id=log_id)
 
         return log_file_node
+
+    def add_type(self, type_info_dict, root_node=None):
+
+        if root_node is None:
+            root_node = self.__root
+
+        type_node = le.SubElement(root_node, 'type', name=type_info_dict['name'])
+
+        return type_node
 
     """
       <component idfillbyfirst="x" idstart="1" idstepbyrow="1024" type="arm">

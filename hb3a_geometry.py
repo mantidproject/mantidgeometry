@@ -150,6 +150,8 @@ def main(argv):
         print ('Generate HB3A IDF: {} [number of panel (1 or 3)')
         sys.exit(0)
 
+    # TODO - TONIGHT 0 - 3 options: 1 panel, 3 panel, Zebra
+
     num_panel = int(argv[1])
     now = datetime.datetime.now()
     output_idf_name = 'HB3A_Definition_{:04}{:02}{:02}_{:02}{:02}.xml' \

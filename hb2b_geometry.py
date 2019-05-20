@@ -7,10 +7,17 @@ HB3A_L1 = 2.
 
 
 HB2B_SETUP = {'L1': 2.678898,
-              'L2': 0.95, # arm length
+              'L2': 0.95,  # arm length
               'PixelNumber': {'1K': (1024, 1024), '2K': (2048, 2048)},
               'PixelSize': {'1K': 0.00029296875, '2K': 0.00029296875*0.5}
               }
+
+
+MOCK_HB2B_SETUP = {'L1': 2.678898,
+                   'L2': 0.95,  # arm length
+                   'PixelNumber': {'1K': (1024, 1024), '2K': (2048, 2048)},
+                   'PixelSize': {'1K': 0.00029296875, '2K': 0.00029296875*0.5}
+                   }
 
 XRAY_SETUP = {'L1': 2.678898,
               'L2': 0.416,  # arm length
@@ -19,7 +26,7 @@ XRAY_SETUP = {'L1': 2.678898,
               }
 
 
-class HB2BGeometry(helper.MantidGeom):
+class ResidualStressGeometry(helper.MantidGeom):
     """
     HB3A geometry extended from MantidGeom
     """
@@ -31,7 +38,7 @@ class HB2BGeometry(helper.MantidGeom):
         :param valid_from: beginning date
         :param valid_to: end date
         """
-        super(HB2BGeometry, self).__init__(instname, comment, valid_from, valid_to)
+        super(ResidualStressGeometry, self).__init__(instname, comment, valid_from, valid_to)
 
         return
 
@@ -57,6 +64,34 @@ class HB2BGeometry(helper.MantidGeom):
 
         return
 
+    def add_panel_type(self, type_name='arm'):
+        """ Add panel
+        """
+        type_node = self.add_type({'name': 'arm'})
+
+        return type_node
+
+    """
+      <type name="arm">
+	  <component type="panel">
+		  <location>
+			  <parameter name="z">
+	                          <logfile eq="1.0*value+0.416" id="cal::arm"/>
+			  </parameter>
+                           <parameter name="rotx">
+                             <logfile eq="value+0.0" id="cal::flip"/>
+                           </parameter>
+                          <parameter name="roty">
+                            <logfile eq="value+0.0" id="cal::roty"/>
+                          </parameter>
+                          <parameter name="rotz">
+                            <logfile eq="value+0.0" id="cal::spin"/>
+                          </parameter>
+		  </location>
+	  </component>
+  </type>
+    """
+
 # END-DEF-HB3A
 
 
@@ -74,10 +109,10 @@ def generate_1bank_2d_idf(instrument_name, geom_setup_dict, pixel_setup, output_
     end_date = '2100-10-20 23:59:59'
 
     # boiler plate stuff
-    hb2b = HB2BGeometry(instrument_name,
-                        comment="Created by " + ", ".join(authors),
-                        valid_from=begin_date,
-                        valid_to=end_date)
+    hb2b = ResidualStressGeometry(instrument_name,
+                                  comment="Created by " + ", ".join(authors),
+                                  valid_from=begin_date,
+                                  valid_to=end_date)
 
     # TODO/FIXME - NO HFIR Default
     # hb2b.addComment('DEFAULTS')
@@ -107,28 +142,7 @@ def generate_1bank_2d_idf(instrument_name, geom_setup_dict, pixel_setup, output_
     arm_loc_node = hb2b.add_location('bank1', arm_node, arm_loc_dict)
 
     # define type: arm
-    # TODO - TONIGHT - Implement add_type
-    arm_type_node = hb2b.add_type(type_name='arm')
-    """
-      <type name="arm">
-	  <component type="panel">
-		  <location>
-			  <parameter name="z">
-	                          <logfile eq="1.0*value+0.416" id="cal::arm"/>
-			  </parameter>
-                           <parameter name="rotx">
-                             <logfile eq="value+0.0" id="cal::flip"/>
-                           </parameter>
-                          <parameter name="roty">
-                            <logfile eq="value+0.0" id="cal::roty"/>
-                          </parameter>
-                          <parameter name="rotz">
-                            <logfile eq="value+0.0" id="cal::spin"/>
-                          </parameter>
-		  </location>
-	  </component>
-  </type>
-    """
+    arm_type_node = hb2b.add_panel_type(type_name='arm')
 
     # define component panel under type arm
     panel_loc_dict = {'z': {'logfile': 'value+{}'.format(geom_setup_dict['L2']), 'id': 'cal::arm'},
@@ -136,7 +150,8 @@ def generate_1bank_2d_idf(instrument_name, geom_setup_dict, pixel_setup, output_
                       'roty': {'logfile': 'value+0.0', 'id': 'cal::roty'},
                       'rotz': {'logfile': 'value+0.0', 'id': 'cal::spin'},
                       }
-    panel_node = hb2b.add_component(type_name='panel', parent=arm_type_node)
+    panel_node = hb2b.add_component(type_name='panel', idfillbyfirst=None, idstart=None,
+                                    idstepbyrow=None, root=arm_type_node)
     hb2b.add_location(None, panel_node, panel_loc_dict)
 
     # hb2b.add_parameter('r-position', 0.0, arm_loc_node)
@@ -152,31 +167,31 @@ def generate_1bank_2d_idf(instrument_name, geom_setup_dict, pixel_setup, output_
                                   pixel_size_x=pixel_size_x, pixel_size_y=pixel_size_y,
                                   pixel_size_z=0.0001)
 
-
     hb2b.write_terminal()
-
-    return
-
-    # add detectors
-    hb2b.addComment('Define detector banks')
-    hb2b.addComponent(type_name='detectors', idlist='detectors')
-    # define detector type
-    hb2b.add_banks_type(name='detectors',
-                        components=['bank1'])
-
-    # define center bank
-    hb2b.addComment('Define Centre Bank')
-    hb2b.add_bank(name='bank1', component_name='square256detector',
-                  x=2.0, y=0., z=0., rot=90)
-
-    # 20 x 8 packs
-    hb2b.addComment('256 x 256 pack')
-    hb2b.angler_detector(name='square256detector', num_linear_pixel=256, tube_x=0.01)
-
-    # write file
     hb2b.writeGeom(output_idf_name)
 
     return
+
+    # # add detectors
+    # hb2b.addComment('Define detector banks')
+    # hb2b.addComponent(type_name='detectors', idlist='detectors')
+    # # define detector type
+    # hb2b.add_banks_type(name='detectors',
+    #                     components=['bank1'])
+    #
+    # # define center bank
+    # hb2b.addComment('Define Centre Bank')
+    # hb2b.add_bank(name='bank1', component_name='square256detector',
+    #               x=2.0, y=0., z=0., rot=90)
+    #
+    # # 20 x 8 packs
+    # hb2b.addComment('256 x 256 pack')
+    # hb2b.angler_detector(name='square256detector', num_linear_pixel=256, tube_x=0.01)
+    #
+    # # write file
+    # hb2b.writeGeom(output_idf_name)
+    #
+    # return
 
 
 def main(argv):
@@ -185,7 +200,7 @@ def main(argv):
     :return:
     """
     if len(argv) < 3:
-        print ('Generate HB2B IDF: {} [hb2b [xray]] [1k [2k]]'.format(argv[0]))
+        print ('Generate HB2B IDF: {} [hb2b [xray, mock]] [1k [2k]]'.format(argv[0]))
         sys.exit(0)
 
     instrument = argv[1]
@@ -195,6 +210,8 @@ def main(argv):
     elif instrument == 'xray':
         geom_setup_dict = XRAY_SETUP
         instrument_name = 'XRAY'
+    elif instrument == 'mock':
+        geom_setup_dict = MOCK_HB2B_SETUP
     else:
         print ('[ERROR] Instrument {} is not supported.'.format(instrument))
         sys.exit(-1)
