@@ -147,23 +147,39 @@ def main(argv):
     :return:
     """
     if len(argv) < 2:
-        print ('Generate HB3A IDF: {} [number of panel (1 or 3)')
+        print ('Generate HB3A IDF: {} [number of panel [1, 3, zebra]'.format(argv[0]))
         sys.exit(0)
 
-    # TODO - TONIGHT 0 - 3 options: 1 panel, 3 panel, Zebra
-
-    num_panel = int(argv[1])
-    now = datetime.datetime.now()
-    output_idf_name = 'HB3A_Definition_{:04}{:02}{:02}_{:02}{:02}.xml' \
-                      ''.format(now.year, now.month, now.day,
-                                now.hour, now.minute)
-    if num_panel == 1:
-        generate_1_panel_idf(output_idf_name)
-    elif num_panel:
-        generate_3_panel_idf(output_idf_name)
+    is_zebra = argv[1].lower() == 'zebra'
+    if is_zebra:
+        generate_1_panel_idf(is_zebra)
+    else:
+        num_panel = int(argv[1])
+        now = datetime.datetime.now()
+        output_idf_name = 'HB3A_Definition_{:04}{:02}{:02}_{:02}{:02}.xml' \
+                          ''.format(now.year, now.month, now.day,
+                                    now.hour, now.minute)
+        if num_panel == 1:
+            generate_1_panel_idf(output_idf_name)
+        elif num_panel:
+            generate_3_panel_idf(output_idf_name)
+        else:
+            print ('Panel configuration {} is not supported'.format(argv[1]))
+            sys.exit(-1)
 
     return
 
 
 if __name__ == '__main__':
     main(sys.argv)
+
+# TODO - TONIGHT 0 - Also output ...
+"""
+# ASCII instrument configuration file for 2K detector (2048 x 2048)
+
+arm = 0.416
+rows = 2048
+columns = 2048
+pixel_size_x = 0.0002
+pixel_size_y = 0.0002
+"""
