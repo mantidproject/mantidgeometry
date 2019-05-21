@@ -332,6 +332,14 @@ class MantidGeom(object):
 
         return log_file_node
 
+    def add_component_type(self, type_name):
+        """ Add panel
+        """
+        # TODO - TONIGHT 0 - Merge with add_type
+        type_node = self.add_type({'name': type_name})
+
+        return type_node
+
     def add_type(self, type_info_dict, root_node=None):
 
         if root_node is None:
@@ -340,28 +348,6 @@ class MantidGeom(object):
         type_node = le.SubElement(root_node, 'type', name=type_info_dict['name'])
 
         return type_node
-
-    """
-      <component idfillbyfirst="x" idstart="1" idstepbyrow="1024" type="arm">
-    <location name="bank1">
-      <parameter name="r-position">
-	      <value val='0.0'/>
-	      <!--logfile eq="1.0*value+0.950" id="cal::arm"/-->
-      </parameter>
-      <parameter name="t-position">
-        <logfile eq="value+0.0" id="cal::2theta"/>
-      </parameter>
-      <parameter name="p-position">
-        <value val="0.0"/>
-      </parameter>
-                          <parameter name="roty">
-                            <logfile eq="value+0.0" id="cal::roty"/>
-                          </parameter>
-    </location>
-  </component>
-
-    
-    """
 
     def addComponentILL(self, type_name, x, y, z, isType=None, root=None):
         """

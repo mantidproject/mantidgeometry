@@ -13,11 +13,11 @@ HB2B_SETUP = {'L1': 2.678898,
               }
 
 
-MOCK_HB2B_SETUP = {'L1': 2.678898,
-                   'L2': 0.95,  # arm length
-                   'PixelNumber': {'1K': (1024, 1024), '2K': (2048, 2048)},
-                   'PixelSize': {'1K': 0.00029296875, '2K': 0.00029296875*0.5}
-                   }
+HZB_SETUP = {'L1': 2.678898,
+             'L2': 1.13268,  # arm length
+             'PixelNumber': {'1K': (1024, 1024), '2K': (2048, 2048)},
+             'PixelSize': {'1K': 0.00029296875, '2K': 0.00029296875*0.5}
+             }
 
 XRAY_SETUP = {'L1': 2.678898,
               'L2': 0.416,  # arm length
@@ -45,10 +45,10 @@ class ResidualStressGeometry(helper.MantidGeom):
     def add_rectangular_detector(self, x_start, x_step, x_pixels,
                                  y_start, y_step, y_pixels,
                                  pixel_size_x, pixel_size_y, pixel_size_z):
-        """
+        """ Add a rectangular detector
         """
         # add detector panel
-        self.addRectangularDetector(name='panel', type='pixel',
+        self.addRectangularDetector(name='shiftpanel', type='pixel',
                                     xstart='{}'.format(x_start), xstep='{}'.format(x_step),
                                     xpixels='{}'.format(x_pixels),
                                     ystart='{}'.format(y_start), ystep='{}'.format(y_step),
@@ -63,34 +63,6 @@ class ResidualStressGeometry(helper.MantidGeom):
                             )
 
         return
-
-    def add_panel_type(self, type_name='arm'):
-        """ Add panel
-        """
-        type_node = self.add_type({'name': 'arm'})
-
-        return type_node
-
-    """
-      <type name="arm">
-	  <component type="panel">
-		  <location>
-			  <parameter name="z">
-	                          <logfile eq="1.0*value+0.416" id="cal::arm"/>
-			  </parameter>
-                           <parameter name="rotx">
-                             <logfile eq="value+0.0" id="cal::flip"/>
-                           </parameter>
-                          <parameter name="roty">
-                            <logfile eq="value+0.0" id="cal::roty"/>
-                          </parameter>
-                          <parameter name="rotz">
-                            <logfile eq="value+0.0" id="cal::spin"/>
-                          </parameter>
-		  </location>
-	  </component>
-  </type>
-    """
 
 # END-DEF-HB3A
 
@@ -130,7 +102,9 @@ def generate_1bank_2d_idf(instrument_name, geom_setup_dict, pixel_setup, output_
     # hb2b.addComment("MONITORS")
     # hb2b.add_monitor_type()
 
-    # Build 'arm'
+    # Build 'arm'/panel/shiftpanel
+    hb2b.addComment("PANEL")
+
     # define arm - component
     pixel_row_count, pixel_column_count = geom_setup_dict['PixelNumber'][pixel_setup]
     arm_loc_dict = dict()
@@ -142,21 +116,27 @@ def generate_1bank_2d_idf(instrument_name, geom_setup_dict, pixel_setup, output_
     arm_loc_node = hb2b.add_location('bank1', arm_node, arm_loc_dict)
 
     # define type: arm
-    arm_type_node = hb2b.add_panel_type(type_name='arm')
+    arm_type_node = hb2b.add_component_type(type_name='arm')
 
     # define component panel under type arm
-    panel_loc_dict = {'z': {'logfile': 'value+{}'.format(geom_setup_dict['L2']), 'id': 'cal::arm'},
-                      'rotx': {'logfile': 'value+0.0', 'id': 'cal::flip'},
-                      'roty': {'logfile': 'value+0.0', 'id': 'cal::roty'},
-                      'rotz': {'logfile': 'value+0.0', 'id': 'cal::spin'},
-                      }
-    panel_node = hb2b.add_component(type_name='panel', idfillbyfirst=None, idstart=None,
-                                    idstepbyrow=None, root=arm_type_node)
+    arm_loc_dict = {'z': {'logfile': 'value+{}'.format(geom_setup_dict['L2']), 'id': 'cal::arm'},
+                    'rotx': {'logfile': 'value+0.0', 'id': 'cal::flip'},
+                    'roty': {'logfile': 'value+0.0', 'id': 'cal::roty'},
+                    'rotz': {'logfile': 'value+0.0', 'id': 'cal::spin'},
+                    }
+    arm_node = hb2b.add_component(type_name='panel', idfillbyfirst=None, idstart=None,
+                                  idstepbyrow=None, root=arm_type_node)
+    hb2b.add_location(None, arm_node, arm_loc_dict)
+
+    # add panel
+    panel_loc_dict = {'x': {'logfile': 'value', 'id': 'cal::deltax'},
+                      'y': {'logfile': 'value', 'id': 'cal::deltay'}}
+    panel_type_node = hb2b.add_component_type('panel')
+    panel_node = hb2b.add_component(type_name='shiftpanel', idfillbyfirst=None, idstart=None,
+                                    idstepbyrow=None, root=panel_type_node)
     hb2b.add_location(None, panel_node, panel_loc_dict)
 
-    # hb2b.add_parameter('r-position', 0.0, arm_loc_node)
-
-    # generate rectangular detector
+    # generate rectangular detector based on 'shiftpanel'
     pixel_size_x = pixel_size_y = geom_setup_dict['PixelSize'][pixel_setup]
     x_start = (float(pixel_column_count)*0.5 - 0.5) * pixel_size_x
     x_step = - pixel_size_x
@@ -200,7 +180,7 @@ def main(argv):
     :return:
     """
     if len(argv) < 3:
-        print ('Generate HB2B IDF: {} [hb2b [xray, mock]] [1k [2k]]'.format(argv[0]))
+        print ('Generate HB2B IDF: {} [hb2b [xray, hzb]] [1k [2k]]'.format(argv[0]))
         sys.exit(0)
 
     instrument = argv[1]
@@ -210,8 +190,9 @@ def main(argv):
     elif instrument == 'xray':
         geom_setup_dict = XRAY_SETUP
         instrument_name = 'XRAY'
-    elif instrument == 'mock':
-        geom_setup_dict = MOCK_HB2B_SETUP
+    elif instrument == 'hzb':
+        geom_setup_dict = HZB_SETUP
+        instrument_name = 'HZB'
     else:
         print ('[ERROR] Instrument {} is not supported.'.format(instrument))
         sys.exit(-1)
