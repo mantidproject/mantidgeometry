@@ -15,8 +15,8 @@ HB2B_SETUP = {'L1': 2.678898,
 
 HZB_SETUP = {'L1': 2.678898,
              'L2': 1.13268,  # arm length
-             'PixelNumber': {'1K': (1024, 1024), '2K': (2048, 2048)},
-             'PixelSize': {'1K': 0.00029296875, '2K': 0.00029296875*0.5}
+             'PixelNumber': {'1K': (1024, 1024), '2K': (2048, 2048), '256': (256, 256)},
+             'PixelSize': {'1K': 0.00029296875, '2K': 0.00029296875*0.5, '256': 0.00029296875*4}
              }
 
 XRAY_SETUP = {'L1': 2.678898,
@@ -152,26 +152,20 @@ def generate_1bank_2d_idf(instrument_name, geom_setup_dict, pixel_setup, output_
 
     return
 
-    # # add detectors
-    # hb2b.addComment('Define detector banks')
-    # hb2b.addComponent(type_name='detectors', idlist='detectors')
-    # # define detector type
-    # hb2b.add_banks_type(name='detectors',
-    #                     components=['bank1'])
-    #
-    # # define center bank
-    # hb2b.addComment('Define Centre Bank')
-    # hb2b.add_bank(name='bank1', component_name='square256detector',
-    #               x=2.0, y=0., z=0., rot=90)
-    #
-    # # 20 x 8 packs
-    # hb2b.addComment('256 x 256 pack')
-    # hb2b.angler_detector(name='square256detector', num_linear_pixel=256, tube_x=0.01)
-    #
-    # # write file
-    # hb2b.writeGeom(output_idf_name)
-    #
-    # return
+
+def generate_2d_configure(instrument_name, geom_setup_dict, pixel_setup, output_pyrs_name):
+    """
+    # ASCII instrument configuration file for 2K detector (2048 x 2048)
+
+    arm = 0.416
+    rows = 2048
+    columns = 2048
+    pixel_size_x = 0.0002
+    pixel_size_y = 0.0002
+    """
+    # TODO - TONIGHT 0 - Also output ...
+
+    return
 
 
 def main(argv):
@@ -213,6 +207,7 @@ def main(argv):
                       ''.format(instrument_name, now.year, now.month, now.day,
                                 now.hour, now.minute)
     generate_1bank_2d_idf(instrument_name, geom_setup_dict, pixel_setup, output_idf_name)
+    generate_2d_configure(instrument_name, geom_setup_dict, pixel_setup, output_config_name)
 
     return
 

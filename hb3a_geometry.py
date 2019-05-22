@@ -173,13 +173,4 @@ def main(argv):
 if __name__ == '__main__':
     main(sys.argv)
 
-# TODO - TONIGHT 0 - Also output ...
-"""
-# ASCII instrument configuration file for 2K detector (2048 x 2048)
 
-arm = 0.416
-rows = 2048
-columns = 2048
-pixel_size_x = 0.0002
-pixel_size_y = 0.0002
-"""
