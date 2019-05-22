@@ -5,6 +5,21 @@ import helper
 # Definition of constants
 HB3A_L1 = 2.
 
+FourCircle_SETUP = {'L1': 2.0,
+                    'L2': 0.3750,  # arm length
+                    'PixelNumber': {256: (256, 256), 512: (512, 512)},
+                    'PixelSize': {256: xx, 512: 0.0002265625},
+                    }
+
+ZEBRA_SETUP = {}
+
+DEMAND_SETUP = {'L1': 2.0,
+                'L2': 0.3750,
+                'Panel Center': {1: (0, -Y), 2: (0, 0), 3: (0, Y)},
+                'PixelNumber': {1: (512, 512), 2: (512, 512), 3: (512, 512)}
+                }
+
+
 
 class HB3AGeometry(helper.MantidGeom):
     """
@@ -29,6 +44,10 @@ def generate_1_panel_idf(out_file_name):
     """ Generate the 1 panel (256 X 256) IDF valid to October 2018
     :return:
     """
+    # rot-y --> 2theta
+    # diffx --> deltax
+    # diffy --> deltay
+
     # generate instrument geometry object
     instrument_name = 'HB3A'
     authors = ["Wenduo Zhou"]
