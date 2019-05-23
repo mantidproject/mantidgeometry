@@ -11,6 +11,7 @@ XMLNS = "http://www.mantidproject.org/IDF/1.0"
 XSI = "http://www.w3.org/2001/XMLSchema-instance"
 SCHEMA_LOC = "http://www.mantidproject.org/IDF/1.0 http://schema.mantidproject.org/IDF/1.0/IDFSchema.xsd"
 
+
 class MantidGeom(object):
 
     def __init__(self, instname, comment=None, valid_from=None, valid_to=None):
@@ -339,6 +340,41 @@ class MantidGeom(object):
         type_node = self.add_type({'name': type_name})
 
         return type_node
+
+    def add_rectangular_detector(self, x_start, x_step, x_pixels,
+                                 y_start, y_step, y_pixels,
+                                 pixel_size_x, pixel_size_y, pixel_size_z,
+                                 panel_name='shiftpanel'):
+        """
+        Add an angular detector in rectangular shape
+        :param x_start:
+        :param x_step:
+        :param x_pixels:
+        :param y_start:
+        :param y_step:
+        :param y_pixels:
+        :param pixel_size_x:
+        :param pixel_size_y:
+        :param pixel_size_z:
+        :param panel_name: name in the XML for panel
+        :return:
+        """
+        # add detector panel
+        self.addRectangularDetector(name=panel_name, type='pixel',
+                                    xstart='{}'.format(x_start), xstep='{}'.format(x_step),
+                                    xpixels='{}'.format(x_pixels),
+                                    ystart='{}'.format(y_start), ystep='{}'.format(y_step),
+                                    ypixels='{}'.format(y_pixels))
+
+        # add pixels
+        self.addCuboidPixel(name='pixel', shape_id='pixel-shape',
+                            lfb_pt=(pixel_size_x*0.5, -pixel_size_y*0.5, 0),  # left-front-bottom
+                            lft_pt=(pixel_size_x*0.5, pixel_size_y*0.5, 0),  # left-front-top
+                            lbb_pt=(pixel_size_x*0.5, -pixel_size_y*0.5, -pixel_size_z),  # left-back-bottom
+                            rfb_pt=(-pixel_size_x*0.5, -pixel_size_y*0.5, 0)  # right-front-bottom
+                            )
+
+        return
 
     def add_type(self, type_info_dict, root_node=None):
 

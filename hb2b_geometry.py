@@ -42,27 +42,6 @@ class ResidualStressGeometry(helper.MantidGeom):
 
         return
 
-    def add_rectangular_detector(self, x_start, x_step, x_pixels,
-                                 y_start, y_step, y_pixels,
-                                 pixel_size_x, pixel_size_y, pixel_size_z):
-        """ Add a rectangular detector
-        """
-        # add detector panel
-        self.addRectangularDetector(name='shiftpanel', type='pixel',
-                                    xstart='{}'.format(x_start), xstep='{}'.format(x_step),
-                                    xpixels='{}'.format(x_pixels),
-                                    ystart='{}'.format(y_start), ystep='{}'.format(y_step),
-                                    ypixels='{}'.format(y_pixels))
-
-        # add pixels
-        self.addCuboidPixel(name='pixel', shape_id='pixel-shape',
-                            lfb_pt=(pixel_size_x*0.5, -pixel_size_y*0.5, 0),  # left-front-bottom
-                            lft_pt=(pixel_size_x*0.5, pixel_size_y*0.5, 0),  # left-front-top
-                            lbb_pt=(pixel_size_x*0.5, -pixel_size_y*0.5, -pixel_size_z),  # left-back-bottom
-                            rfb_pt=(-pixel_size_x*0.5, -pixel_size_y*0.5, 0)  # right-front-bottom
-                            )
-
-        return
 
 # END-DEF-HB3A
 
@@ -153,17 +132,36 @@ def generate_1bank_2d_idf(instrument_name, geom_setup_dict, pixel_setup, output_
     return
 
 
-def generate_2d_configure(instrument_name, geom_setup_dict, pixel_setup, output_pyrs_name):
-    """
+def generate_2d_configure(instrument_name, geom_setup_dict, pixel_setup, hydra_idf_name):
+    """ Generate an ASCII file for the instrument configuration
+    Here is the example:
+    ```
     # ASCII instrument configuration file for 2K detector (2048 x 2048)
-
     arm = 0.416
     rows = 2048
     columns = 2048
     pixel_size_x = 0.0002
     pixel_size_y = 0.0002
+    ```
+    :param instrument_name:
+    :param geom_setup_dict:
+    :param pixel_setup:
+    :param hydra_idf_name:
+    :return:
     """
-    # TODO - TONIGHT 0 - Also output ...
+    pixel_row_count, pixel_column_count = geom_setup_dict['PixelNumber'][pixel_setup]
+
+    config_str = '# Instrument configuration file for {} ({})\n'.format(instrument_name, pixel_setup)
+    config_str += 'arm  = {}\n'.format(geom_setup_dict['arm'])
+    config_str += 'rows = {}\n'.format(pixel_row_count)
+    config_str += 'columns = {}\n'.format(pixel_column_count)
+    config_str += 'pixel_size_x = {}\n'.format(geom_setup_dict['PixelSize'][pixel_setup])
+    config_str += 'pixel_size_y = {}\n'.format(geom_setup_dict['PixelSize'][pixel_setup])
+
+    # write out
+    idf_file = open(hydra_idf_name, 'w')
+    idf_file.write(config_str)
+    idf_file.close()
 
     return
 
@@ -206,6 +204,9 @@ def main(argv):
     output_idf_name = '{}_Definition_{:04}{:02}{:02}_{:02}{:02}.xml' \
                       ''.format(instrument_name, now.year, now.month, now.day,
                                 now.hour, now.minute)
+    output_config_name = '{}_Definition_{:04}{:02}{:02}_{:02}{:02}.txt' \
+                         ''.format(instrument_name, now.year, now.month, now.day,
+                                   now.hour, now.minute)
     generate_1bank_2d_idf(instrument_name, geom_setup_dict, pixel_setup, output_idf_name)
     generate_2d_configure(instrument_name, geom_setup_dict, pixel_setup, output_config_name)
 
