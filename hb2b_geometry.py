@@ -152,7 +152,7 @@ def generate_2d_configure(instrument_name, geom_setup_dict, pixel_setup, hydra_i
     pixel_row_count, pixel_column_count = geom_setup_dict['PixelNumber'][pixel_setup]
 
     config_str = '# Instrument configuration file for {} ({})\n'.format(instrument_name, pixel_setup)
-    config_str += 'arm  = {}\n'.format(geom_setup_dict['arm'])
+    config_str += 'arm  = {}\n'.format(geom_setup_dict['L2'])
     config_str += 'rows = {}\n'.format(pixel_row_count)
     config_str += 'columns = {}\n'.format(pixel_column_count)
     config_str += 'pixel_size_x = {}\n'.format(geom_setup_dict['PixelSize'][pixel_setup])

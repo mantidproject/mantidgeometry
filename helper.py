@@ -300,6 +300,7 @@ class MantidGeom(object):
         else:
             arg_dict['name'] = location_name
             # location_node = le.SubElement(node, 'location', name=location_name)
+
         location_node = le.SubElement(node, 'location', **arg_dict)
 
         for param_name in sorted(location_param_dict.keys()):

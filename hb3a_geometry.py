@@ -7,22 +7,31 @@ HB3A_L1 = 2.
 
 # TODO - Need to separate FourCircle_256_SETUP and FourCircle_512_SETUP
 # TODO - Unify the dictioanry layout!
-FourCircle_SETUP = {'L1': 2.0,
-                    'L2': 0.3750,  # arm length
-                    'PixelNumber': {1: (256, 256)},
-                    'PixelSize': {256: xx, 512: 0.0002265625},
-                    'Panel Center': {1: (0, -Y), 2: (0, 0), 3: (0, Y)},
-                    }
+FourCircle_256_SETUP = {'L1': 2.0,
+                        'L2': 0.3750,  # arm length
+                        'PixelNumber': {1: (256, 256)},  # bank: (row, col)
+                        'PixelSize': {1: 0.0001984375},  # bank: pixel size
+                        'Panel Center': {1: (0, 0)}
+                        }
+
+FourCircle_512_SETUP = {'L1': 2.0,
+                        'L2': 0.3750,  # arm length
+                        'PixelNumber': {1: (512, 512)},  # bank: (row, col)
+                        'PixelSize': {1: 0.0002265625},
+                        'Panel Center': {1: (0, 0)}
+                        }
 
 ZEBRA_SETUP = {'L1': 2.0,
                'L2': 0.3750,  # arm length
-               'PixelNumber': {256: (256, 256)},
-               'PixelSize': {256: xx}}
+               'PixelNumber': {1: (256, 256)},
+               'PixelSize': {1: 0.01234567}}
 
+Y = 0.1234567
 DEMAND_SETUP = {'L1': 2.0,
                 'L2': 0.3750,
                 'Panel Center': {1: (0, -Y), 2: (0, 0), 3: (0, Y)},
-                'PixelNumber': {1: (512, 512), 2: (512, 512), 3: (512, 512)}
+                'PixelNumber': {1: (512, 512), 2: (512, 512), 3: (512, 512)},
+                'PixelSize': {1: 0.0002265625, 2: 0.0002265625, 3: 0.0002265625}
                 }
 
 
@@ -46,7 +55,7 @@ class DemandGeometry(helper.MantidGeom):
                   cal_rotx='cal::flip', cal_roty='cal::roty',
                   cal_rotz='cal::spin'):
         # define arm - component
-        pixel_row_count, pixel_column_count = geom_setup_dict['PixelNumber'][linear_pixel_size]
+        pixel_row_count, pixel_column_count = geom_setup_dict['PixelNumber'][bank_id]
         arm_loc_dict = dict()
         arm_loc_dict['r-position'] = {'value': 0.0}
         arm_loc_dict['t-position'] = {'value': 0.0}
@@ -54,7 +63,7 @@ class DemandGeometry(helper.MantidGeom):
         arm_loc_dict['roty'] = {'logfile': 'value+0.0', 'id': '2theta'}  # roty works as 2theta with experiment
         arm_node = self.add_component(type_name='arm', idfillbyfirst='x', idstart=1,
                                       idstepbyrow=pixel_column_count)
-        arm_loc_node = self.add_location(bank_id, arm_node, arm_loc_dict)
+        arm_loc_node = self.add_location('bank{}'.format(bank_id), arm_node, arm_loc_dict)
 
         # define type: arm
         arm_type_node = self.add_component_type(type_name='arm')
@@ -70,13 +79,13 @@ class DemandGeometry(helper.MantidGeom):
         self.add_location(None, arm_node, arm_loc_dict)
 
         # add panel
-        center_y = geom_setup_dict['Panel Center'][]
+        center_y = geom_setup_dict['Panel Center'][bank_id]
         panel_loc_dict = {'x': {'logfile': 'value', 'id': cal_shift_x},
                           'y': {'logfile': '{}+value'.format(center_y), 'id': cal_shift_y}}
         panel_type_node = self.add_component_type('panel')
         panel_node = self.add_component(type_name='shiftpanel', idfillbyfirst=None, idstart=None,
                                         idstepbyrow=None, root=panel_type_node)
-        scx_instrument.add_location(None, panel_node, panel_loc_dict)
+        self.add_location(None, panel_node, panel_loc_dict)
 
 # END-DEF-HB3A
 
@@ -94,7 +103,12 @@ def generate_1_panel_idf(is_zebra, idf_name, config_name, linear_pixel_size):
         geom_setup_dict = ZEBRA_SETUP
     else:
         instrument_name = 'HB3A'
-        geom_setup_dict = FourCircle_SETUP
+        if linear_pixel_size == 256:
+            geom_setup_dict = FourCircle_256_SETUP
+        elif linear_pixel_size == 512:
+            geom_setup_dict = FourCircle_512_SETUP
+        else:
+            raise RuntimeError('HB3A-1-Panel with {0} x {0} does not exist'.format(linear_pixel_size))
 
     # generate instrument geometry object
     authors = ["Wenduo Zhou"]
@@ -117,10 +131,12 @@ def generate_1_panel_idf(is_zebra, idf_name, config_name, linear_pixel_size):
     # Build 'arm'/panel/shiftpanel
     scx_instrument.addComment("PANEL")
 
-    scx_instrument.add_panel()
+    scx_instrument.add_panel(bank_id=1, geom_setup_dict=geom_setup_dict,
+                             cal_shift_x='diffx', cal_shift_y='diffy')
 
     # generate rectangular detector based on 'shiftpanel'
-    pixel_size_x = pixel_size_y = geom_setup_dict['PixelSize'][linear_pixel_size]
+    pixel_size_x = pixel_size_y = geom_setup_dict['PixelSize'][1]
+    pixel_row_count, pixel_column_count = geom_setup_dict['PixelNumber'][1]
     x_start = (float(pixel_column_count)*0.5 - 0.5) * pixel_size_x
     x_step = - pixel_size_x
     y_start = -(float(pixel_row_count)*0.5 - 0.5) * pixel_size_y
