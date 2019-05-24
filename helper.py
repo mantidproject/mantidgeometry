@@ -1,4 +1,6 @@
 from __future__ import (print_function)
+
+import sys
 from lxml import etree as le # python-lxml on rpm based systems
 import numpy as np
 from itertools import groupby
@@ -45,8 +47,10 @@ class MantidGeom:
         Write the XML geometry to the given filename
         """
         fh = open(filename, "w")
-        fh.write(le.tostring(self.__root, pretty_print=True,
-                             xml_declaration=True))
+        to_write = le.tostring(self.__root, pretty_print=True, xml_declaration=True)
+        if sys.version_info.major > 2:
+            to_write = to_write.decode("utf-8")  # conversion from bytes to str
+        fh.write(to_write)
         fh.close()
 
     def showGeom(self):
@@ -57,9 +61,15 @@ class MantidGeom:
                              xml_declaration=True))
 
 
-    def addSnsDefaults(self, indirect=False, default_view=None, theta_sign_axis='x'):
+
+    def addSnsDefaults(self, indirect=False, theta_sign_axis=None,
+                       default_view=None, axis_view_3d=None):
         """
         Set the default properties for SNS geometries
+
+        Returns
+        -------
+        xml element
         """
         defaults_element = le.SubElement(self.__root, "defaults")
         le.SubElement(defaults_element, "length", unit="metre")
@@ -73,8 +83,13 @@ class MantidGeom:
         le.SubElement(reference_element, "handedness", val="right")
         if theta_sign_axis:
             le.SubElement(reference_element, "theta-sign", axis=theta_sign_axis)
-        if default_view:
-            le.SubElement(defaults_element, "default-view", view=default_view)
+        if default_view is not None:
+            kwargs = dict(view=default_view)
+            if default_view == '3D' and axis_view_3d is not None:
+                kwargs['axis-view'] = axis_view_3d
+            le.SubElement(defaults_element, "default-view", **kwargs)
+
+        return defaults_element
 
     def addComment(self, comment):
         """
@@ -289,22 +304,35 @@ class MantidGeom:
                     log=le.SubElement(pos_loc,"parameter",**{"name":"z"})
                     le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})
 
-    def addComponent(self, type_name, idlist=None, root=None, blank_location=True):
-        """
+    def addComponent(self, type_name, idlist=None, root=None,
+                     name=None, blank_location=True):
+        r"""
         Add a component to the XML definition. A blank location is added.
+
+        Parameters
+        ----------
+        type_name: str
+            Type of the component
+        idlist
+        root
+        name: str
+            Name of the component. Not used if None
+        blank_location
+
+        Returns
+        -------
+
         """
         if root is None:
             root = self.__root
-
+        kwargs = dict(type=type_name)
         if idlist is not None:
-            comp = le.SubElement(root, "component", type=type_name,
-                                 idlist=idlist)
-        else:
-            comp = le.SubElement(root, "component", type=type_name)
-        l=comp
-        if blank_location:
-            l = le.SubElement(comp, "location")
-        return l
+            kwargs['idlist'] = idlist
+        if name is not None:
+            kwargs['name'] = name
+        comp = le.SubElement(root, "component", **kwargs)
+        lc = comp if blank_location is True else le.SubElement(comp, "location")
+        return lc
 
     def addComponentILL(self, type_name, x, y, z, isType=None, root=None):
         """
@@ -566,6 +594,92 @@ class MantidGeom:
                     le.SubElement(location_element, "neutronic", x=str(x))
                 else:
                     le.SubElement(location_element, "neutronic", x="0.0")
+
+    def add_double_pack(self, name, pack_type, separation, slip=0.0,
+                        neutronic=False):
+        r"""
+        Place two packs of the same type along their normal, like two slices
+        of the same type of bread making a sandwich.
+
+        For instance, SNS-EQSANS, HFIR-BIOSANS, HFIR-GPSANS
+        use double four-packs
+
+        Parameters
+        ----------
+        name: str
+            Type name of the resulting dual pack
+        pack_type: str
+            Type name of each pack
+        separation: float
+            Distance between the two packs along their
+            normal (usually the Z-axis)
+        slip: float
+            Distance between the two packs along the axis perpendicular to
+            the tubes axis and pack normal (usually the X-axis)
+        """
+        type_element = le.SubElement(self.__root, 'type', name=name)
+        le.SubElement(type_element, 'properties')
+        component = le.SubElement(type_element, 'component', type=pack_type)
+        pack_start_z = -separation / 2.0
+        pack_start_x = -slip / 2.0
+        prefix = ('front', 'back')
+        for i in range(2):
+            pack_name = '{}_{}'.format(prefix[i], pack_type)
+            z = pack_start_z + separation * i
+            x = pack_start_x + slip * i
+            le.SubElement(component, 'location', name=pack_name,
+                          x=str(x), z=str(z))
+        if neutronic is True:
+            raise NotImplementedError('Not implemented for neutronic'
+                                      'posisitons')
+
+    def add_curved_panel(self, name, sub_type, num_sub, radius, dtheta,
+                         theta_0=0., comp_type=None, sub_name=None,
+                         first_index=1):
+        r"""
+        Create a sequence of `sub_type` elements laid out on an circle arc
+        by rotating the elements around the Y-axis.
+
+        Parameters
+        ----------
+        name: str
+            Name of the component assembly
+        sub_type: str
+            Type of the subelements making up the assembly
+        num_sub: int
+            Number of subelements
+        radius: float
+            Radius of the circle arc
+        comp_type: str
+            Type of the component assembly. If None, then `name` is used
+        dtheta: float
+            Angle separation between consecutive subelements
+        theta_0: float
+            Additional angle shift for the angular position of the subelements
+        sub_name: str
+            Name of the subelements. If None, then sub_type is used
+        first_index: int
+            subelements are named as `sub_name{i}` with i<=first_index
+
+        Returns
+        -------
+        lxml.etree.ElementBase
+            Reference to the panel
+        """
+        component_type = name if comp_type is None else comp_type
+        type_assembly = le.SubElement(self.__root, 'type', name=component_type)
+        le.SubElement(type_assembly, 'properties')
+        component = le.SubElement(type_assembly, 'component', type=sub_type)
+        theta_angles = dtheta * (0.5 + np.arange(num_sub)) - \
+                       num_sub * dtheta / 2 + theta_0
+        rot = [f'{v:.4f}' for v in theta_angles]
+        rot_axis = {'axis-x': '0', 'axis-y': '1', 'axis-z': '0'}
+        for i in range(num_sub):
+            kwargs = dict(name=f'{sub_name}{first_index+i}', r=str(radius),
+                          t=rot[i], rot=rot[i])
+            kwargs.update(rot_axis)
+            le.SubElement(component, 'location', **kwargs)
+        return type_assembly
 
     def addWANDDetector(self, name, num_tubes, tube_width, air_gap, radius, type_name="tube"):
         """
@@ -990,4 +1104,8 @@ class MantidGeom:
         le.SubElement(type_element, "algebra", val="body : "+hole_list[:-3])
 
     def getRoot(self):
+        return self.__root
+
+    @property
+    def root(self):
         return self.__root
