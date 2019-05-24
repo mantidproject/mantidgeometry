@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import math
 from lxml import etree as le # python-lxml on rpm based systems
 import sys
 from helper import MantidGeom
@@ -7,7 +8,7 @@ from collections import OrderedDict
 
 """
 Instrument requirements from meeting at HFIR on May 07, 2019
-- One bank for the fron panel and one bank for the back panel
+- One bank for the front panel and one bank for the back panel
 - (optional) divide each bank into fourpacks
 - Pixel ID's start at tube1 of bank1, then continue in tube1 of bank2, then
   continue in tube2 of bank1,  then continue in tube2 of bank2, and so on
@@ -17,87 +18,47 @@ Instrument requirements from meeting at HFIR on May 07, 2019
 Instrument hierarchy in Nexus file:
 - 48 banks, 4 tubes per bank, 256 pixels per tube. The first eigthpack
   is made of banks 1 and 25, although the eightpack construct is not
-  used. Useful when comparing with the hiearchy of current IDF.
+  used.
 - front panel (close to the sample) contains banks 1 through 24.
 - bank number increases with decreasing X-coordinate values.
 - tube number increases with decreasing X-coordinate values.
 - pixel number increases with increasing Y-coordinate values.
+- pixel number increases with decreasing X-coordinate values
+- pixel number increases from bank1 to bank4, then from bank25 to bank28,
+  then from bank5 to bank8, then from bank29 to bank32, and so on
 
-Instrument hierarchy in current IDF to match hieararchy of Nexus file:
-- 24 eightpacks, two fourpacks per eightpack, four tubes per fourpack,
-  256 pixels per tube.
-- eighpack number increases with decreasing X-coordinate values.
-- fourpack front to back with increasing Z-coordinate values.
-- tube number increases with decreasing X-coordinate values.
-- pixel number increases with increasing Y-coordinate values.
+Instrument hierarchy in current IDF:
+- 48 banks, 4 tubes per bank, 256 pixels per tube.
+- front panel (close to the sample) contains banks 1 through 24.
+- bank number increases with decreasing X-coordinate values
+- tube number increases with decreasing X-coordinate values
+- pixel number increases with increasing Y-coordinate values
+- pixel number increases with decreasing X-coordinate values
+- pixel number increases with increasing bank number
 """
 
 """
-Rules for the generals_instrument block
+Rules for the iinfo block
     - String representing floats must contain decimal point symbol '.'
     - Strings representing string must be enclosed in double quotes
 """
-generals_instrument = """
-valid_from          "2019-01-01 00:00:00"
-valid_to            "2100-12-31 23:59:59"
-comment             "Created by Jose Borregero, borreguerojm@ornl.gov"
-instrument_name     "EQSANS"
-source-sample-distance 14.122
-array_name          "detector1"
-tube_length         1.046
-tube_diameter       0.00805
-pixels_per_tube     256
-tube_separation     0.0110  # distance between consecutive tube axis
-fourpack_separation 0.0082  # distance between front and back fourpacks
-fourpack_slip       0.0055  # slip vector between the two fourpacks along X-axis
-bank_radius         5.0     # distance between focal-point and anchor point
-anchor_offset       0.0041  # add this to bank_radius for distance between focal-point and eightpack midline
-eightpack_angle     0.5041  # angle subtended by each eightpack, in degrees
-eightpack_quantity  24      # number of eight-packs in the detector array
-"""
 
-
-def assign_type(d):
-    r"""Find out the type of each value in a dictionary
-
-    Valid types: `str`, `int`, and `float`
-
-    Rules:
-        - String representing floats must contain '.'
-        - Strings representing string must be enclosed in double quotes
-"""
-    for k, v in d.items():
-        try:
-            w = float(v)
-            if '.' in v:
-                d[k] = w
-            else:
-                d[k] = int(v)
-        except:
-            d[k] = v.strip('"')
-
-
-def read_generals(gen):
-    r"""Return a dictionary from a generals block
-
-    Parameters
-    ----------
-    gen: str
-        block comment with general options
-
-    Returns
-    -------
-    dict
-    """
-    gen_dict = dict()
-    for line in gen.split('\n'):
-        if len(line) == 0:
-            continue  # first and last lines are empty
-        entry = line.split('#')[0].strip()  # remove comment and bracketing spaces
-        key = entry.split()[0]
-        gen_dict[key] = entry[len(key):].strip()
-    assign_type(gen_dict)
-    return gen_dict
+iinfo = dict(valid_from='2019-01-01 00:00:00',
+             valid_to='2100-12-31 23:59:59',
+             comment='Created by Jose Borregero, borreguerojm@ornl.gov',
+             instrument_name='EQSANS',
+             source_sample_distance=14.122,
+             array_name='detector1',
+             tube_length=1.046,
+             tube_diameter=0.00805,
+             pixels_per_tube=256,
+             tube_separation=0.0110,  # distance between consecutive tube axis
+             fourpack_separation=0.0082,  # distance between front and back fourpacks
+             fourpack_slip=0.0055,  # slip vector between the two fourpacks along X-axis
+             bank_radius=5.0,  # distance between focal-point and anchor point
+             anchor_offset=0.0041,  # add this to bank_radius for distance between focal-point and eightpack midline
+             eightpack_angle=0.5041,  # angle subtended by each eightpack, in degrees
+             number_eightpacks=24)   # number of eight-packs in the detector array
 
 
 def filter_dict(d, *keys):
@@ -162,78 +123,73 @@ def add_comment_section(instrument, comment):
     instrument.addComment("")
 
 
-def arc_detector(det, type_pack, radius, dtheta, population):
-    r"""
-    (r, t, p) positions for the eightpack components of a detector spanning
-    an arc segment.
-
-    Parameters
-    ----------
-    radius: float
-        Radius of the arc
-    dtheta: float
-        Angle spanned by each eight-pack
-    population: int
-        Number of eight-packs
-
-    Returns
-    -------
-    list
-        List elements are the
-    """
-
-
 if __name__ == '__main__':
-    bs = read_generals(generals_instrument)  # basic settings
-    det = MantidGeom(bs['instrument_name'],
-                     **kw(bs, 'comment', 'valid_from', 'valid_to'))
+    det = MantidGeom(iinfo['instrument_name'],
+                     **kw(iinfo, 'comment', 'valid_from', 'valid_to'))
     defaults_element = det.addSnsDefaults(default_view="3D",
                                           axis_view_3d="Z-")
 
-    fn = make_filename(*ag(bs, 'instrument_name', 'valid_from','valid_to'))
+    fn = make_filename(*ag(iinfo, 'instrument_name', 'valid_from','valid_to'))
 
     add_comment_section(det, 'COMPONENT and TYPE: SOURCE AND SAMPLE POSITION')
-    det.addModerator(-bs['source-sample-distance'])
+    det.addModerator(-iinfo['source_sample_distance'])
     det.addSamplePosition()
 
     add_comment_section(det, 'TYPE: PIXEL FOR STANDARD 256 PIXEL TUBE')
     center_bottom_base = (0.0, 0.0, 0.0)
     pixel_axis = (0.0, 1.0, 0.0)
-    pixel_radius = bs['tube_diameter'] / 2.0
-    pixel_height = bs['tube_length'] / bs['pixels_per_tube']
+    pixel_radius = iinfo['tube_diameter'] / 2.0
+    pixel_height = iinfo['tube_length'] / iinfo['pixels_per_tube']
     det.addCylinderPixel("pixel", center_bottom_base, pixel_axis,
                          pixel_radius, pixel_height)
 
     add_comment_section(det, 'TYPE: STANDARD 256 PIXEL TUBE')
     tube_type_name = 'tube'
-    det.addPixelatedTube(tube_type_name, bs['pixels_per_tube'],
-                         bs['tube_length'])
+    det.addPixelatedTube(tube_type_name, iinfo['pixels_per_tube'],
+                         iinfo['tube_length'])
 
     add_comment_section(det, 'TYPE: FOUR-PACK')
-    air_gap = bs['tube_separation'] - bs['tube_diameter']
+    air_gap = iinfo['tube_separation'] - iinfo['tube_diameter']
     # negative diameter and air gaps to conform with ordering of tubes
     # in the Nexus embedded XML file
-    det.addNPack('fourpack', 4, -bs['tube_diameter'], -air_gap,
+    det.addNPack('fourpack', 4, -iinfo['tube_diameter'], -air_gap,
                  type_name=tube_type_name)
 
-    add_comment_section(det, 'TYPE: EIGHT-PACK')
-    det.add_double_pack('eightpack', 'fourpack',
-                      bs['fourpack_separation'], slip=-bs['fourpack_slip'])
-
-    add_comment_section(det, 'TYPE: DETECTOR ARRAY')
-    r = bs['bank_radius'] + bs['anchor_offset']
+    # distance from sample to the center of the eight-pack
+    r_eightpack = iinfo['bank_radius'] + iinfo['anchor_offset']
+    # shift by delta_r for distance from sample to either of the two fourpacks
+    delta_r = iinfo['fourpack_separation'] / 2
+    n = iinfo['number_eightpacks']
+    slip_angle = 180. / math.pi * iinfo['fourpack_slip'] / (2 * r_eightpack)
     # negative dtheta to conform with ordering of eightpacks in the Nexus
     # embedded XML file
-    panel = det.add_curved_panel(bs['array_name'], 'eightpack',
-                                 bs['eightpack_quantity'],
-                                 r, -bs['eightpack_angle'])
+
+    add_comment_section(det, 'TYPE: FRONT PANEL')
+    args = ['front-panel', 'fourpack', n,
+            r_eightpack - delta_r, -iinfo['eightpack_angle']]
+    det.add_curved_panel(*args, sub_name='bank', theta_0=slip_angle,
+                         first_index=1)
+
+    add_comment_section(det, 'TYPE: BACK PANEL')
+    args = ['back-panel', 'fourpack', n,
+            r_eightpack + delta_r, -iinfo['eightpack_angle']]
+    back_panel = det.add_curved_panel(*args, sub_name='bank',
+                                      theta_0=-slip_angle, first_index=1+n)
+
+    add_comment_section(det, 'TYPE: DOUBLE PANEL')
+    double_panel = le.SubElement(det.root, 'type', name='double-panel')
+    le.SubElement(double_panel, 'properties')
+    front_panel = le.SubElement(double_panel, 'component', type='front-panel')
+    det.addLocation(front_panel, 0., 0., -r_eightpack - delta_r)
+    back_panel = le.SubElement(double_panel, 'component', type='back-panel')
+    det.addLocation(back_panel, 0., 0., -r_eightpack + delta_r)
 
     add_comment_section(det, 'COMPONENT: DETECTOR ARRAY')
-    panel = det.addComponent(bs['array_name'], idlist='array_list',
-                     blank_location=False)
-    det.addLocation(panel, 0., 0., -r)
+    panel = det.addComponent('double-panel', idlist='array_list',
+                             name=iinfo['array_name'], blank_location=True)
+    det.addLocation(panel, 0., 0., 0)
 
     add_comment_section(det, 'ID ranges for DETECTOR ARRAY')
-    det.addDetectorIds('array_list', [0, bs['eightpack_quantity']*8*256 - 1, 1])
-
+    det.addDetectorIds('array_list',
+                       [0, iinfo['number_eightpacks']*8*256 - 1, 1])
     det.writeGeom(fn)

@@ -304,22 +304,35 @@ class MantidGeom:
                     log=le.SubElement(pos_loc,"parameter",**{"name":"z"})
                     le.SubElement(log, "logfile", **{"id":processed[0],"eq":equation})
 
-    def addComponent(self, type_name, idlist=None, root=None, blank_location=True):
-        """
+    def addComponent(self, type_name, idlist=None, root=None,
+                     name=None, blank_location=True):
+        r"""
         Add a component to the XML definition. A blank location is added.
+
+        Parameters
+        ----------
+        type_name: str
+            Type of the component
+        idlist
+        root
+        name: str
+            Name of the component. Not used if None
+        blank_location
+
+        Returns
+        -------
+
         """
         if root is None:
             root = self.__root
-
+        kwargs = dict(type=type_name)
         if idlist is not None:
-            comp = le.SubElement(root, "component", type=type_name,
-                                 idlist=idlist)
-        else:
-            comp = le.SubElement(root, "component", type=type_name)
-        l=comp
-        if blank_location:
-            l = le.SubElement(comp, "location")
-        return l
+            kwargs['idlist'] = idlist
+        if name is not None:
+            kwargs['name'] = name
+        comp = le.SubElement(root, "component", **kwargs)
+        lc = comp if blank_location is True else le.SubElement(comp, "location")
+        return lc
 
     def addComponentILL(self, type_name, x, y, z, isType=None, root=None):
         """
@@ -588,7 +601,8 @@ class MantidGeom:
         Place two packs of the same type along their normal, like two slices
         of the same type of bread making a sandwich.
 
-        SNS-EQSANS, HFIR-BIOSANS, HFIR-GPSANS use double four-packs
+        For instance, SNS-EQSANS, HFIR-BIOSANS, HFIR-GPSANS
+        use double four-packs
 
         Parameters
         ----------
@@ -619,7 +633,9 @@ class MantidGeom:
             raise NotImplementedError('Not implemented for neutronic'
                                       'posisitons')
 
-    def add_curved_panel(self, name, sub_type, num_sub, radius, dtheta):
+    def add_curved_panel(self, name, sub_type, num_sub, radius, dtheta,
+                         theta_0=0., comp_type=None, sub_name=None,
+                         first_index=1):
         r"""
         Create a sequence of `sub_type` elements laid out on an circle arc
         by rotating the elements around the Y-axis.
@@ -634,24 +650,33 @@ class MantidGeom:
             Number of subelements
         radius: float
             Radius of the circle arc
+        comp_type: str
+            Type of the component assembly. If None, then `name` is used
         dtheta: float
             Angle separation between consecutive subelements
+        theta_0: float
+            Additional angle shift for the angular position of the subelements
+        sub_name: str
+            Name of the subelements. If None, then sub_type is used
+        first_index: int
+            subelements are named as `sub_name{i}` with i<=first_index
 
         Returns
         -------
         lxml.etree.ElementBase
             Reference to the panel
         """
-        type_assembly = le.SubElement(self.__root, 'type', name=name)
+        component_type = name if comp_type is None else comp_type
+        type_assembly = le.SubElement(self.__root, 'type', name=component_type)
         le.SubElement(type_assembly, 'properties')
         component = le.SubElement(type_assembly, 'component', type=sub_type)
-        theta_angles = dtheta * (0.5 + np.arange(num_sub)) -\
-            num_sub * dtheta / 2
+        theta_angles = dtheta * (0.5 + np.arange(num_sub)) - \
+                       num_sub * dtheta / 2 + theta_0
         rot = [f'{v:.4f}' for v in theta_angles]
         rot_axis = {'axis-x': '0', 'axis-y': '1', 'axis-z': '0'}
         for i in range(num_sub):
-            kwargs = dict(name=f'eightpack{i+1}', r=str(radius), t=rot[i],
-                          rot=rot[i])
+            kwargs = dict(name=f'{sub_name}{first_index+i}', r=str(radius),
+                          t=rot[i], rot=rot[i])
             kwargs.update(rot_axis)
             le.SubElement(component, 'location', **kwargs)
         return type_assembly
