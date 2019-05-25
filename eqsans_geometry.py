@@ -8,10 +8,9 @@ from collections import OrderedDict
 
 """
 Instrument requirements from meeting at HFIR on May 07, 2019
-- One bank for the front panel and one bank for the back panel
-- (optional) divide each bank into fourpacks
-- Pixel ID's start at tube1 of bank1, then continue in tube1 of bank2, then
-  continue in tube2 of bank1,  then continue in tube2 of bank2, and so on
+- One component for the front panel and one component for the back panel
+- divide each bank into fourpacks
+- Pixel ID's start at tube1 of bank1 and finish at last tube of the last bank
 """
 
 """
@@ -35,12 +34,6 @@ Instrument hierarchy in current IDF:
 - pixel number increases with increasing Y-coordinate values
 - pixel number increases with decreasing X-coordinate values
 - pixel number increases with increasing bank number
-"""
-
-"""
-Rules for the iinfo block
-    - String representing floats must contain decimal point symbol '.'
-    - Strings representing string must be enclosed in double quotes
 """
 
 iinfo = dict(valid_from='2019-01-01 00:00:00',
@@ -126,9 +119,7 @@ def add_comment_section(instrument, comment):
 if __name__ == '__main__':
     det = MantidGeom(iinfo['instrument_name'],
                      **kw(iinfo, 'comment', 'valid_from', 'valid_to'))
-    defaults_element = det.addSnsDefaults(default_view="3D",
-                                          axis_view_3d="Z-")
-
+    det.addSnsDefaults(default_view="3D", axis_view_3d="Z-")
     fn = make_filename(*ag(iinfo, 'instrument_name', 'valid_from','valid_to'))
 
     add_comment_section(det, 'COMPONENT and TYPE: SOURCE AND SAMPLE POSITION')
