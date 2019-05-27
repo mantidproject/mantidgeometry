@@ -3,7 +3,7 @@ import math
 import numpy as np
 from dateutil.parser import parse as parse_date
 from collections import OrderedDict
-from lxml import etree as le # python-lxml on rpm based systems
+from lxml import etree as le  # python-lxml on rpm based systems
 
 
 def filter_dict(d, *keys):
@@ -66,9 +66,6 @@ def add_comment_section(instrument, comment):
     instrument.addComment("")
     instrument.addComment(comment)
     instrument.addComment("")
-
-"""
-"""
 
 
 def add_source_and_sample(det, ssd):
@@ -295,7 +292,7 @@ def add_curved_panel_type(det, num_elem, radius, dtheta, theta_0=0.,
     le.SubElement(type_assembly, 'properties')
     component = le.SubElement(type_assembly, 'component', type=type_elem)
     theta_angles = dtheta * (0.5 + np.arange(num_elem)) -\
-                   num_elem * dtheta / 2 + theta_0
+        num_elem * dtheta / 2 + theta_0
     rot = [f'{v:.4f}' for v in theta_angles]
     rot_axis = {'axis-x': '0', 'axis-y': '1', 'axis-z': '0'}
     for i in range(num_elem):
@@ -338,15 +335,15 @@ def add_double_curved_panel_type(det, iinfo):
     args = [det, iinfo['number_eightpacks'], r_eightpack - delta_r,
             -iinfo['eightpack_angle']]
     # Insert type for front panel
-    kwargs= dict(name_elem=iinfo['bank_name'], theta_0=slip_angle,
-                 assemb_type=iinfo['curved_panel_types']['front'])
+    kwargs = dict(name_elem=iinfo['bank_name'], theta_0=slip_angle,
+                  assemb_type=iinfo['curved_panel_types']['front'])
     front = add_curved_panel_type(*args, **kwargs)
     # Insert type for back panel
     args = [det, iinfo['number_eightpacks'], r_eightpack + delta_r,
             -iinfo['eightpack_angle']]
-    kwargs= dict(name_elem=iinfo['bank_name'], theta_0=-slip_angle,
-                 assemb_type=iinfo['curved_panel_types']['back'],
-                 first_index=1+iinfo['number_eightpacks'])
+    kwargs = dict(name_elem=iinfo['bank_name'], theta_0=-slip_angle,
+                  assemb_type=iinfo['curved_panel_types']['back'],
+                  first_index=1+iinfo['number_eightpacks'])
     back = add_curved_panel_type(*args, **kwargs)
     # Insert type for double panel
     add_comment_section(det, 'TYPE: DOUBLE CURVED PANEL')

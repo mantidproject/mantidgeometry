@@ -33,7 +33,7 @@ iinfo = dict(valid_from='2019-01-01 00:00:00',
 det = MantidGeom(iinfo['instrument_name'],
                  **kw(iinfo, 'comment', 'valid_from', 'valid_to'))
 det.addSnsDefaults(default_view="3D", axis_view_3d="Z-")
-fn = make_filename(*ag(iinfo, 'instrument_name', 'valid_from','valid_to'))
+fn = make_filename(*ag(iinfo, 'instrument_name', 'valid_from', 'valid_to'))
 add_basic_types(det, iinfo)  # source, sample, pixel, tube, and fourpack
 #
 # Insert the flat panel
@@ -54,8 +54,8 @@ jinfo = dict(curved_array='wing_detector_arm',  # name of the wing detector
              number_eightpacks=20,
              bank_radius=5.0,  # distance between focal-point and anchor point
              anchor_offset=0.0041,  # add this to bank_radius for distance between focal-point and eightpack midline
-             eightpack_angle=0.5041,  # angle subtended by each eightpack, in degrees
-)
+             eightpack_angle=0.5041)  # angle subtended by each eightpack, in degrees
+
 iinfo.update(jinfo)
 double_panel = add_double_curved_panel_type(det, iinfo)
 add_comment_section(det, 'LIST OF PIXEL IDs in CURVED DETECTOR')
