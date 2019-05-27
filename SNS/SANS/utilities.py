@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+import math
+import numpy as np
 from dateutil.parser import parse as parse_date
 from collections import OrderedDict
 from lxml import etree as le # python-lxml on rpm based systems
@@ -150,7 +152,7 @@ def add_flat_panel_type(det, num_elem, width, gap, type_elem='fourpack',
     lxml.etree.subelement
         Handle to the flat panel object
     """
-    add_comment_section(det, 'TYPE: PANEL')
+    add_comment_section(det, 'TYPE: FLAT PANEL')
     assembly = le.SubElement(det.root, 'type', name=assemb_type)
     le.SubElement(assembly, 'properties')
     component = le.SubElement(assembly, 'component', type=type_elem)
@@ -211,15 +213,15 @@ def add_double_flat_panel_type(det, iinfo):
     lxml.etree.subelement
         Handle to the double panel type
     """
-    #width = 4 * iinfo['tube_diameter'] + 3 * iinfo['tube_separation']
     width = 3 * iinfo['tube_separation']
     args = [det, iinfo['number_eightpacks'], width, iinfo['tube_separation']]
     # Insert type for front panel
-    kwargs = dict(name_elem='bank', first_index=1, assemb_type='front-panel')
+    kwargs = dict(name_elem=iinfo['bank_name'], first_index=1,
+                  assemb_type=iinfo['flat_panel_types']['front'])
     add_flat_panel_type(*args, **kwargs)
     # Insert type for back panel
-    kwargs = dict(name_elem='bank', first_index=1 + iinfo['number_eightpacks'],
-                  assemb_type='back-panel')
+    kwargs = dict(name_elem=iinfo['bank_name'], first_index=1 + iinfo['number_eightpacks'],
+                  assemb_type=iinfo['flat_panel_types']['back'])
     add_flat_panel_type(*args, **kwargs)
     # Insert type for double flat panel type
     add_comment_section(det, 'TYPE: DOUBLE FLAT PANEL')
@@ -256,7 +258,124 @@ def add_double_flat_panel_component(double_panel, idlist, det, name):
     return comp
 
 
+def add_curved_panel_type(det, num_elem, radius, dtheta, theta_0=0.,
+                          type_elem='fourpack', name_elem=None, first_index=1,
+                          assemb_type='panel'):
+    r"""
+
+    Parameters
+    ----------
+    det: MantidGeom
+    num_elem: int
+        Number of elements making up the panel
+    radius: float
+        Radius of the circle arc
+    dtheta: float
+        Angle separation between consecutive subelements
+    theta_0: float
+        Additional angle shift for the angular position of the subelements
+    type_elem: str
+        Type of the elements making up the panel
+    name_elem: str
+        Root name of the elements making up the panel. Use `type_elem`
+        if None
+    first_index: int
+        Elements are named as `name_elem{i}` with
+        `first_index <= i <= first_index + num_elem`
+    assemb_type: str
+        Type of the assembly of elements
+
+    Returns
+    -------
+    lxml.etree.subelement
+        Handle to the curved panel object
+    """
+    add_comment_section(det, 'TYPE: CURVED PANEL')
+    type_assembly = le.SubElement(det.root, 'type', name=assemb_type)
+    le.SubElement(type_assembly, 'properties')
+    component = le.SubElement(type_assembly, 'component', type=type_elem)
+    theta_angles = dtheta * (0.5 + np.arange(num_elem)) -\
+                   num_elem * dtheta / 2 + theta_0
+    rot = [f'{v:.4f}' for v in theta_angles]
+    rot_axis = {'axis-x': '0', 'axis-y': '1', 'axis-z': '0'}
+    for i in range(num_elem):
+        kwargs = dict(name=f'{name_elem}{first_index+i}', r=str(radius),
+                      t=rot[i], rot=rot[i])
+        kwargs.update(rot_axis)
+        le.SubElement(component, 'location', **kwargs)
+    return type_assembly
 
 
+def add_double_curved_panel_type(det, iinfo):
+    r"""
+    Create a type for the double curved panel using a type for the front
+    and a type for the back  panels.
+
+    The double panel is returned with its center at (0, 0, r) with `r`
+    the radius of the curved panel
+
+    Parameters
+    ----------
+    det: MantidGeom
+    iinfo: dict
+        Options for the instrument. Assumed to contain the following
+        keys: bank_radius, anchor_offset, fourpack_separation, fourpack_slip,
+        number_eightpacks, eightpack_angle, curved_panel_types
+
+    Returns
+    -------
+    lxml.etree.subelement
+        Handle to the double panel type
+    """
+    # distance from sample to the center of the eight-pack
+    r_eightpack = iinfo['bank_radius'] + iinfo['anchor_offset']
+    # shift by delta_r for distance from sample to either of the two fourpacks
+    delta_r = iinfo['fourpack_separation'] / 2
+    slip_angle = 180. / math.pi * iinfo['fourpack_slip'] / (2 * r_eightpack)
+    # negative dtheta to conform with ordering of eightpacks in the Nexus
+    # embedded XML file
+
+    args = [det, iinfo['number_eightpacks'], r_eightpack - delta_r,
+            -iinfo['eightpack_angle']]
+    # Insert type for front panel
+    kwargs= dict(name_elem=iinfo['bank_name'], theta_0=slip_angle,
+                 assemb_type=iinfo['curved_panel_types']['front'])
+    front = add_curved_panel_type(*args, **kwargs)
+    # Insert type for back panel
+    args = [det, iinfo['number_eightpacks'], r_eightpack + delta_r,
+            -iinfo['eightpack_angle']]
+    kwargs= dict(name_elem=iinfo['bank_name'], theta_0=-slip_angle,
+                 assemb_type=iinfo['curved_panel_types']['back'],
+                 first_index=1+iinfo['number_eightpacks'])
+    back = add_curved_panel_type(*args, **kwargs)
+    # Insert type for double panel
+    add_comment_section(det, 'TYPE: DOUBLE CURVED PANEL')
+    double_panel = le.SubElement(det.root, 'type', name='double-curved-panel')
+    le.SubElement(double_panel, 'properties')
+    front_panel = le.SubElement(double_panel, 'component',
+                                type=front.attrib['name'])
+    det.addLocation(front_panel, 0., 0., 0.)
+    back_panel = le.SubElement(double_panel, 'component',
+                               type=back.attrib['name'])
+    det.addLocation(back_panel, 0., 0., 0.)
+    return double_panel
 
 
+def add_double_curved_panel_component(double_panel, idlist, det, name):
+    r"""
+
+    Parameters
+    ----------
+    double_panel
+    idlist
+    det
+    name
+
+    Returns
+    -------
+
+    """
+    add_comment_section(det, 'COMPONENT: DOUBLE CURVED PANEL')
+    kwargs = dict(type=double_panel.attrib['name'], idlist=idlist, name=name)
+    comp = le.SubElement(det.root, 'component', **kwargs)
+    return comp
