@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import math
 from helper import MantidGeom
 from SNS.SANS.utilities import (add_comment_section, kw, ag, make_filename,
                                 add_basic_types, add_double_flat_panel_type,
@@ -13,6 +14,13 @@ Instrument requirements from meeting at HFIR on May 07, 2019
 - Pixel ID's start at tube1 of bank1 and finish at last tube of the last bank
 """
 
+"""
+Explanation of some entries in iinfo dictionary
+ tube_separation      distance between consecutive tube axis
+ fourpack_separation  distance between front and back fourpacks
+ fourpack_slip        slip vector between the two fourpacks along X-axis
+ number_eightpacks    number of eight-packs in the detector array
+"""
 iinfo = dict(valid_from='2019-01-01 00:00:00',
              valid_to='2100-12-31 23:59:59',
              comment='Created by Jose Borregero, borreguerojm@ornl.gov',
@@ -24,10 +32,10 @@ iinfo = dict(valid_from='2019-01-01 00:00:00',
              tube_length=1.046,
              tube_diameter=0.00805,
              pixels_per_tube=256,
-             tube_separation=0.0110,  # distance between consecutive tube axis
-             fourpack_separation=0.0082,  # distance between front and back fourpacks
-             fourpack_slip=0.0055,  # slip vector between the two fourpacks along X-axis
-             number_eightpacks=24)  # number of eight-packs in the detector array
+             tube_separation=0.0110,
+             fourpack_separation=0.0082,
+             fourpack_slip=0.0055,
+             number_eightpacks=24)
 
 # Instrument handle
 det = MantidGeom(iinfo['instrument_name'],
@@ -47,14 +55,21 @@ add_double_flat_panel_component(double_panel, 'flat_panel_ids', det,
 #
 # Insert the curved panel
 #
+"""
+Explanation of some entries in jinfo dictionary
+ bank_radius      distance between focal-point and anchor point
+ anchor_offset    add this to bank_radius for distance between focal-point
+                  and eightpack midline
+ eightpack_angle  angle subtended by each eightpack, in degrees
+"""
 jinfo = dict(curved_array='wing_detector_arm',  # name of the wing detector
              curved_panel_types=dict(front='front-wing-panel',
                                      back='back-wing-panel'),
              bank_name='wing-bank',
              number_eightpacks=20,
-             bank_radius=5.0,  # distance between focal-point and anchor point
-             anchor_offset=0.0041,  # add this to bank_radius for distance between focal-point and eightpack midline
-             eightpack_angle=0.5041)  # angle subtended by each eightpack, in degrees
+             bank_radius=1.13,
+             anchor_offset=0.0,
+             eightpack_angle=2.230986)
 
 iinfo.update(jinfo)
 double_panel = add_double_curved_panel_type(det, iinfo)
@@ -66,8 +81,10 @@ double_panel = add_double_curved_panel_component(double_panel,
                                                  'curved_panel_ids',
                                                  det, iinfo['curved_array'])
 # Rotate the double panel away from the path of the Z-axis
-rot_y = -iinfo['eightpack_angle'] * iinfo['number_eightpacks'] / 2
+rot_y = - iinfo['eightpack_angle'] * iinfo['number_eightpacks'] / 2
+rot_y += 0.5 * iinfo['fourpack_slip'] / jinfo['bank_radius'] * 180. / math.pi
 det.addLocation(double_panel, 0., 0., 0, rot_y=rot_y)
+
 #
 # Write to file
 #
