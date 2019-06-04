@@ -32,9 +32,9 @@ iinfo = dict(valid_from='2019-01-01 00:00:00',
              tube_length=1.046,
              tube_diameter=0.00805,
              pixels_per_tube=256,
-             tube_separation=0.0110,
-             fourpack_separation=0.0082,
-             fourpack_slip=0.0055,
+             tube_separation=0.0112522,
+             fourpack_separation=0.008205216,
+             fourpack_slip=0.0055103014,
              number_eightpacks=24)
 
 # Instrument handle
@@ -60,16 +60,16 @@ Explanation of some entries in jinfo dictionary
  bank_radius      distance between focal-point and anchor point
  anchor_offset    add this to bank_radius for distance between focal-point
                   and eightpack midline
- eightpack_angle  angle subtended by each eightpack, in degrees
+ eightpack_angle  effective angle subtended by each eightpack, in degrees
 """
 jinfo = dict(curved_array='wing_detector_arm',  # name of the wing detector
              curved_panel_types=dict(front='front-wing-panel',
                                      back='back-wing-panel'),
              bank_name='wing-bank',
              number_eightpacks=20,
-             bank_radius=1.13,
+             bank_radius=1.129538,
              anchor_offset=0.0,
-             eightpack_angle=2.230986)
+             eightpack_angle=2.232094)
 
 iinfo.update(jinfo)
 double_panel = add_double_curved_panel_type(det, iinfo)
