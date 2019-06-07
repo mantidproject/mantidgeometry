@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 from helper import MantidGeom
-from SNS.SANS.utilities import (add_comment_section, kw, ag, make_filename,
-                                add_basic_types, add_double_curved_panel_type,
-                                add_double_curved_panel_component)
+from SNS.SANS.utilities import (kw, ag, make_filename, add_basic_types,
+                                add_double_curved_panel_type,
+                                add_double_curved_panel_component,
+                                add_double_panel_idlist)
 
 """
 Instrument requirements from meeting at HFIR on May 07, 2019
@@ -75,15 +76,14 @@ if __name__ == '__main__':
     # Insert the curved panel
     #
     double_panel = add_double_curved_panel_type(det, iinfo)
-    add_comment_section(det, 'LIST OF PIXEL IDs in DETECTOR')
-    n_pixels = iinfo['number_eightpacks'] * 8 * 256
-    det.addDetectorIds('pixel_ids', [0, n_pixels - 1, 1])
+    pixel_idlist = 'pixel_ids'
     double_panel = add_double_curved_panel_component(double_panel,
-                                                     'pixel_ids',
+                                                     pixel_idlist,
                                                      det,
                                                      iinfo['curved_array'])
     r_eightpack = iinfo['bank_radius'] + iinfo['anchor_offset']
     det.addLocation(double_panel, 0., 0., -r_eightpack)  # position at origin
+    add_double_panel_idlist(det, iinfo, pixel_idlist)
     #
     # Write to file
     #
