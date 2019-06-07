@@ -376,3 +376,47 @@ def add_double_curved_panel_component(double_panel, idlist, det, name):
     kwargs = dict(type=double_panel.attrib['name'], idlist=idlist, name=name)
     comp = le.SubElement(det.root, 'component', **kwargs)
     return comp
+
+
+def panel_idlist(iinfo, start=0, gap=0):
+    r"""
+    List of pixel ID's in a single panel
+    in suitable format for helper.addDetectorIds
+
+    Parameters
+    ----------
+    iinfo: dict
+        Options for the instrument. Assumed to contain the following
+        keys: pixels_per_tube, number_eightpacks
+    start: int
+        starting pixel ID for the panel
+    gap: int
+        pixel ID gap between consecutive panel elements (fourpacks)
+
+    Returns
+    -------
+    list
+        [(start1, end1, None), (start2, end2, None), ...]
+    """
+    fourpack = 4 * iinfo['pixels_per_tube']  # number of pixels in a fourpack
+    idlist = list()
+    s = start
+    for i in range(iinfo['number_eightpacks']):
+        idlist.extend([s, s + fourpack - 1, None])
+        s += fourpack + gap
+    return idlist
+
+
+def add_double_panel_idlist(det, iinfo, name, start=0):
+    r"""
+
+    Parameters
+    ----------
+    iinfo
+    start
+    """
+    add_comment_section(det, 'LIST OF PIXEL IDs in DETECTOR')
+    fourpack = 4 * iinfo['pixels_per_tube']  # number of pixels in a fourpack
+    front_list = panel_idlist(iinfo, start=start, gap=fourpack)
+    back_list = panel_idlist(iinfo, start=start + fourpack, gap=fourpack)
+    det.addDetectorIds(name, front_list + back_list)
