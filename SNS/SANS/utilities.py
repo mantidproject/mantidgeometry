@@ -303,7 +303,7 @@ def add_curved_panel_type(det, num_elem, radius, dtheta, theta_0=0.,
     return type_assembly
 
 
-def add_double_curved_panel_type(det, iinfo):
+def add_double_curved_panel_type(det, iinfo, first_bank_number=1):
     r"""
     Create a type for the double curved panel using a type for the front
     and a type for the back  panels.
@@ -318,7 +318,8 @@ def add_double_curved_panel_type(det, iinfo):
         Options for the instrument. Assumed to contain the following
         keys: bank_radius, anchor_offset, fourpack_separation, fourpack_slip,
         number_eightpacks, eightpack_angle, curved_panel_types
-
+    first_bank_number: int
+        Start bank number with this one
     Returns
     -------
     lxml.etree.subelement
@@ -336,14 +337,15 @@ def add_double_curved_panel_type(det, iinfo):
             -iinfo['eightpack_angle']]
     # Insert type for front panel
     kwargs = dict(name_elem=iinfo['bank_name'], theta_0=slip_angle,
-                  assemb_type=iinfo['curved_panel_types']['front'])
+                  assemb_type=iinfo['curved_panel_types']['front'],
+                  first_index=first_bank_number)
     front = add_curved_panel_type(*args, **kwargs)
     # Insert type for back panel
     args = [det, iinfo['number_eightpacks'], r_eightpack + delta_r,
             -iinfo['eightpack_angle']]
     kwargs = dict(name_elem=iinfo['bank_name'], theta_0=-slip_angle,
                   assemb_type=iinfo['curved_panel_types']['back'],
-                  first_index=1+iinfo['number_eightpacks'])
+                  first_index=first_bank_number + iinfo['number_eightpacks'])
     back = add_curved_panel_type(*args, **kwargs)
     # Insert type for double panel
     add_comment_section(det, 'TYPE: DOUBLE CURVED PANEL')

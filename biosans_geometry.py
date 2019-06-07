@@ -53,7 +53,7 @@ add_double_flat_panel_component(double_panel, 'flat_panel_ids', det,
                                 iinfo['flat_array'])
 add_double_panel_idlist(det, iinfo, pixel_idlist)
 last_pixel_id = 8 * iinfo['number_eightpacks'] * iinfo['pixels_per_tube'] - 1
-
+last_bank_number = 2 * iinfo['number_eightpacks']
 #
 # Insert the curved panel
 #
@@ -67,14 +67,14 @@ Explanation of some entries in jinfo dictionary
 jinfo = dict(curved_array='wing_detector_arm',  # name of the wing detector
              curved_panel_types=dict(front='front-wing-panel',
                                      back='back-wing-panel'),
-             bank_name='wing-bank',
              number_eightpacks=20,
              bank_radius=1.129538,
              anchor_offset=0.0,
              eightpack_angle=2.232094)
 
 iinfo.update(jinfo)
-double_panel = add_double_curved_panel_type(det, iinfo)
+kwargs = dict(first_bank_number = 1 + last_bank_number)
+double_panel = add_double_curved_panel_type(det, iinfo, **kwargs)
 pixel_idlist = 'curved_panel_ids'
 double_panel = add_double_curved_panel_component(double_panel,
                                                  pixel_idlist,
