@@ -62,9 +62,11 @@ def make_filename(instrument_name, valid_from, valid_to):
     return f'{instrument_name}_Definition_{vfp[:-1]}_{vtp[:-1]}.xml'
 
 
-def add_comment_section(instrument, comment):
+def add_comment_section(instrument, comment, notes=None):
     instrument.addComment("")
     instrument.addComment(comment)
+    if notes is not None:
+        instrument.addComment(notes)
     instrument.addComment("")
 
 
@@ -303,7 +305,8 @@ def add_curved_panel_type(det, num_elem, radius, dtheta, theta_0=0.,
     return type_assembly
 
 
-def add_double_curved_panel_type(det, iinfo, first_bank_number=1):
+def add_double_curved_panel_type(det, iinfo, first_bank_number=1,
+                                 comment=None):
     r"""
     Create a type for the double curved panel using a type for the front
     and a type for the back  panels.
@@ -348,7 +351,7 @@ def add_double_curved_panel_type(det, iinfo, first_bank_number=1):
                   first_index=first_bank_number + iinfo['number_eightpacks'])
     back = add_curved_panel_type(*args, **kwargs)
     # Insert type for double panel
-    add_comment_section(det, 'TYPE: DOUBLE CURVED PANEL')
+    add_comment_section(det, 'TYPE: DOUBLE CURVED PANEL', notes=comment)
     double_panel = le.SubElement(det.root, 'type', name='double-curved-panel')
     le.SubElement(double_panel, 'properties')
     front_panel = le.SubElement(double_panel, 'component',
@@ -360,7 +363,8 @@ def add_double_curved_panel_type(det, iinfo, first_bank_number=1):
     return double_panel
 
 
-def add_double_curved_panel_component(double_panel, idlist, det, name):
+def add_double_curved_panel_component(double_panel, idlist, det, name,
+                                      comment=None):
     r"""
 
     Parameters
@@ -374,7 +378,7 @@ def add_double_curved_panel_component(double_panel, idlist, det, name):
     -------
 
     """
-    add_comment_section(det, 'COMPONENT: DOUBLE CURVED PANEL')
+    add_comment_section(det, 'COMPONENT: DOUBLE CURVED PANEL', notes=comment)
     kwargs = dict(type=double_panel.attrib['name'], idlist=idlist, name=name)
     comp = le.SubElement(det.root, 'component', **kwargs)
     return comp
@@ -422,3 +426,31 @@ def add_double_panel_idlist(det, iinfo, name, start=0):
     front_list = panel_idlist(iinfo, start=start, gap=fourpack)
     back_list = panel_idlist(iinfo, start=start + fourpack, gap=fourpack)
     det.addDetectorIds(name, front_list + back_list)
+
+
+def insert_location_from_logs(element, log_key='detectorZ',
+                              coord_name='z', equation='0.001*value'):
+    r"""
+
+    Example:
+        <location name="detector1">
+            <parameter name="z">
+                <logfile eq="0.0+0.001*value" id="detectorZ"/>
+            </parameter>
+        </location>
+
+    Parameters
+    ----------
+    element: lmxl.etree.Element
+        Element receiving the location
+    log_key: str
+        Name of the long entry of interest
+    coord_name: str
+        Coordinate affected by the log value
+    equation: str
+        Equation determining the final value of coord_name
+    """
+    loc = le.SubElement(element, 'location')
+    par = le.SubElement(loc, 'parameter', **dict(name=coord_name))
+    le.SubElement(par, 'logfile', **dict(id=log_key, eq=equation))
+

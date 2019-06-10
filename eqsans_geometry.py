@@ -3,7 +3,8 @@ from helper import MantidGeom
 from SNS.SANS.utilities import (kw, ag, make_filename, add_basic_types,
                                 add_double_curved_panel_type,
                                 add_double_curved_panel_component,
-                                add_double_panel_idlist)
+                                add_double_panel_idlist,
+                                insert_location_from_logs)
 
 """
 Instrument requirements from meeting at HFIR on May 07, 2019
@@ -45,6 +46,7 @@ Explanation of some entries in iinfo dictionary
                       and eightpack midline
  eightpack_angle      angle subtended by each eightpack, in degrees
  number_eightpacks    number of eight-packs in the detector array
+ panel_translation_log_key  log entry specifying the position of the detector
 """
 iinfo = dict(valid_from='2019-01-01 00:00:00',
              valid_to='2100-12-31 23:59:59',
@@ -63,7 +65,8 @@ iinfo = dict(valid_from='2019-01-01 00:00:00',
              bank_radius=5.0,
              anchor_offset=0.0041,
              eightpack_angle=0.5041,
-             number_eightpacks=24)
+             number_eightpacks=24,
+             panel_translation_log_key='detectorZ')
 
 
 if __name__ == '__main__':
@@ -75,14 +78,21 @@ if __name__ == '__main__':
     #
     # Insert the curved panel
     #
-    double_panel = add_double_curved_panel_type(det, iinfo)
+    r_eightpack = iinfo['bank_radius'] + iinfo['anchor_offset']
+    comment = f'Panel is positioned {r_eightpack} meters downstream'
+    double_panel = add_double_curved_panel_type(det, iinfo, comment=comment)
     pixel_idlist = 'pixel_ids'
+    comment = f'Panel is translated to the origin, ' \
+              f'then shifted by an amount specified in the logs'
     double_panel = add_double_curved_panel_component(double_panel,
                                                      pixel_idlist,
                                                      det,
-                                                     iinfo['curved_array'])
-    r_eightpack = iinfo['bank_radius'] + iinfo['anchor_offset']
-    det.addLocation(double_panel, 0., 0., -r_eightpack)  # position at origin
+                                                     iinfo['curved_array'],
+                                                     comment=comment)
+    insert_location_from_logs(double_panel,
+                              log_key=iinfo['panel_translation_log_key'],
+                              coord_name='z',
+                              equation=f'{-r_eightpack}+0.001*value')
     add_double_panel_idlist(det, iinfo, pixel_idlist)
     #
     # Write to file
