@@ -303,7 +303,7 @@ def add_curved_panel_type(det, num_elem, radius, dtheta, theta_0=0.,
     return type_assembly
 
 
-def add_double_curved_panel_type(det, iinfo):
+def add_double_curved_panel_type(det, iinfo, first_bank_number=1):
     r"""
     Create a type for the double curved panel using a type for the front
     and a type for the back  panels.
@@ -318,7 +318,8 @@ def add_double_curved_panel_type(det, iinfo):
         Options for the instrument. Assumed to contain the following
         keys: bank_radius, anchor_offset, fourpack_separation, fourpack_slip,
         number_eightpacks, eightpack_angle, curved_panel_types
-
+    first_bank_number: int
+        Start bank number with this one
     Returns
     -------
     lxml.etree.subelement
@@ -336,14 +337,15 @@ def add_double_curved_panel_type(det, iinfo):
             -iinfo['eightpack_angle']]
     # Insert type for front panel
     kwargs = dict(name_elem=iinfo['bank_name'], theta_0=slip_angle,
-                  assemb_type=iinfo['curved_panel_types']['front'])
+                  assemb_type=iinfo['curved_panel_types']['front'],
+                  first_index=first_bank_number)
     front = add_curved_panel_type(*args, **kwargs)
     # Insert type for back panel
     args = [det, iinfo['number_eightpacks'], r_eightpack + delta_r,
             -iinfo['eightpack_angle']]
     kwargs = dict(name_elem=iinfo['bank_name'], theta_0=-slip_angle,
                   assemb_type=iinfo['curved_panel_types']['back'],
-                  first_index=1+iinfo['number_eightpacks'])
+                  first_index=first_bank_number + iinfo['number_eightpacks'])
     back = add_curved_panel_type(*args, **kwargs)
     # Insert type for double panel
     add_comment_section(det, 'TYPE: DOUBLE CURVED PANEL')
@@ -376,3 +378,47 @@ def add_double_curved_panel_component(double_panel, idlist, det, name):
     kwargs = dict(type=double_panel.attrib['name'], idlist=idlist, name=name)
     comp = le.SubElement(det.root, 'component', **kwargs)
     return comp
+
+
+def panel_idlist(iinfo, start=0, gap=0):
+    r"""
+    List of pixel ID's in a single panel
+    in suitable format for helper.addDetectorIds
+
+    Parameters
+    ----------
+    iinfo: dict
+        Options for the instrument. Assumed to contain the following
+        keys: pixels_per_tube, number_eightpacks
+    start: int
+        starting pixel ID for the panel
+    gap: int
+        pixel ID gap between consecutive panel elements (fourpacks)
+
+    Returns
+    -------
+    list
+        [(start1, end1, None), (start2, end2, None), ...]
+    """
+    fourpack = 4 * iinfo['pixels_per_tube']  # number of pixels in a fourpack
+    idlist = list()
+    s = start
+    for i in range(iinfo['number_eightpacks']):
+        idlist.extend([s, s + fourpack - 1, None])
+        s += fourpack + gap
+    return idlist
+
+
+def add_double_panel_idlist(det, iinfo, name, start=0):
+    r"""
+
+    Parameters
+    ----------
+    iinfo
+    start
+    """
+    add_comment_section(det, 'LIST OF PIXEL IDs in DETECTOR')
+    fourpack = 4 * iinfo['pixels_per_tube']  # number of pixels in a fourpack
+    front_list = panel_idlist(iinfo, start=start, gap=fourpack)
+    back_list = panel_idlist(iinfo, start=start + fourpack, gap=fourpack)
+    det.addDetectorIds(name, front_list + back_list)

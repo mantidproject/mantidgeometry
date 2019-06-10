@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 import math
 from helper import MantidGeom
-from SNS.SANS.utilities import (add_comment_section, kw, ag, make_filename,
-                                add_basic_types, add_double_flat_panel_type,
+from SNS.SANS.utilities import (kw, ag, make_filename, add_basic_types,
+                                add_double_flat_panel_type,
                                 add_double_flat_panel_component,
                                 add_double_curved_panel_type,
-                                add_double_curved_panel_component)
+                                add_double_curved_panel_component,
+                                add_double_panel_idlist)
 
 """
 Instrument requirements from meeting at HFIR on May 07, 2019
@@ -47,11 +48,12 @@ add_basic_types(det, iinfo)  # source, sample, pixel, tube, and fourpack
 # Insert the flat panel
 #
 double_panel = add_double_flat_panel_type(det, iinfo)
-add_comment_section(det, 'LIST OF PIXEL IDs in FLAT DETECTOR')
-n_flat_pixels = iinfo['number_eightpacks'] * 8 * 256
-det.addDetectorIds('flat_panel_ids', [0, n_flat_pixels - 1, 1])
+pixel_idlist = 'flat_panel_ids'
 add_double_flat_panel_component(double_panel, 'flat_panel_ids', det,
                                 iinfo['flat_array'])
+add_double_panel_idlist(det, iinfo, pixel_idlist)
+last_pixel_id = 8 * iinfo['number_eightpacks'] * iinfo['pixels_per_tube'] - 1
+last_bank_number = 2 * iinfo['number_eightpacks']
 #
 # Insert the curved panel
 #
@@ -65,25 +67,23 @@ Explanation of some entries in jinfo dictionary
 jinfo = dict(curved_array='wing_detector_arm',  # name of the wing detector
              curved_panel_types=dict(front='front-wing-panel',
                                      back='back-wing-panel'),
-             bank_name='wing-bank',
              number_eightpacks=20,
              bank_radius=1.129538,
              anchor_offset=0.0,
              eightpack_angle=2.232094)
 
 iinfo.update(jinfo)
-double_panel = add_double_curved_panel_type(det, iinfo)
-add_comment_section(det, 'LIST OF PIXEL IDs in CURVED DETECTOR')
-n_curved_pixels = iinfo['number_eightpacks'] * 8 * 256
-det.addDetectorIds('curved_panel_ids',
-                   [n_flat_pixels, n_flat_pixels + n_curved_pixels - 1, 1])
+kwargs = dict(first_bank_number = 1 + last_bank_number)
+double_panel = add_double_curved_panel_type(det, iinfo, **kwargs)
+pixel_idlist = 'curved_panel_ids'
 double_panel = add_double_curved_panel_component(double_panel,
-                                                 'curved_panel_ids',
+                                                 pixel_idlist,
                                                  det, iinfo['curved_array'])
 # Rotate the double panel away from the path of the Z-axis
 rot_y = - iinfo['eightpack_angle'] * iinfo['number_eightpacks'] / 2
 rot_y += 0.5 * iinfo['fourpack_slip'] / jinfo['bank_radius'] * 180. / math.pi
 det.addLocation(double_panel, 0., 0., 0, rot_y=rot_y)
+add_double_panel_idlist(det, iinfo, pixel_idlist, start=1 + last_pixel_id)
 
 #
 # Write to file
