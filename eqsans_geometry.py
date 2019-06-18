@@ -51,7 +51,7 @@ Explanation of some entries in iinfo dictionary
 iinfo = dict(valid_from='2019-01-01 00:00:00',
              valid_to='2100-12-31 23:59:59',
              comment='Created by Jose Borregero, borreguerojm@ornl.gov',
-             instrument_name='EQSANS',
+             instrument_name='EQ-SANS',
              source_sample_distance=14.122,
              bank_name='bank',
              curved_array='detector1',
