@@ -25,7 +25,7 @@ pixelHeight = 0.008 / factor
 x = pixelWidth / 2.
 y = pixelHeight / 2.
 z = 0.
-thickness = repr(-0.0001)
+thickness = 0.0001
 # detector
 zPos = 12.8
 # start identification numbers
@@ -78,7 +78,7 @@ comment = """ This is the instrument definition file of the D22 Large dynamic ra
        https://www.ill.eu/instruments-support/instruments-groups/instruments/d22/characteristics/
        """
 d22 = MantidGeom(instrumentName, comment=comment, valid_from=validFrom)
-d22.addSnsDefaults()
+d22.addSnsDefaults(default_view='3D',axis_view_3d='z-')
 d22.addComment("SOURCE")
 d22.addComponentILL("moderator", 0., 0., moderator_source, "Source")
 d22.addComment("Sample position")
@@ -94,5 +94,5 @@ d22.addComment("DETECTOR")
 d22.addComponentRectangularDetector(detector0, 0., 0., zPos, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR)
 d22.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
 d22.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
-d22.addCuboidPixel(pixelName, [-x, -y, z], [x, y, z], [-x, -y, thickness], [x, -y, z], shape_id="pixel-shape")
+d22.addCuboidPixel(pixelName, [-x, -y, thickness/2.], [-x, y, thickness/2.], [-x, -y, -thickness/2.], [x, -y, thickness/2.], shape_id="pixel-shape")
 d22.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")

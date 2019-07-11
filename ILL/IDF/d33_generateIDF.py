@@ -25,7 +25,7 @@ pixelHeight = 0.005
 x = pixelWidth / 2.
 y = pixelHeight / 2.
 z = 0.
-thickness = repr(-0.0001)
+thickness = 0.0001
 # rear detector
 zPosRear = 12.8
 # front detector
@@ -101,7 +101,7 @@ comment = """ This is the instrument definition file of the D33 Massive dynamic 
        https://www.ill.eu/instruments-support/instruments-groups/instruments/d33/characteristics/
        """
 d33 = MantidGeom(instrumentName, comment=comment, valid_from=validFrom)
-d33.addSnsDefaults()
+d33.addSnsDefaults(default_view='3D',axis_view_3d='z-')
 d33.addComment("SOURCE")
 d33.addComponentILL("moderator", 0., 0., moderator_source, "Source")
 d33.addComment("Sample position")
@@ -137,5 +137,5 @@ d33.addRectangularDetector(detector3, pixelName, xstart, xstep, xpixels, startFr
 d33.addComment("TOP")
 d33.addRectangularDetector(detector4, pixelName, xstart, xstep, xpixels, startFront, ystep, pixelsFront)
 d33.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
-d33.addCuboidPixel(pixelName, [-x, -y, z], [x, y, z], [-x, -y, thickness], [x, -y, z], shape_id="pixel-shape")
+d33.addCuboidPixel(pixelName, [-x, -y, thickness/2.], [-x, y, thickness/2.], [-x, -y, -thickness/2.], [x, -y, -thickness/2.], shape_id="pixel-shape")
 d33.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")
