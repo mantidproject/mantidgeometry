@@ -7,14 +7,14 @@ sys.path.insert(0, path)
 from helper import MantidGeom
 
 # using metre as unit
-instrumentName = 'D11lr'
+instrumentName = 'D11'
 validFrom = "2017-10-01 23:59:59"
 moderator_source = -2.0
 # 2 Monitors
 zMon1 = -16.7
 zMon2 = -1.2
 # factor: 1 (lr), 2
-factor = 1
+factor = 2
 # definition of the quadratic detector
 numberPixelsVertical = 128 * factor
 numberPixelsHorizontal = 128 * factor
