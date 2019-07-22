@@ -64,13 +64,13 @@ geometry.addModerator(distance=ch12, name="chopper")
 geometry.addMonitors(names=["monitor"], distance=[mon], neutronic=args.geometrytype != 'N')
 geometry.addDummyMonitor(0.001, 0.001)
 geometry.addMonitorIds([0])
-geometry.addComponent("single_detectors", "single_detectors")
+geometry.addComponent("single_detectors", "single_detectors", blank_location=False)
 sds = geometry.makeTypeElement("single_detectors")
-sdc = geometry.addComponent("single_pixel", root=sds, blank_location=False)
+sdc = geometry.addComponent("single_pixel", root=sds)
 r = 2*analyser+psd
 for i in range(len(SD_azimuths)):
     t=SD_azimuths[i]* pi/180.
-    x = - psd * sin(t)
+    x = psd * sin(t)
     y = 0.
     z = - psd * cos(t)
     nx, ny, nz = mirror(x, y, z)
@@ -78,12 +78,12 @@ for i in range(len(SD_azimuths)):
         geometry.addLocation(root=sdc, x=nx, y=ny, z=nz, name="single_tube_{0}".format(i+1))
     else:
         geometry.addLocation(root=sdc, x=x, y=y, z=z, nx=nx, ny=ny, nz=nz, name="single_tube_{0}".format(i+1), neutronic=True)
-geometry.addComponent("psds", "psds")
+geometry.addComponent("psds", "psds", blank_location=False)
 psds = geometry.makeTypeElement("psds")
-psdc = geometry.addComponent("single_pixel", root=psds, blank_location=False)
+psdc = geometry.addComponent("single_pixel", root=psds)
 for i in range(len(PSD_azimuths)):
     t = PSD_azimuths[i]*pi/180.
-    x = - psd * sin(t)
+    x = psd * sin(t)
     z = - psd * cos(t)
     for p in range(pixels):
         y = -height/2 + p * height/pixels
