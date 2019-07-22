@@ -29,7 +29,9 @@ last_modified = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 ch12 = 34.3
 ch34 = 33.388
 mon = -0.178
-analyser = 2.
+psd_analyser = 2.
+sd = 0.065
+sd_analyser = 2. - sd/2.
 psd = 0.102
 SDs = 8
 PSDs = 16
@@ -50,7 +52,7 @@ def tocartesian(r, t, p):
     z = r * cos(t)
     return [x, y, z]
 
-def mirror(x, y, z):
+def mirror(x, y, z, analyser):
     r, t, p = topolar(x, y, z)
     r += 2*analyser
     t = pi - t
@@ -67,13 +69,12 @@ geometry.addMonitorIds([0])
 geometry.addComponent("single_detectors", "single_detectors", blank_location=False)
 sds = geometry.makeTypeElement("single_detectors")
 sdc = geometry.addComponent("single_pixel", root=sds)
-r = 2*analyser+psd
 for i in range(len(SD_azimuths)):
     t=SD_azimuths[i]* pi/180.
-    x = psd * sin(t)
+    x = sd * sin(t)
     y = 0.
-    z = - psd * cos(t)
-    nx, ny, nz = mirror(x, y, z)
+    z = - sd * cos(t)
+    nx, ny, nz = mirror(x, y, z, sd_analyser)
     if args.geometrytype == 'N':
         geometry.addLocation(root=sdc, x=nx, y=ny, z=nz, name="single_tube_{0}".format(i+1))
     else:
@@ -87,7 +88,7 @@ for i in range(len(PSD_azimuths)):
     z = - psd * cos(t)
     for p in range(pixels):
         y = -height/2 + p * height/pixels
-        nx, ny, nz = mirror(x, y, z)
+        nx, ny, nz = mirror(x, y, z, psd_analyser)
         if args.geometrytype == 'N':
             geometry.addLocation(root=psdc, x=nx, y=ny, z=nz, name="tube_{0}_pixel_{1}".format(i+1, p+1))
         else:
