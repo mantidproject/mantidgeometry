@@ -24,7 +24,7 @@ comment = """ This is the instrument definition file of the IN16B (BATS) at the 
 
 instrument_name = "IN16B"
 # valid_from = "2018-03-01 00:00:00" # this is the starting date for BATS mode
-valid_from = "1900-01-31 23:59:59" # we want to give a retroactive force
+valid_from = "1901-01-01 00:00:00" # we want to give a retroactive force
 last_modified = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 ch12 = 34.3
 ch34 = 33.388
