@@ -3,7 +3,8 @@ from helper import MantidGeom
 from SNS.SANS.utilities import (kw, ag, make_filename, add_basic_types,
                                 add_double_flat_panel_type,
                                 add_double_flat_panel_component,
-                                add_double_panel_idlist)
+                                add_double_panel_idlist,
+                                add_comment_section, add_sample_aperture)
 
 """
 Instrument requirements from meeting at HFIR on May 07, 2019
@@ -16,7 +17,10 @@ iinfo = dict(valid_from='2019-01-01 00:00:00',
              valid_to='2100-12-31 23:59:59',
              comment='Created by Jose Borregero, borreguerojm@ornl.gov',
              instrument_name='GPSANS',
-             source_sample_distance=1.0,
+             source_sample_distance=13.601,
+             monitors=(dict(name='monitor1', z=-10.5),
+                       dict(name='timer', z=-10.5)),
+             sample_aperture=dict(z=0.0, diameter=14.0),
              bank_name='bank',
              flat_panel_types=dict(front='front-panel', back='back-panel'),
              flat_array='detector1',  # name of the detector array
@@ -32,11 +36,22 @@ iinfo = dict(valid_from='2019-01-01 00:00:00',
 det = MantidGeom(iinfo['instrument_name'],
                  **kw(iinfo, 'comment', 'valid_from', 'valid_to'))
 det.addSnsDefaults(default_view="3D", axis_view_3d="Z-")
-fn = make_filename(*ag(iinfo, 'instrument_name', 'valid_from','valid_to'))
+fn = make_filename(*ag(iinfo, 'instrument_name', 'valid_from', 'valid_to'))
+add_basic_types(det, iinfo)  # source, sample, pixel, tube, and fourpack
+#
+# Monitor Section
+#
+add_comment_section(det, 'COMPONENT, TYPE, and IDLIST: MONITORS')
+det.addMonitors(distance=[m['z'] for m in iinfo['monitors']],
+                names=[m['name'] for m in iinfo['monitors']])
+det.addMonitorIds(ids=[-1, -2])
+det.addCuboidMonitor(0.0508, 0.1651, 0.0381)
+
+add_sample_aperture(det, **iinfo['sample_aperture'])
+
 #
 # Insert the flat panel
 #
-add_basic_types(det, iinfo)  # source, sample, pixel, tube, and fourpack
 double_panel = add_double_flat_panel_type(det, iinfo)
 pixel_idlist = 'pixel_ids'
 add_double_flat_panel_component(double_panel, pixel_idlist, det,

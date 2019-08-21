@@ -84,6 +84,32 @@ def add_source_and_sample(det, ssd):
     det.addSamplePosition()
 
 
+def add_sample_aperture(det, z=0, diameter=0):
+    r"""
+    Create a component and type for a sample aperture device
+
+    Parameters
+    ----------
+    det: MantidGeom
+    z: float
+        Location on the aperture on the Z-axis, in meters.
+    diameter: float
+        Aperture diameter, in mili-meters.
+
+    Returns
+    -------
+    lxml.etree.subelement
+        Handle to the sample-aperture component object
+    """
+    add_comment_section(det, 'COMPONENT and TYPE: SAMPLE APERTURE')
+    le.SubElement(det.root, 'type', name='sample_aperture')
+    aperture = le.SubElement(det.root, 'component', type='sample_aperture')
+    le.SubElement(aperture, 'location', z=str(z))
+    parameter_size = le.SubElement(aperture, 'parameter', name="Size")
+    le.SubElement(parameter_size, 'value', val=str(diameter))
+    return aperture
+
+
 def add_pixel_type(det, diameter, height):
     r"""
 
@@ -468,4 +494,3 @@ def insert_location_from_logs(element, log_key='detectorZ',
     loc = le.SubElement(element, 'location')
     par = le.SubElement(loc, 'parameter', **dict(name=coord_name))
     le.SubElement(par, 'logfile', **dict(id=log_key, eq=equation))
-
