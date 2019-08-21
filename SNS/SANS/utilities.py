@@ -258,8 +258,8 @@ def add_double_flat_panel_component(double_panel, idlist, det, name):
 
 
 def add_curved_panel_type(det, num_elem, radius, dtheta, theta_0=0.,
-                          type_elem='fourpack', name_elem=None, first_index=1,
-                          assemb_type='panel'):
+                          transl=[0., 0., 0.], type_elem='fourpack',
+                          name_elem=None, first_index=1, assemb_type='panel'):
     r"""
 
     Parameters
@@ -271,6 +271,8 @@ def add_curved_panel_type(det, num_elem, radius, dtheta, theta_0=0.,
         Radius of the circle arc
     dtheta: float
         Angle separation between consecutive subelements
+    transl: list
+        Apply additional translation to each element
     theta_0: float
         Additional angle shift for the angular position of the subelements
     type_elem: str
@@ -289,24 +291,29 @@ def add_curved_panel_type(det, num_elem, radius, dtheta, theta_0=0.,
     lxml.etree.subelement
         Handle to the curved panel object
     """
+    def to_str(vv):
+        return [f'{v:.5f}' for v in vv]
     add_comment_section(det, 'TYPE: CURVED PANEL')
     type_assembly = le.SubElement(det.root, 'type', name=assemb_type)
     le.SubElement(type_assembly, 'properties')
     component = le.SubElement(type_assembly, 'component', type=type_elem)
     theta_angles = dtheta * (0.5 + np.arange(num_elem)) -\
         num_elem * dtheta / 2 + theta_0
-    rot = [f'{v:.4f}' for v in theta_angles]
+    x = to_str(radius * np.sin(np.deg2rad(theta_angles)) + transl[0])
+    y = to_str(transl[1] * np.ones(num_elem))
+    z = to_str(radius * np.cos(np.deg2rad(theta_angles)) + transl[2])
+    rot = to_str(theta_angles)
     rot_axis = {'axis-x': '0', 'axis-y': '1', 'axis-z': '0'}
     for i in range(num_elem):
-        kwargs = dict(name=f'{name_elem}{first_index+i}', r=str(radius),
-                      t=rot[i], rot=rot[i])
+        kwargs = dict(name=f'{name_elem}{first_index+i}',
+                      x=x[i], y=y[i], z=z[i], rot=rot[i])
         kwargs.update(rot_axis)
         le.SubElement(component, 'location', **kwargs)
     return type_assembly
 
 
 def add_double_curved_panel_type(det, iinfo, first_bank_number=1,
-                                 comment=None):
+                                 to_origin=True, comment=None):
     r"""
     Create a type for the double curved panel using a type for the front
     and a type for the back  panels.
@@ -323,6 +330,8 @@ def add_double_curved_panel_type(det, iinfo, first_bank_number=1,
         number_eightpacks, eightpack_angle, curved_panel_types
     first_bank_number: int
         Start bank number with this one
+    to_origin: bool
+        Translate all the panel to the origin of coordinates
     Returns
     -------
     lxml.etree.subelement
@@ -339,16 +348,22 @@ def add_double_curved_panel_type(det, iinfo, first_bank_number=1,
     args = [det, iinfo['number_eightpacks'], r_eightpack - delta_r,
             -iinfo['eightpack_angle']]
     # Insert type for front panel
-    kwargs = dict(name_elem=iinfo['bank_name'], theta_0=slip_angle,
+    kwargs = dict(name_elem=iinfo['bank_name'],
+                  theta_0=slip_angle,
                   assemb_type=iinfo['curved_panel_types']['front'],
                   first_index=first_bank_number)
+    if to_origin is True:
+        kwargs['transl'] = [0., 0., -r_eightpack]
     front = add_curved_panel_type(*args, **kwargs)
     # Insert type for back panel
     args = [det, iinfo['number_eightpacks'], r_eightpack + delta_r,
             -iinfo['eightpack_angle']]
-    kwargs = dict(name_elem=iinfo['bank_name'], theta_0=-slip_angle,
+    kwargs = dict(name_elem=iinfo['bank_name'],
+                  theta_0=-slip_angle,
                   assemb_type=iinfo['curved_panel_types']['back'],
                   first_index=first_bank_number + iinfo['number_eightpacks'])
+    if to_origin is True:
+        kwargs['transl'] = [0., 0., -r_eightpack]
     back = add_curved_panel_type(*args, **kwargs)
     # Insert type for double panel
     add_comment_section(det, 'TYPE: DOUBLE CURVED PANEL', notes=comment)

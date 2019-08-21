@@ -6,7 +6,8 @@ from SNS.SANS.utilities import (kw, ag, make_filename, add_basic_types,
                                 add_double_flat_panel_component,
                                 add_double_curved_panel_type,
                                 add_double_curved_panel_component,
-                                add_double_panel_idlist)
+                                add_double_panel_idlist,
+                                insert_location_from_logs)
 
 """
 Instrument requirements from meeting at HFIR on May 07, 2019
@@ -70,10 +71,14 @@ jinfo = dict(curved_array='wing_detector_arm',  # name of the wing detector
              number_eightpacks=20,
              bank_radius=1.129538,
              anchor_offset=0.0,
-             eightpack_angle=2.232094)
+             eightpack_angle=2.232094,
+             panel_translation_log_key='detectorZ')
 
 iinfo.update(jinfo)
-kwargs = dict(first_bank_number = 1 + last_bank_number)
+r_eightpack = iinfo['bank_radius'] + iinfo['anchor_offset']
+comment = f'Panel is positioned {r_eightpack} meters downstream'
+kwargs = dict(comment=comment, to_origin=False,
+              first_bank_number=1 + last_bank_number)
 double_panel = add_double_curved_panel_type(det, iinfo, **kwargs)
 pixel_idlist = 'curved_panel_ids'
 double_panel = add_double_curved_panel_component(double_panel,

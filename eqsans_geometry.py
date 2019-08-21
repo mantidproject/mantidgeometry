@@ -51,7 +51,7 @@ Explanation of some entries in iinfo dictionary
 iinfo = dict(valid_from='2019-01-01 00:00:00',
              valid_to='2100-12-31 23:59:59',
              comment='Created by Jose Borregero, borreguerojm@ornl.gov',
-             instrument_name='EQSANS',
+             instrument_name='EQ-SANS',
              source_sample_distance=14.122,
              bank_name='bank',
              curved_array='detector1',
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     insert_location_from_logs(double_panel,
                               log_key=iinfo['panel_translation_log_key'],
                               coord_name='z',
-                              equation=f'{-r_eightpack}+0.001*value')
+                              equation='0.001*value')
     add_double_panel_idlist(det, iinfo, pixel_idlist)
     #
     # Write to file
