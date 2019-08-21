@@ -35,7 +35,7 @@ iinfo = dict(valid_from='2019-01-01 00:00:00',
 
 det = MantidGeom(iinfo['instrument_name'],
                  **kw(iinfo, 'comment', 'valid_from', 'valid_to'))
-det.addSnsDefaults(default_view="3D", axis_view_3d="Z-")
+det.addSnsDefaults(default_view="3D", axis_view_3d="Z+")
 fn = make_filename(*ag(iinfo, 'instrument_name', 'valid_from', 'valid_to'))
 add_basic_types(det, iinfo)  # source, sample, pixel, tube, and fourpack
 #
@@ -45,7 +45,7 @@ add_comment_section(det, 'COMPONENT, TYPE, and IDLIST: MONITORS')
 det.addMonitors(distance=[m['z'] for m in iinfo['monitors']],
                 names=[m['name'] for m in iinfo['monitors']])
 det.addMonitorIds(ids=[-1, -2])
-det.addCuboidMonitor(0.0508, 0.1651, 0.0381)
+det.addDummyMonitor(0.01, 0.1)
 
 add_sample_aperture(det, **iinfo['sample_aperture'])
 
