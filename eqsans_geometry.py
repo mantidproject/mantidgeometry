@@ -92,7 +92,7 @@ if __name__ == '__main__':
     insert_location_from_logs(double_panel,
                               log_key=iinfo['panel_translation_log_key'],
                               coord_name='z',
-                              equation=f'{-r_eightpack}+0.001*value')
+                              equation='0.001*value')
     add_double_panel_idlist(det, iinfo, pixel_idlist)
     #
     # Write to file
