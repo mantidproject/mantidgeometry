@@ -182,10 +182,10 @@ def add_flat_panel_type(det, num_elem, width, gap, type_elem='fourpack',
     le.SubElement(assembly, 'properties')
     component = le.SubElement(assembly, 'component', type=type_elem)
     effective_width = width + gap
-    pack_start = (effective_width / 2.0) * (1 - num_elem)
+    pack_start = (effective_width / 2.0) * (num_elem - 1)
     for i in range(num_elem):
         kwargs = dict(name=f'{name_elem}{first_index+i}',
-                      x=str(pack_start + (i * effective_width)))
+                      x=str(pack_start - (i * effective_width)))
         le.SubElement(component, 'location', **kwargs)
     return assembly
 
@@ -255,9 +255,9 @@ def add_double_flat_panel_type(det, iinfo):
     z = iinfo['fourpack_separation'] / 2
     le.SubElement(double_panel, 'properties')
     front_panel = le.SubElement(double_panel, 'component', type='front-panel')
-    det.addLocation(front_panel, -x, 0., -z)
+    det.addLocation(front_panel, x, 0., -z)
     back_panel = le.SubElement(double_panel, 'component', type='back-panel')
-    det.addLocation(back_panel, x, 0., z)
+    det.addLocation(back_panel, -x, 0., z)
     return double_panel
 
 

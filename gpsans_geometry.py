@@ -35,7 +35,7 @@ iinfo = dict(valid_from='2019-01-01 00:00:00',
 
 det = MantidGeom(iinfo['instrument_name'],
                  **kw(iinfo, 'comment', 'valid_from', 'valid_to'))
-det.addSnsDefaults(default_view="3D", axis_view_3d="Z+")
+det.addSnsDefaults(default_view="3D", axis_view_3d="Z-")
 fn = make_filename(*ag(iinfo, 'instrument_name', 'valid_from', 'valid_to'))
 add_basic_types(det, iinfo)  # source, sample, pixel, tube, and fourpack
 #
