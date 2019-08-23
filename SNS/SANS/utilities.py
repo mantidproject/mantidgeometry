@@ -84,6 +84,32 @@ def add_source_and_sample(det, ssd):
     det.addSamplePosition()
 
 
+def add_sample_aperture(det, z=0, diameter=0):
+    r"""
+    Create a component and type for a sample aperture device
+
+    Parameters
+    ----------
+    det: MantidGeom
+    z: float
+        Location on the aperture on the Z-axis, in meters.
+    diameter: float
+        Aperture diameter, in mili-meters.
+
+    Returns
+    -------
+    lxml.etree.subelement
+        Handle to the sample-aperture component object
+    """
+    add_comment_section(det, 'COMPONENT and TYPE: SAMPLE APERTURE')
+    le.SubElement(det.root, 'type', name='sample_aperture')
+    aperture = le.SubElement(det.root, 'component', type='sample_aperture')
+    le.SubElement(aperture, 'location', z=str(z))
+    parameter_size = le.SubElement(aperture, 'parameter', name="Size")
+    le.SubElement(parameter_size, 'value', val=str(diameter))
+    return aperture
+
+
 def add_pixel_type(det, diameter, height):
     r"""
 
@@ -156,10 +182,10 @@ def add_flat_panel_type(det, num_elem, width, gap, type_elem='fourpack',
     le.SubElement(assembly, 'properties')
     component = le.SubElement(assembly, 'component', type=type_elem)
     effective_width = width + gap
-    pack_start = (effective_width / 2.0) * (1 - num_elem)
+    pack_start = (effective_width / 2.0) * (num_elem - 1)
     for i in range(num_elem):
         kwargs = dict(name=f'{name_elem}{first_index+i}',
-                      x=str(pack_start + (i * effective_width)))
+                      x=str(pack_start - (i * effective_width)))
         le.SubElement(component, 'location', **kwargs)
     return assembly
 
@@ -229,9 +255,9 @@ def add_double_flat_panel_type(det, iinfo):
     z = iinfo['fourpack_separation'] / 2
     le.SubElement(double_panel, 'properties')
     front_panel = le.SubElement(double_panel, 'component', type='front-panel')
-    det.addLocation(front_panel, -x, 0., -z)
+    det.addLocation(front_panel, x, 0., -z)
     back_panel = le.SubElement(double_panel, 'component', type='back-panel')
-    det.addLocation(back_panel, x, 0., z)
+    det.addLocation(back_panel, -x, 0., z)
     return double_panel
 
 
@@ -468,4 +494,3 @@ def insert_location_from_logs(element, log_key='detectorZ',
     loc = le.SubElement(element, 'location')
     par = le.SubElement(loc, 'parameter', **dict(name=coord_name))
     le.SubElement(par, 'logfile', **dict(id=log_key, eq=equation))
-
