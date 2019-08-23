@@ -4,7 +4,8 @@ from SNS.SANS.utilities import (kw, ag, make_filename, add_basic_types,
                                 add_double_flat_panel_type,
                                 add_double_flat_panel_component,
                                 add_double_panel_idlist,
-                                add_comment_section, add_sample_aperture)
+                                add_comment_section, add_sample_aperture,
+                                insert_location_from_logs)
 
 """
 Instrument requirements from meeting at HFIR on May 07, 2019
@@ -54,7 +55,11 @@ add_sample_aperture(det, **iinfo['sample_aperture'])
 #
 double_panel = add_double_flat_panel_type(det, iinfo)
 pixel_idlist = 'pixel_ids'
-add_double_flat_panel_component(double_panel, pixel_idlist, det,
-                                iinfo['flat_array'])
+double_panel = add_double_flat_panel_component(double_panel, pixel_idlist, det,
+                                               iinfo['flat_array'])
+insert_location_from_logs(double_panel,
+                          log_key=['detector-translation', 'sdd'],
+                          coord_name=['x', 'z'],
+                          equation=['0.001*value', '0.001*value'])
 add_double_panel_idlist(det, iinfo, pixel_idlist)
 det.writeGeom(fn)

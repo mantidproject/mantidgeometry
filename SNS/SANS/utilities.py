@@ -261,7 +261,8 @@ def add_double_flat_panel_type(det, iinfo):
     return double_panel
 
 
-def add_double_flat_panel_component(double_panel, idlist, det, name):
+def add_double_flat_panel_component(double_panel, idlist, det, name,
+                                    location=None):
     r"""
 
     Parameters
@@ -270,7 +271,8 @@ def add_double_flat_panel_component(double_panel, idlist, det, name):
     idlist
     det
     name
-
+    location: list
+        Position of the panel as a vector. If None, then no location is added
     Returns
     -------
     lxml.etree.subelement
@@ -279,7 +281,8 @@ def add_double_flat_panel_component(double_panel, idlist, det, name):
     add_comment_section(det, 'COMPONENT: DOUBLE FLAT PANEL')
     kwargs = dict(type=double_panel.attrib['name'], idlist=idlist, name=name)
     comp = le.SubElement(det.root, 'component', **kwargs)
-    det.addLocation(comp, 0., 0., 0)
+    if location is not None:
+        det.addLocation(comp, **list(location))
     return comp
 
 
@@ -417,7 +420,7 @@ def add_double_curved_panel_component(double_panel, idlist, det, name,
 
     Returns
     -------
-
+    Reference to the component
     """
     add_comment_section(det, 'COMPONENT: DOUBLE CURVED PANEL', notes=comment)
     kwargs = dict(type=double_panel.attrib['name'], idlist=idlist, name=name)
@@ -484,13 +487,18 @@ def insert_location_from_logs(element, log_key='detectorZ',
     ----------
     element: lmxl.etree.Element
         Element receiving the location
-    log_key: str
-        Name of the long entry of interest
-    coord_name: str
-        Coordinate affected by the log value
-    equation: str
-        Equation determining the final value of coord_name
+    log_key: str or list
+        Name(s) of the log entry(ies) of interest
+    coord_name: str or list
+        Coordinate(s) affected by the log value(s)
+    equation: str or list
+        Equation(s) determining the final value(s) of coord_names
     """
+    log_keys = log_key if isinstance(log_key, list) else [log_key]
+    coord_names =  coord_name if isinstance(coord_name, list) else [coord_name]
+    equations = equation if isinstance(equation, list) else [equation]
+
     loc = le.SubElement(element, 'location')
-    par = le.SubElement(loc, 'parameter', **dict(name=coord_name))
-    le.SubElement(par, 'logfile', **dict(id=log_key, eq=equation))
+    for i in range(len(log_keys)):
+        par = le.SubElement(loc, 'parameter', **dict(name=coord_names[i]))
+        le.SubElement(par, 'logfile', **dict(id=log_keys[i], eq=equations[i]))
