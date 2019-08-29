@@ -185,7 +185,7 @@ def add_flat_panel_type(det, num_elem, width, gap, type_elem='fourpack',
     pack_start = (effective_width / 2.0) * (num_elem - 1)
     for i in range(num_elem):
         kwargs = dict(name=f'{name_elem}{first_index+i}',
-                      x=str(pack_start - (i * effective_width)))
+                      x='{:.5f}'.format(pack_start - (i * effective_width)))
         le.SubElement(component, 'location', **kwargs)
     return assembly
 

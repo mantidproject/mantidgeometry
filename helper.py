@@ -588,10 +588,10 @@ class MantidGeom:
         for i in range(num_tubes):
             tube_name = "tube%d" % (i + 1)
             x = pack_start + (i * effective_tube_width)
-            location_element = le.SubElement(component, "location", name=tube_name, x=str(x))
+            location_element = le.SubElement(component, "location", name=tube_name, x='{:.5f}'.format(x))
             if (neutronic):
                 if (neutronicIsPhysical):
-                    le.SubElement(location_element, "neutronic", x=str(x))
+                    le.SubElement(location_element, "neutronic", x='{:.5f}'.format(x))
                 else:
                     le.SubElement(location_element, "neutronic", x="0.0")
 
@@ -726,7 +726,7 @@ class MantidGeom:
         for i in range(num_pixels):
             pixel_name = "pixel%d" % (i + 1)
             y = tube_start + (i * pixel_width)
-            location_element = le.SubElement(component, "location", name=pixel_name, y=str(y))
+            location_element = le.SubElement(component, "location", name=pixel_name, y='{:.5f}'.format(y))
             if (neutronic):
                 if (neutronicIsPhysical):
                     le.SubElement(location_element, "neutronic", y=str(y))
@@ -746,10 +746,10 @@ class MantidGeom:
                       r=str(center_bottom_base[0]),
                       t=str(center_bottom_base[1]),
                       p=str(center_bottom_base[2]))
-        le.SubElement(cylinder, "axis", x=str(axis[0]), y=str(axis[1]),
-                      z=str(axis[2]))
-        le.SubElement(cylinder, "radius", val=str(pixel_radius))
-        le.SubElement(cylinder, "height", val=str(pixel_height))
+        le.SubElement(cylinder, "axis", x='{:.5f}'.format(axis[0]), y='{:.5f}'.format(axis[1]),
+                      z='{:.5f}'.format(axis[2]))
+        le.SubElement(cylinder, "radius", val='{:.5f}'.format(pixel_radius))
+        le.SubElement(cylinder, "height", val='{:.5f}'.format(pixel_height))
         le.SubElement(type_element, "algebra", val=algebra)
 
         return
