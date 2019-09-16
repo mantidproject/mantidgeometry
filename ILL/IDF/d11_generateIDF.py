@@ -25,14 +25,14 @@ pixelHeight = 0.0075 / factor
 x = pixelWidth / 2.
 y = pixelHeight / 2.
 z = 0.
-thickness = repr(-0.0001)
+thickness = 0.0001
 # rear detector
 zPos = 1.2
 # start identification numbers
 id0 = repr(0)
 # rectangular detector
-xstart = repr(-pixelWidth * (numberPixelsHorizontal - 1) / 2)
-xstep = repr(pixelWidth)
+xstart = repr(pixelWidth * (numberPixelsHorizontal - 1) / 2)
+xstep = repr(-pixelWidth)
 xpixels = repr(numberPixelsHorizontal)
 ystart = repr(-pixelHeight * (numberPixelsVertical - 1) / 2)
 ystep = repr(pixelHeight)
@@ -83,7 +83,7 @@ comment = """ This is the instrument definition file of the D11 Lowest momentum 
        https://www.ill.eu/instruments-support/instruments-groups/instruments/d11/characteristics/
        """
 d11 = MantidGeom(instrumentName, comment=comment, valid_from=validFrom)
-d11.addSnsDefaults()
+d11.addSnsDefaults(default_view='3D',axis_view_3d='z-')
 d11.addComment("SOURCE")
 d11.addComponentILL("moderator", 0., 0., moderator_source, "Source")
 d11.addComment("Sample position")
@@ -99,5 +99,5 @@ d11.addComment("DETECTOR")
 d11.addComponentRectangularDetector(detector0, 0., 0., zPos, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR)
 d11.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
 d11.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
-d11.addCuboidPixel(pixelName, [-x, -y, z], [x, y, z], [-x, -y, thickness], [x, -y, z], shape_id="pixel-shape")
+d11.addCuboidPixel(pixelName, [-x, -y, thickness/2.], [-x, y, thickness/2.], [-x, -y, -thickness/2.], [x, -y, thickness/2.], shape_id="pixel-shape")
 d11.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")
