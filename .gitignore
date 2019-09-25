@@ -2,3 +2,4 @@
 *.py~
 *_Definition*.xml
 *.vtp
+.idea/

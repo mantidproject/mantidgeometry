@@ -54,7 +54,26 @@ class DemandGeometry(helper.MantidGeom):
     def add_panel(self, bank_id, geom_setup_dict, cal_shift_x='diffx', cal_shift_y='diffy',
                   cal_rotx='cal::flip', cal_roty='cal::roty',
                   cal_rotz='cal::spin'):
-        # define arm - component
+        """ Add 1 2D detector panel
+        Code is somehow shared with hb2b_geometry.generate_1bank_2d_idf
+        For Mantid IDF, the logic of applying shift to a detector is from bottom to top as
+        - shift X and Y
+        - shift Z, rotX, rotY, rotZ
+        - shift 2theta
+        In the same level, rotation shift is applied in a higher priority than linear shift
+        Args:
+            bank_id:
+            geom_setup_dict:
+            cal_shift_x: String, name of calibration shift along X-axis
+            cal_shift_y:
+            cal_rotx:
+            cal_roty:
+            cal_rotz:
+
+        Returns:
+        None
+        """
+        # Define arm component - component with roty as 2theta
         pixel_row_count, pixel_column_count = geom_setup_dict['PixelNumber'][bank_id]
         arm_loc_dict = dict()
         arm_loc_dict['r-position'] = {'value': 0.0}
@@ -63,29 +82,34 @@ class DemandGeometry(helper.MantidGeom):
         arm_loc_dict['roty'] = {'logfile': 'value+0.0', 'id': '2theta'}  # roty works as 2theta with experiment
         arm_node = self.add_component(type_name='arm', idfillbyfirst='x', idstart=1,
                                       idstepbyrow=pixel_column_count)
-        arm_loc_node = self.add_location('bank{}'.format(bank_id), arm_node, arm_loc_dict)
+        self.add_location('bank{}'.format(bank_id), arm_node, arm_loc_dict)
 
-        # define type: arm
+        # Define arm node type: arm
         arm_type_node = self.add_component_type(type_name='arm')
 
-        # define component panel under type arm
+        # Define component panel installed on the arm
+        # rotation along x-, y- and z- axis and shift along arm will be defined from log
         arm_loc_dict = {'z': {'logfile': 'value+{}'.format(geom_setup_dict['L2']), 'id': 'cal::arm'},
                         'rotx': {'logfile': 'value+0.0', 'id': cal_rotx},
                         'roty': {'logfile': 'value+0.0', 'id': cal_roty},
                         'rotz': {'logfile': 'value+0.0', 'id': cal_rotz},
                         }
-        arm_node = self.add_component(type_name='panel', idfillbyfirst=None, idstart=None,
-                                      idstepbyrow=None, root=arm_type_node)
-        self.add_location(None, arm_node, arm_loc_dict)
+        # Add component-panel to arm-type-node
+        panel_node = self.add_component(type_name='panel', idfillbyfirst=None, idstart=None,
+                                        idstepbyrow=None, root=arm_type_node)
+        # Add location to panel node
+        self.add_location(None, panel_node, arm_loc_dict)
 
-        # add panel
+        # Add another layer: shift-panel on to panel for shift in X- and Y- direction
         center_y = geom_setup_dict['Panel Center'][bank_id]
         panel_loc_dict = {'x': {'logfile': 'value', 'id': cal_shift_x},
                           'y': {'logfile': '{}+value'.format(center_y), 'id': cal_shift_y}}
         panel_type_node = self.add_component_type('panel')
-        panel_node = self.add_component(type_name='shiftpanel', idfillbyfirst=None, idstart=None,
-                                        idstepbyrow=None, root=panel_type_node)
-        self.add_location(None, panel_node, panel_loc_dict)
+        shift_panel_node = self.add_component(type_name='shiftpanel', idfillbyfirst=None, idstart=None,
+                                              idstepbyrow=None, root=panel_type_node)
+        self.add_location(None, shift_panel_node, panel_loc_dict)
+
+        return
 
 # END-DEF-HB3A
 
@@ -130,11 +154,11 @@ def generate_1_panel_idf(is_zebra, idf_name, config_name, linear_pixel_size):
 
     # Build 'arm'/panel/shiftpanel
     scx_instrument.addComment("PANEL")
-
     scx_instrument.add_panel(bank_id=1, geom_setup_dict=geom_setup_dict,
                              cal_shift_x='diffx', cal_shift_y='diffy')
 
-    # generate rectangular detector based on 'shiftpanel'
+    # Generate rectangular detector based on 'shiftpanel'
+    # TODO - refactor this to a method (not ASAP)
     pixel_size_x = pixel_size_y = geom_setup_dict['PixelSize'][1]
     pixel_row_count, pixel_column_count = geom_setup_dict['PixelNumber'][1]
     x_start = (float(pixel_column_count)*0.5 - 0.5) * pixel_size_x
@@ -144,7 +168,7 @@ def generate_1_panel_idf(is_zebra, idf_name, config_name, linear_pixel_size):
     scx_instrument.add_rectangular_detector(x_start=x_start, x_step=x_step, x_pixels=pixel_column_count,
                                             y_start=y_start, y_step=y_step, y_pixels=pixel_row_count,
                                             pixel_size_x=pixel_size_x, pixel_size_y=pixel_size_y,
-                                            pixel_size_z=0.0001)
+                                            pixel_size_z=0.0001)  # pixel size Z is not concerned
 
     scx_instrument.write_terminal()
     scx_instrument.writeGeom(idf_name)
@@ -165,13 +189,10 @@ def generate_3_panel_idf(out_file_name):
     end_date = '3018-10-20 23:59:59'
 
     # boiler plate stuff
-    hb3a = HB3AGeometry(instrument_name,
-                        comment="Created by " + ", ".join(authors),
-                        valid_from=begin_date,
-                        valid_to=end_date)
-
-    hb3a.addComment('DEFAULTS')
-    hb3a.addHfirDefaults()
+    hb3a = DemandGeometry(instrument_name,
+                          comment="Created by " + ", ".join(authors),
+                          valid_from=begin_date,
+                          valid_to=end_date)
 
     # source
     hb3a.addComment("SOURCE")
@@ -179,38 +200,40 @@ def generate_3_panel_idf(out_file_name):
     # sample
     hb3a.addComment("SAMPLE")
     hb3a.addSamplePosition()
-    # monitor
-    hb3a.addComment("MONITORS")
-    hb3a.add_monitor_type()
+    # monitor: No monitor
+    # hb3a.addComment("MONITORS")
+    # hb3a.add_monitor_type()
     # self._vulcan.addMonitors(distance=[-1.5077], names=["monitor1"])
 
-    # add detectors
-    hb3a.addComment('Define detector banks')
-    hb3a.addComponent(type_name='detectors', idlist='detectors')
-    # define detector type
-    hb3a.add_banks_type(name='detectors',
-                        components=['bank1', 'bank2', 'bank3'])
+    # Build 'arm'/panel/shiftpanel
+    # TODO FIXME - shall be: 1 arm, 3 panel
+    hb3a.addComment("PANEL Lower")
+    hb3a.add_panel(bank_id=1, geom_setup_dict=DEMAND_SETUP,
+                   cal_shift_x='diffx1', cal_shift_y='diffy1')
 
-    # define center bank
-    hb3a.addComment('Define Centre Bank')
-    hb3a.add_bank(name='bank3', component_name='square256detector',
-                  x=2.0, y=0., z=0., rot=90)
+    hb3a.addComment("PANEL Middle")
+    hb3a.add_panel(bank_id=2, geom_setup_dict=DEMAND_SETUP,
+                   cal_shift_x='diffx2', cal_shift_y='diffy2')
 
-    # define upper bank
-    hb3a.addComment('Define Upper Bank')
-    hb3a.add_bank(name='bank3', component_name='square256detector',
-                  x=2.0, y=1., z=0., rot=90)
+    hb3a.addComment("PANEL Upper")
+    hb3a.add_panel(bank_id=3, geom_setup_dict=DEMAND_SETUP,
+                   cal_shift_x='diffx3', cal_shift_y='diffy3')
 
-    # define lower bank
-    hb3a.addComment('Define Lower Bank')
-    hb3a.add_bank(name='bank1', component_name='square256detector',
-                  x=2.0, y=-1., z=0., rot=90)
+    # Generate rectangular detector based on 'shiftpanel'
+    # TODO - refactor this to a method (not ASAP)
+    pixel_size_x = pixel_size_y = DEMAND_SETUP['PixelSize'][1]
+    pixel_row_count, pixel_column_count = DEMAND_SETUP['PixelNumber'][1]
+    x_start = (float(pixel_column_count)*0.5 - 0.5) * pixel_size_x
+    x_step = - pixel_size_x
+    y_start = -(float(pixel_row_count)*0.5 - 0.5) * pixel_size_y
+    y_step = pixel_size_y
+    hb3a.add_rectangular_detector(x_start=x_start, x_step=x_step, x_pixels=pixel_column_count,
+                                  y_start=y_start, y_step=y_step, y_pixels=pixel_row_count,
+                                  pixel_size_x=pixel_size_x, pixel_size_y=pixel_size_y,
+                                  pixel_size_z=0.0001)  # pixel size Z is not concerned
 
-    # 512 x 512 pack
-    hb3a.addComment('512 x 512 pack')
-    hb3a.angler_detector(name='square256detector', num_linear_pixel=512, tube_x=0.01)
-
-    #
+    # Write out HB3A
+    hb3a.write_terminal()
     hb3a.writeGeom(out_file_name)
 
     return
@@ -253,9 +276,11 @@ def main(argv):
                            ''.format(linear_pixel_number, linear_pixel_number))
 
             generate_1_panel_idf(is_zebra, output_idf_name, instrument_config_name, linear_pixel_number)
-        elif num_panel:
-            generate_3_panel_idf(output_idf_name, instrument_config_name)
+        elif num_panel == 3:
+            # 3 panels: DEMAND
+            generate_3_panel_idf(output_idf_name)
         else:
+            # Non-support
             print ('Panel configuration {} is not supported'.format(argv[1]))
             sys.exit(-1)
     # END-IF-ELSE

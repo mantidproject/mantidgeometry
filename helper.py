@@ -288,9 +288,10 @@ class MantidGeom(object):
         return comp
 
     def add_location(self, location_name, node, location_param_dict):
-        """ add an location
+        """ add location to a component
         :param location_name:
-        :param node
+        :param node: node where location is belonged to
+        :param location_param_dict: dictionary for position parameters including parameters
         :return:
         """
         arg_dict = dict()
@@ -301,15 +302,16 @@ class MantidGeom(object):
             arg_dict['name'] = location_name
             # location_node = le.SubElement(node, 'location', name=location_name)
 
+        # Create location node with "location name" as an option
         location_node = le.SubElement(node, 'location', **arg_dict)
 
         for param_name in sorted(location_param_dict.keys()):
             if 'value' in location_param_dict[param_name]:
-                # write parameter value
+                # write location parameter value directly
                 param_value = location_param_dict[param_name]['value']
                 self.add_parameter(param_name, param_value, location_node)
             elif 'logfile' in location_param_dict[param_name]:
-                # write logfile
+                # write location parameter with value associated with log in workspace's run object: logfile
                 log_equation = location_param_dict[param_name]['logfile']
                 log_name = location_param_dict[param_name]['id']
                 self.add_log_file(param_name, log_equation, log_name, location_node)

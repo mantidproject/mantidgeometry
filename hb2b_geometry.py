@@ -84,6 +84,7 @@ def generate_1bank_2d_idf(instrument_name, geom_setup_dict, pixel_setup, output_
     # Build 'arm'/panel/shiftpanel
     hb2b.addComment("PANEL")
 
+    # TODO - the following part is refactored to method add_panel in hb3a_geometry
     # define arm - component
     pixel_row_count, pixel_column_count = geom_setup_dict['PixelNumber'][pixel_setup]
     arm_loc_dict = dict()
