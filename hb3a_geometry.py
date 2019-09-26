@@ -26,7 +26,7 @@ ZEBRA_SETUP = {'L1': 2.0,
                'PixelNumber': {1: (256, 256)},
                'PixelSize': {1: 0.01234567}}
 
-Y = 0.1234567
+Y = 0.120  # distance between two panels = 512 * 0.0002265625 = 0.116
 DEMAND_SETUP = {'L1': 2.0,
                 'L2': 0.3750,
                 'Panel Center': {1: (0, -Y), 2: (0, 0), 3: (0, Y)},
@@ -51,9 +51,8 @@ class DemandGeometry(helper.MantidGeom):
 
         return
 
-    def add_panel(self, bank_id, geom_setup_dict, cal_shift_x='diffx', cal_shift_y='diffy',
-                  cal_rotx='cal::flip', cal_roty='cal::roty',
-                  cal_rotz='cal::spin'):
+    def add_panel(self, bank_id, geom_setup_dict, cal_shift_x, cal_shift_y, cal_shift_z,
+                  cal_rotx, cal_roty, cal_rotz, component_use_bank_id, start_pixel_id=1):
         """ Add 1 2D detector panel
         Code is somehow shared with hb2b_geometry.generate_1bank_2d_idf
         For Mantid IDF, the logic of applying shift to a detector is from bottom to top as
@@ -63,15 +62,22 @@ class DemandGeometry(helper.MantidGeom):
         In the same level, rotation shift is applied in a higher priority than linear shift
         Args:
             bank_id:
-            geom_setup_dict:
+            geom_setup_dict: dictionary for geometry parameters such as L2, panel center position (Y)
             cal_shift_x: String, name of calibration shift along X-axis
-            cal_shift_y:
-            cal_rotx:
-            cal_roty:
-            cal_rotz:
+            cal_shift_y: String, name of calibration shift along Y-axis
+            cal_shift_z: String
+                log name of calibration shift along Z-axis
+            cal_rotx: Log name of shift of rotation along X axis
+            cal_roty: Log name of shift of rotation along Y axis
+            cal_rotz: Log name of shift of rotation along Z axis
+            component_use_bank_id: boolean
+                If true, then all the component name containing bank number
+            start_pixel_id: integer
+                starting pixel ID
 
         Returns:
-        None
+        Integer
+            number of pixels in this panel
         """
         # Define arm component - component with roty as 2theta
         pixel_row_count, pixel_column_count = geom_setup_dict['PixelNumber'][bank_id]
@@ -80,36 +86,50 @@ class DemandGeometry(helper.MantidGeom):
         arm_loc_dict['t-position'] = {'value': 0.0}
         arm_loc_dict['p-position'] = {'value': 0.0}
         arm_loc_dict['roty'] = {'logfile': 'value+0.0', 'id': '2theta'}  # roty works as 2theta with experiment
-        arm_node = self.add_component(type_name='arm', idfillbyfirst='x', idstart=1,
+
+        # generate arm node name
+        arm_node_name = 'arm'
+        if component_use_bank_id:
+            arm_node_name += '{}'.format(bank_id)
+
+        arm_node = self.add_component(type_name=arm_node_name, idfillbyfirst='x', idstart=start_pixel_id,
                                       idstepbyrow=pixel_column_count)
         self.add_location('bank{}'.format(bank_id), arm_node, arm_loc_dict)
 
         # Define arm node type: arm
-        arm_type_node = self.add_component_type(type_name='arm')
+        arm_type_node = self.add_component_type(type_name=arm_node_name)
 
         # Define component panel installed on the arm
         # rotation along x-, y- and z- axis and shift along arm will be defined from log
-        arm_loc_dict = {'z': {'logfile': 'value+{}'.format(geom_setup_dict['L2']), 'id': 'cal::arm'},
+        arm_loc_dict = {'z': {'logfile': 'value+{}'.format(geom_setup_dict['L2']), 'id': cal_shift_z},
                         'rotx': {'logfile': 'value+0.0', 'id': cal_rotx},
                         'roty': {'logfile': 'value+0.0', 'id': cal_roty},
                         'rotz': {'logfile': 'value+0.0', 'id': cal_rotz},
                         }
         # Add component-panel to arm-type-node
-        panel_node = self.add_component(type_name='panel', idfillbyfirst=None, idstart=None,
+        # generate name for panel
+        panel_node_name = 'panel'
+        if component_use_bank_id:
+            panel_node_name += '{}'.format(bank_id)
+        # add panel as a component
+        panel_node = self.add_component(type_name=panel_node_name, idfillbyfirst=None, idstart=None,
                                         idstepbyrow=None, root=arm_type_node)
         # Add location to panel node
         self.add_location(None, panel_node, arm_loc_dict)
 
         # Add another layer: shift-panel on to panel for shift in X- and Y- direction
-        center_y = geom_setup_dict['Panel Center'][bank_id]
+        center_y = geom_setup_dict['Panel Center'][bank_id][1]
         panel_loc_dict = {'x': {'logfile': 'value', 'id': cal_shift_x},
                           'y': {'logfile': '{}+value'.format(center_y), 'id': cal_shift_y}}
-        panel_type_node = self.add_component_type('panel')
+        # add  panel as component type
+        panel_type_node = self.add_component_type(panel_node_name)
+
+        # Add component shift_panel
         shift_panel_node = self.add_component(type_name='shiftpanel', idfillbyfirst=None, idstart=None,
                                               idstepbyrow=None, root=panel_type_node)
         self.add_location(None, shift_panel_node, panel_loc_dict)
 
-        return
+        return pixel_row_count * pixel_column_count
 
 # END-DEF-HB3A
 
@@ -155,7 +175,10 @@ def generate_1_panel_idf(is_zebra, idf_name, config_name, linear_pixel_size):
     # Build 'arm'/panel/shiftpanel
     scx_instrument.addComment("PANEL")
     scx_instrument.add_panel(bank_id=1, geom_setup_dict=geom_setup_dict,
-                             cal_shift_x='diffx', cal_shift_y='diffy')
+                             cal_shift_x='cal::diffx', cal_shift_y='cal::diffy',
+                             cal_shift_z='cal::diffz', cal_rotx='cal::rotx',
+                             cal_roty='cal::roty', cal_rotz='cal::rotz',
+                             component_use_bank_id=False, start_pixel_id=1)
 
     # Generate rectangular detector based on 'shiftpanel'
     # TODO - refactor this to a method (not ASAP)
@@ -208,16 +231,25 @@ def generate_3_panel_idf(out_file_name):
     # Build 'arm'/panel/shiftpanel
     # TODO FIXME - shall be: 1 arm, 3 panel
     hb3a.addComment("PANEL Lower")
-    hb3a.add_panel(bank_id=1, geom_setup_dict=DEMAND_SETUP,
-                   cal_shift_x='diffx1', cal_shift_y='diffy1')
+    bank1_num_pixels = hb3a.add_panel(bank_id=1, geom_setup_dict=DEMAND_SETUP,
+                                      cal_shift_x='cal::diffx1', cal_shift_y='cal::diffy1',
+                                      cal_shift_z='cal::diffz1', cal_rotx='cal::rotx1',
+                                      cal_roty='cal::roty1', cal_rotz='cal::rotz1',
+                                      component_use_bank_id=True, start_pixel_id=1)
 
     hb3a.addComment("PANEL Middle")
-    hb3a.add_panel(bank_id=2, geom_setup_dict=DEMAND_SETUP,
-                   cal_shift_x='diffx2', cal_shift_y='diffy2')
+    bank2_num_pixels = hb3a.add_panel(bank_id=2, geom_setup_dict=DEMAND_SETUP,
+                                      cal_shift_x='cal::diffx2', cal_shift_y='cal::diffy2',
+                                      cal_shift_z='cal::diffz2', cal_rotx='cal::rotx2',
+                                      cal_roty='cal::roty2', cal_rotz='cal::rotz2',
+                                      component_use_bank_id=True, start_pixel_id=1+bank1_num_pixels)
 
     hb3a.addComment("PANEL Upper")
     hb3a.add_panel(bank_id=3, geom_setup_dict=DEMAND_SETUP,
-                   cal_shift_x='diffx3', cal_shift_y='diffy3')
+                   cal_shift_x='cal::diffx3', cal_shift_y='cal::diffy3',
+                   cal_shift_z='cal::diffz3', cal_rotx='cal::rotx3',
+                   cal_roty='cal::roty3', cal_rotz='cal::rotz3',
+                   component_use_bank_id=True, start_pixel_id=1 + bank1_num_pixels + bank2_num_pixels)
 
     # Generate rectangular detector based on 'shiftpanel'
     # TODO - refactor this to a method (not ASAP)
