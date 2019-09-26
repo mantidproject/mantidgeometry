@@ -1,12 +1,9 @@
 #!/usr/bin/python3
 import math
 from helper import MantidGeom
-from SNS.SANS.utilities import (kw, ag, make_filename, add_basic_types,
-                                add_double_flat_panel_type,
-                                add_double_flat_panel_component,
-                                add_double_curved_panel_type,
-                                add_double_curved_panel_component,
-                                add_double_panel_idlist,
+from SNS.SANS.utilities import (kw, ag, make_filename, add_basic_types, add_double_flat_panel_type,
+                                add_double_flat_panel_component, add_double_curved_panel_type,
+                                add_double_curved_panel_component, add_double_panel_idlist, add_comment_section,
                                 insert_location_from_logs)
 
 """
@@ -28,6 +25,8 @@ iinfo = dict(valid_from='2019-01-01 00:00:00',
              comment='Created by Jose Borregero, borreguerojm@ornl.gov',
              instrument_name='BIOSANS',
              source_sample_distance=1.0,
+             monitors=(dict(name='monitor1', z=-10.5),
+                       dict(name='timer', z=-10.5)),
              flat_array='detector1',  # name of the detector array
              flat_panel_types=dict(front='front-panel', back='back-panel'),
              bank_name='bank',
@@ -40,18 +39,26 @@ iinfo = dict(valid_from='2019-01-01 00:00:00',
              number_eightpacks=24)
 
 # Instrument handle
-det = MantidGeom(iinfo['instrument_name'],
-                 **kw(iinfo, 'comment', 'valid_from', 'valid_to'))
+det = MantidGeom(iinfo['instrument_name'], **kw(iinfo, 'comment', 'valid_from', 'valid_to'))
 det.addSnsDefaults(default_view="3D", axis_view_3d="Z-")
 fn = make_filename(*ag(iinfo, 'instrument_name', 'valid_from', 'valid_to'))
 add_basic_types(det, iinfo)  # source, sample, pixel, tube, and fourpack
+#
+# Monitor Section
+#
+add_comment_section(det, 'COMPONENT, TYPE, and IDLIST: MONITORS')
+det.addMonitors(distance=[m['z'] for m in iinfo['monitors']],
+                names=[m['name'] for m in iinfo['monitors']])
+det.addMonitorIds(ids=[-1, -2])
+det.addDummyMonitor(0.01, 0.1)
 #
 # Insert the flat panel
 #
 double_panel = add_double_flat_panel_type(det, iinfo)
 pixel_idlist = 'flat_panel_ids'
-add_double_flat_panel_component(double_panel, 'flat_panel_ids', det,
-                                iinfo['flat_array'])
+double_panel = add_double_flat_panel_component(double_panel, 'flat_panel_ids', det, iinfo['flat_array'])
+insert_location_from_logs(double_panel, log_key=['detector-translation', 'sdd'], coord_name=['x', 'z'],
+                          equation=['-0.001*value', '0.001*value'])
 add_double_panel_idlist(det, iinfo, pixel_idlist)
 last_pixel_id = 8 * iinfo['number_eightpacks'] * iinfo['pixels_per_tube'] - 1
 last_bank_number = 2 * iinfo['number_eightpacks']
@@ -77,17 +84,18 @@ jinfo = dict(curved_array='wing_detector_arm',  # name of the wing detector
 iinfo.update(jinfo)
 r_eightpack = iinfo['bank_radius'] + iinfo['anchor_offset']
 comment = f'Panel is positioned {r_eightpack} meters downstream'
-kwargs = dict(comment=comment, to_origin=False,
-              first_bank_number=1 + last_bank_number)
+kwargs = dict(comment=comment, to_origin=False, first_bank_number=1 + last_bank_number)
 double_panel = add_double_curved_panel_type(det, iinfo, **kwargs)
 pixel_idlist = 'curved_panel_ids'
-double_panel = add_double_curved_panel_component(double_panel,
-                                                 pixel_idlist,
-                                                 det, iinfo['curved_array'])
+double_panel = add_double_curved_panel_component(double_panel, pixel_idlist, det, iinfo['curved_array'])
 # Rotate the double panel away from the path of the Z-axis
 rot_y = - iinfo['eightpack_angle'] * iinfo['number_eightpacks'] / 2
 rot_y += 0.5 * iinfo['fourpack_slip'] / jinfo['bank_radius'] * 180. / math.pi
 det.addLocation(double_panel, 0., 0., 0, rot_y=rot_y)
+insert_location_from_logs(double_panel, log_key=['rotangle', 'rotangle'], coord_name=['t-position', 'roty'],
+                          equation=['0.0+value', '0.0+value'])
+
+
 add_double_panel_idlist(det, iinfo, pixel_idlist, start=1 + last_pixel_id)
 
 #

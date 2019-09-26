@@ -55,11 +55,8 @@ add_sample_aperture(det, **iinfo['sample_aperture'])
 #
 double_panel = add_double_flat_panel_type(det, iinfo)
 pixel_idlist = 'pixel_ids'
-double_panel = add_double_flat_panel_component(double_panel, pixel_idlist, det,
-                                               iinfo['flat_array'])
-insert_location_from_logs(double_panel,
-                          log_key=['detector-translation', 'sdd'],
-                          coord_name=['x', 'z'],
+double_panel = add_double_flat_panel_component(double_panel, pixel_idlist, det, iinfo['flat_array'])
+insert_location_from_logs(double_panel, log_key=['detector-translation', 'sdd'], coord_name=['x', 'z'],
                           equation=['-0.001*value', '0.001*value'])
 add_double_panel_idlist(det, iinfo, pixel_idlist)
 det.writeGeom(fn)
