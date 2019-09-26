@@ -92,8 +92,8 @@ class DemandGeometry(helper.MantidGeom):
         if component_use_bank_id:
             arm_node_name += '{}'.format(bank_id)
 
-        arm_node = self.add_component(type_name=arm_node_name, idfillbyfirst='x', idstart=start_pixel_id,
-                                      idstepbyrow=pixel_column_count)
+        arm_node = self.add_component(type_name=arm_node_name, idfillbyfirst=None, idstart=None,
+                                      idstepbyrow=None)
         self.add_location('bank{}'.format(bank_id), arm_node, arm_loc_dict)
 
         # Define arm node type: arm
@@ -125,8 +125,8 @@ class DemandGeometry(helper.MantidGeom):
         panel_type_node = self.add_component_type(panel_node_name)
 
         # Add component shift_panel
-        shift_panel_node = self.add_component(type_name='shiftpanel', idfillbyfirst=None, idstart=None,
-                                              idstepbyrow=None, root=panel_type_node)
+        shift_panel_node = self.add_component(type_name='shiftpanel', idfillbyfirst='x', idstart=start_pixel_id,
+                                              idstepbyrow=pixel_column_count, root=panel_type_node)
         self.add_location(None, shift_panel_node, panel_loc_dict)
 
         return pixel_row_count * pixel_column_count
