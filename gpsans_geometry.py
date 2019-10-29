@@ -14,10 +14,10 @@ Instrument requirements from meeting at HFIR on May 07, 2019
 - Pixel ID's start at tube1 of bank1 and finish at last tube of the last bank
 """
 
-iinfo = dict(valid_from='2019-01-01 00:00:00',
+iinfo = dict(valid_from='2019-10-01 00:00:00',
              valid_to='2100-12-31 23:59:59',
              comment='Created by Jose Borregero, borreguerojm@ornl.gov',
-             instrument_name='GPSANS',
+             instrument_name='CG2',
              source_sample_distance=13.601,
              monitors=(dict(name='monitor1', z=-10.5),
                        dict(name='timer', z=-10.5)),
@@ -34,8 +34,7 @@ iinfo = dict(valid_from='2019-01-01 00:00:00',
              number_eightpacks=24)  # number of eight-packs in the detector array
 
 
-det = MantidGeom(iinfo['instrument_name'],
-                 **kw(iinfo, 'comment', 'valid_from', 'valid_to'))
+det = MantidGeom(iinfo['instrument_name'], **kw(iinfo, 'comment', 'valid_from', 'valid_to'))
 det.addSnsDefaults(default_view="3D", axis_view_3d="Z-")
 fn = make_filename(*ag(iinfo, 'instrument_name', 'valid_from', 'valid_to'))
 add_basic_types(det, iinfo)  # source, sample, pixel, tube, and fourpack
@@ -56,7 +55,7 @@ add_sample_aperture(det, **iinfo['sample_aperture'])
 double_panel = add_double_flat_panel_type(det, iinfo)
 pixel_idlist = 'pixel_ids'
 double_panel = add_double_flat_panel_component(double_panel, pixel_idlist, det, iinfo['flat_array'])
-insert_location_from_logs(double_panel, log_key=['detector-translation', 'sdd'], coord_name=['x', 'z'],
-                          equation=['-0.001*value', '0.001*value'])
+insert_location_from_logs(double_panel, log_key=['detector_trans', 'sample_detector_distance'], coord_name=['x', 'z'],
+                          equation=['-0.001*value', 'value'])
 add_double_panel_idlist(det, iinfo, pixel_idlist)
 det.writeGeom(fn)
