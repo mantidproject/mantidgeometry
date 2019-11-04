@@ -20,11 +20,11 @@ Explanation of some entries in iinfo dictionary
  fourpack_slip        slip vector between the two fourpacks along X-axis
  number_eightpacks    number of eight-packs in the detector array
 """
-iinfo = dict(valid_from='2019-01-01 00:00:00',
+iinfo = dict(valid_from='2019-10-01 00:00:00',
              valid_to='2100-12-31 23:59:59',
              comment='Created by Jose Borregero, borreguerojm@ornl.gov',
              instrument_name='BIOSANS',
-             source_sample_distance=1.0,
+             source_sample_distance=13.601,
              monitors=(dict(name='monitor1', z=-10.5),
                        dict(name='timer', z=-10.5)),
              flat_array='detector1',  # name of the detector array
@@ -57,8 +57,8 @@ det.addDummyMonitor(0.01, 0.1)
 double_panel = add_double_flat_panel_type(det, iinfo)
 pixel_idlist = 'flat_panel_ids'
 double_panel = add_double_flat_panel_component(double_panel, 'flat_panel_ids', det, iinfo['flat_array'])
-insert_location_from_logs(double_panel, log_key=['detector-translation', 'sdd'], coord_name=['x', 'z'],
-                          equation=['-0.001*value', '0.001*value'])
+insert_location_from_logs(double_panel, log_key=['detector_trans', 'sample_detector_distance'],
+                          coord_name=['x', 'z'], equation=['-0.001*value', 'value'])
 add_double_panel_idlist(det, iinfo, pixel_idlist)
 last_pixel_id = 8 * iinfo['number_eightpacks'] * iinfo['pixels_per_tube'] - 1
 last_bank_number = 2 * iinfo['number_eightpacks']
@@ -78,8 +78,7 @@ jinfo = dict(curved_array='wing_detector_arm',  # name of the wing detector
              number_eightpacks=20,
              bank_radius=1.129538,
              anchor_offset=0.0,
-             eightpack_angle=2.232094,
-             panel_translation_log_key='detectorZ')
+             eightpack_angle=2.232094)
 
 iinfo.update(jinfo)
 r_eightpack = iinfo['bank_radius'] + iinfo['anchor_offset']
@@ -92,7 +91,7 @@ double_panel = add_double_curved_panel_component(double_panel, pixel_idlist, det
 rot_y = - iinfo['eightpack_angle'] * iinfo['number_eightpacks'] / 2
 rot_y += 0.5 * iinfo['fourpack_slip'] / jinfo['bank_radius'] * 180. / math.pi
 det.addLocation(double_panel, 0., 0., 0, rot_y=rot_y)
-insert_location_from_logs(double_panel, log_key=['rotangle', 'rotangle'], coord_name=['t-position', 'roty'],
+insert_location_from_logs(double_panel, log_key=['ww_rot', 'ww_rot'], coord_name=['t-position', 'roty'],
                           equation=['0.0+value', '0.0+value'])
 
 
