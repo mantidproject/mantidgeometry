@@ -57,8 +57,8 @@ det.addDummyMonitor(0.01, 0.1)
 double_panel = add_double_flat_panel_type(det, iinfo)
 pixel_idlist = 'flat_panel_ids'
 double_panel = add_double_flat_panel_component(double_panel, 'flat_panel_ids', det, iinfo['flat_array'])
-insert_location_from_logs(double_panel, log_key=['detector-translation', 'sdd'], coord_name=['x', 'z'],
-                          equation=['-0.001*value', '0.001*value'])
+insert_location_from_logs(double_panel, log_key=['detector_trans_Readback', 'sample_detector_distance'],
+                          coord_name=['x', 'z'], equation=['-0.001*value', 'value'])
 add_double_panel_idlist(det, iinfo, pixel_idlist)
 last_pixel_id = 8 * iinfo['number_eightpacks'] * iinfo['pixels_per_tube'] - 1
 last_bank_number = 2 * iinfo['number_eightpacks']
@@ -72,7 +72,7 @@ Explanation of some entries in jinfo dictionary
                   and eightpack midline
  eightpack_angle  effective angle subtended by each eightpack, in degrees
 """
-jinfo = dict(curved_array='wing_detector_arm',  # name of the wing detector
+jinfo = dict(curved_array='wing_detector',  # name of the wing detector
              curved_panel_types=dict(front='front-wing-panel',
                                      back='back-wing-panel'),
              number_eightpacks=20,
@@ -91,9 +91,9 @@ double_panel = add_double_curved_panel_component(double_panel, pixel_idlist, det
 # Rotate the double panel away from the path of the Z-axis
 rot_y = - iinfo['eightpack_angle'] * iinfo['number_eightpacks'] / 2
 rot_y += 0.5 * iinfo['fourpack_slip'] / jinfo['bank_radius'] * 180. / math.pi
-det.addLocation(double_panel, 0., 0., 0, rot_y=rot_y)
-insert_location_from_logs(double_panel, log_key=['rotangle', 'rotangle'], coord_name=['t-position', 'roty'],
-                          equation=['0.0+value', '0.0+value'])
+det.addLocation(double_panel, 0., 0., 0, rot_y=f'{rot_y:.2f}')
+insert_location_from_logs(double_panel, log_key=['ww_rot_Readback', 'ww_rot_Readback'],
+                          coord_name=['t-position', 'roty'], equation=[f'{rot_y:.2f}-value', f'{rot_y:.2f}-value'])
 
 
 add_double_panel_idlist(det, iinfo, pixel_idlist, start=1 + last_pixel_id)
