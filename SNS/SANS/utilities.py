@@ -497,8 +497,8 @@ def insert_location_from_logs(element, log_key='detectorZ',
     log_keys = log_key if isinstance(log_key, list) else [log_key]
     coord_names =  coord_name if isinstance(coord_name, list) else [coord_name]
     equations = equation if isinstance(equation, list) else [equation]
-
-    loc = le.SubElement(element, 'location')
+    # Inquire if the element has a "location" element as child
+    loc = le.SubElement(element, 'location') if element.find('location') is None else element.find('location')
     for i in range(len(log_keys)):
         par = le.SubElement(loc, 'parameter', **dict(name=coord_names[i]))
         le.SubElement(par, 'logfile', **dict(id=log_keys[i], eq=equations[i]))
