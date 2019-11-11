@@ -1,9 +1,7 @@
 #!/usr/bin/python3
 from helper import MantidGeom
-from SNS.SANS.utilities import (kw, ag, make_filename, add_basic_types,
-                                add_double_curved_panel_type,
-                                add_double_curved_panel_component,
-                                add_double_panel_idlist,
+from SNS.SANS.utilities import (kw, ag, make_filename, add_basic_types, add_comment_section, add_double_panel_idlist,
+                                add_double_curved_panel_type, add_double_curved_panel_component,
                                 insert_location_from_logs)
 
 """
@@ -48,11 +46,12 @@ Explanation of some entries in iinfo dictionary
  number_eightpacks    number of eight-packs in the detector array
  panel_translation_log_key  log entry specifying the position of the detector
 """
-iinfo = dict(valid_from='2019-01-01 00:00:00',
+iinfo = dict(valid_from='2019-10-01 00:00:00',
              valid_to='2100-12-31 23:59:59',
              comment='Created by Jose Borregero, borreguerojm@ornl.gov',
              instrument_name='EQ-SANS',
              source_sample_distance=14.122,
+             monitors=(dict(name='monitor1', z=-4.0), ),
              bank_name='bank',
              curved_array='detector1',
              curved_panel_types=dict(front='front-panel', back='back-panel'),
@@ -76,6 +75,16 @@ if __name__ == '__main__':
     fn = make_filename(*ag(iinfo, 'instrument_name', 'valid_from', 'valid_to'))
     add_basic_types(det, iinfo)  # source, sample, pixel, tube, and fourpack
     #
+    # Monitor Section
+    #
+    add_comment_section(det, 'TYPE: MONITORS')
+    det.addDummyMonitor(0.01, 0.1)
+    add_comment_section(det, 'COMPONENT: MONITORS')
+    det.addMonitors(distance=[m['z'] for m in iinfo['monitors']],
+                    names=[m['name'] for m in iinfo['monitors']])
+    add_comment_section(det, 'LIST OF PIXEL IDs in MONITOR')
+    det.addMonitorIds(ids=[-1, ])
+    #
     # Insert the curved panel
     #
     r_eightpack = iinfo['bank_radius'] + iinfo['anchor_offset']
@@ -84,14 +93,9 @@ if __name__ == '__main__':
     pixel_idlist = 'pixel_ids'
     comment = f'Panel is translated to the origin, ' \
               f'then shifted by an amount specified in the logs'
-    double_panel = add_double_curved_panel_component(double_panel,
-                                                     pixel_idlist,
-                                                     det,
-                                                     iinfo['curved_array'],
+    double_panel = add_double_curved_panel_component(double_panel, pixel_idlist, det, iinfo['curved_array'],
                                                      comment=comment)
-    insert_location_from_logs(double_panel,
-                              log_key=iinfo['panel_translation_log_key'],
-                              coord_name='z',
+    insert_location_from_logs(double_panel, log_key=iinfo['panel_translation_log_key'], coord_name='z',
                               equation='0.001*value')
     add_double_panel_idlist(det, iinfo, pixel_idlist)
     #
