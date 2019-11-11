@@ -1,11 +1,8 @@
 #!/usr/bin/python3
 from helper import MantidGeom
-from SNS.SANS.utilities import (kw, ag, make_filename, add_basic_types,
-                                add_double_flat_panel_type,
-                                add_double_flat_panel_component,
-                                add_double_panel_idlist,
-                                add_comment_section, add_sample_aperture,
-                                insert_location_from_logs)
+from SNS.SANS.utilities import (kw, ag, make_filename, add_basic_types, add_double_flat_panel_type,
+                                add_double_flat_panel_component, add_double_panel_idlist, add_comment_section,
+                                add_sample_aperture, insert_location_from_logs)
 
 """
 Instrument requirements from meeting at HFIR on May 07, 2019
