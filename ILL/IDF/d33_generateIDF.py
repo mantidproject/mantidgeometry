@@ -51,6 +51,7 @@ startFront = repr(-pixelHeight * (numberPixelsFront - 1) / 2)
 FF = "y"  # idfillbyfirst
 SR = repr(numberPixelsRearVertical)  #idstepbyrow for rear
 SRF = repr(numberPixelsFrontLength) #idstepbyrow for front
+STB = repr(numberPixelsFront)
 detector0 = "back_detector"
 detector1 = "front_detector_right"
 detector2 = "front_detector_left"
@@ -123,8 +124,8 @@ d33.addComponentRectangularDetector(detector1, -dF-dR, 0., zFront, idstart=id1, 
                                     idstepbyrow=SRF, rotz=90., root=front_detector)
 d33.addComponentRectangularDetector(detector2, dR+dF, 0., zFront, idstart=id2, idfillbyfirst="x",
                                     idstepbyrow=SRF, rotz=90., root=front_detector)
-d33.addComponentRectangularDetector(detector3, 0., -dF-dR, zFront, idstart=id3, idfillbyfirst=FF, idstepbyrow=SRF, roty=180., root=front_detector)
-d33.addComponentRectangularDetector(detector4, 0., dR+dF, zFront, idstart=id4, idfillbyfirst=FF, idstepbyrow=SRF, roty=180., root=front_detector)
+d33.addComponentRectangularDetector(detector3, 0., -dF-dR, zFront, idstart=id3, idfillbyfirst=FF, idstepbyrow=STB, roty=180., root=front_detector)
+d33.addComponentRectangularDetector(detector4, 0., dR+dF, zFront, idstart=id4, idfillbyfirst=FF, idstepbyrow=STB, roty=180., root=front_detector)
 d33.addComment("REAR DETECTOR")
 d33.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
 d33.addComment("4 FRONT DETECTORS, from detector to sample in +Z direction")
