@@ -100,9 +100,9 @@ d16.addComment("MONITOR IDs")
 d16.addMonitorIds([repr(500000), repr(500001)])
 
 d16.addComment("DETECTORS")
-d16.addComponentILL("detector", 0., 0., 0.)
-detector = d16.makeTypeElement("detector")
-d16.addComponentRectangularDetector(detector0, 0., 0., -zPosDetector, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR, root=detector)
+# d16.addComponentILL("detector", 0., 0., 0.)
+# detector = d16.makeTypeElement("detector")
+d16.addComponentRectangularDetector(detector0, 0., 0., -zPosDetector, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR)
 d16.addComment("DETECTOR")
 d16.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
 
