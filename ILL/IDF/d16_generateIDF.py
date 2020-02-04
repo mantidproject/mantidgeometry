@@ -10,7 +10,7 @@ instrumentName = 'D16'
 validFrom = "2020-01-01 00:00:00"
 
 
-monochromator_source = 2.8
+monochromator_source = -2.8
 
 # 2 monitors
 zMon1 = 0
