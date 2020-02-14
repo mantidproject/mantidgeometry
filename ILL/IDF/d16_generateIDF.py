@@ -13,8 +13,8 @@ validFrom = "2020-01-01 00:00:00"
 monochromator_source = -2.8
 
 # 2 monitors
-zMon1 = 0
-zMon2 = 0
+zMon1 = -1
+zMon2 = -1.5
 
 # definition of the quadratic detector
 numberPixelsVertical = 320
