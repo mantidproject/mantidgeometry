@@ -10,11 +10,11 @@ instrumentName = 'D16'
 validFrom = "2020-01-01 00:00:00"
 
 
-monochromator_source = 2.8
+monochromator_source = -2.8
 
 # 2 monitors
-zMon1 = 0
-zMon2 = 0
+zMon1 = -1
+zMon2 = -1.5
 
 # definition of the quadratic detector
 numberPixelsVertical = 320
@@ -99,11 +99,8 @@ d16.addDummyMonitor(0.01, 0.01)
 d16.addComment("MONITOR IDs")
 d16.addMonitorIds([repr(500000), repr(500001)])
 
-d16.addComment("DETECTORS")
-d16.addComponentILL("detector", 0., 0., 0.)
-detector = d16.makeTypeElement("detector")
-d16.addComponentRectangularDetector(detector0, 0., 0., -zPosDetector, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR, root=detector)
 d16.addComment("DETECTOR")
+d16.addComponentRectangularDetector(detector0, 0., 0., -zPosDetector, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR)
 d16.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
 
 d16.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
