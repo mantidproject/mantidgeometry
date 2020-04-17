@@ -1,6 +1,7 @@
 from __future__ import (print_function)
 
 import sys
+from datetime import datetime
 from lxml import etree as le # python-lxml on rpm based systems
 import numpy as np
 from itertools import groupby
@@ -26,6 +27,7 @@ class MantidGeom:
         last_modified = str(datetime.now())
         if valid_from is None:
             valid_from = last_modified
+        self.__instname = instname
         self.__root = le.Element("instrument",
                                  attrib={"name": instname,
                                     "valid-from": valid_from,
@@ -42,10 +44,16 @@ class MantidGeom:
             else:
                 self.__root.append(le.Comment(comment))
 
-    def writeGeom(self, filename):
+    def writeGeom(self, filename=None):
         """
         Write the XML geometry to the given filename
+        If the filename isn't provided, it will be <instname>_Definition_<iso8601date>.xml
         """
+        if not filename:
+            today = datetime.now().isoformat().split('T')[0]
+            filename = '{}_Definition_{}.xml'.format(self.__instname, today)
+
+        print(f'writing {filename}')
         fh = open(filename, "w")
         to_write = le.tostring(self.__root, pretty_print=True, xml_declaration=True)
         if sys.version_info.major > 2:
