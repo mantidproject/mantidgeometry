@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import os
 
 def readFile(filename, hasLabels=True, headerLines=0):
@@ -51,6 +50,6 @@ def readFile(filename, hasLabels=True, headerLines=0):
 
 if __name__ == "__main__":
     info = readFile("SEQ_geom.txt")
-    print "******************************"
+    print("******************************")
     for key in info.keys():
-        print key, info[key][0]
+        print(key, info[key][0])
