@@ -2,15 +2,19 @@
 #
 # https://flathead.ornl.gov/repos/TranslationService/trunk/sns-translation-client/sns-translation-core/src/main/java/gov/ornl/sns/translation/geometry/calc/helpers/RectCorners.java
 #
+from __future__ import print_function
 
 import math
 import numpy as np
-from string import maketrans
+try:
+    from string import maketrans  # python2
+except ImportError:
+    maketrans = str.maketrans  # python3
 HAS_LXML = True
 try:
     from lxml import etree as le # python-lxml on rpm based systems
-except ImportError, e:
-    print "WARNING: Failed to load lxml. Xml output turned off for rectangle.py"
+except ImportError:
+    print("WARNING: Failed to load lxml. Xml output turned off for rectangle.py")
     HAS_LXML = False
 
 TOLERANCE = .0001
@@ -126,12 +130,12 @@ def getAngle(y, x, debug=False, onlyPositive=True):
     Returns the angle in radians using atan2 (y=sin, x=cos)
     """
     if debug:
-        print "getAngle(%f, %f)=" % (y, x),
+        print("getAngle(%f, %f)=" % (y, x),)
     angle = math.atan2(y, x)
     if onlyPositive and angle < 0.:
         angle += 2.*math.pi
     if debug:
-        print math.degrees(angle)
+        print(math.degrees(angle))
     return angle
 
 def getEuler(uVec, vVec, **kwargs):
@@ -152,20 +156,20 @@ def getEuler(uVec, vVec, **kwargs):
     vVec = vVec.normalize()
 
     if verbose:
-        print "orthonormal:", uVec, vVec, nVec
+        print("orthonormal:", uVec, vVec, nVec)
 
     # calculate the angles
     import math
 
     if vVec.y == 1.: # chi rotation is 0, just rotate about z-axis
         if verbose > 1:
-            print "chi rotation is 0"
+            print("chi rotation is 0")
         phi = math.atan2(nVec.x, nVec.z)
         chi = 0.
         omega = 0.
     elif vVec.y == -1.:# chi rotation is 180 degrees
         if verbose > 1:
-            print "chi rotation is 180 degrees"
+            print("chi rotation is 180 degrees")
         phi = -1. * math.atan2(nVec.x, nVec.z)
         if phi == -1.* math.pi:
             phi = math.pi
@@ -173,7 +177,7 @@ def getEuler(uVec, vVec, **kwargs):
         omega = 0.
     else:
         if verbose > 1:
-            print "using generic version"
+            print("using generic version")
         phi = math.atan2(nVec.y, uVec.y)
         chi = math.acos(vVec.y)
         omega = math.atan2(vVec.z, -1. * vVec.x)
@@ -411,10 +415,10 @@ class Rectangle:
         yvec.normalize()
         zvec.normalize()
 
-        #print "x =", xvec, "y =", yvec, "z =", zvec
-        #print "x dot y =", xvec.dot(yvec)
-        #print "x dot z =", xvec.dot(zvec)
-        #print "y dot z =", yvec.dot(zvec)
+        #print("x =", xvec, "y =", yvec, "z =", zvec)
+        #print("x dot y =", xvec.dot(yvec))
+        #print("x dot z =", xvec.dot(zvec))
+        #print("y dot z =", yvec.dot(zvec))
 
         # xvec should change most in x direction
         self.__orient = np.array([xvec.data,yvec.data,zvec.data],
