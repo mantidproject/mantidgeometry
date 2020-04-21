@@ -428,8 +428,8 @@ class MantidGeom:
         Add a rectangular detector in a type element for the XML definition.
         """
         type_element = le.SubElement(self.__root, "type",
-                                     xstart=xstart, xstep=xstep, xpixels=xpixels,
-                                     ystart=ystart, ystep=ystep, ypixels=ypixels,
+                                     xstart=str(xstart), xstep=str(xstep), xpixels=str(xpixels),
+                                     ystart=str(ystart), ystep=str(ystep), ypixels=str(ypixels),
                                      **{"name": name, "is": "rectangular_detector", "type": type})
 
     def addSingleDetector(self, root, x, y, z, rot_x, rot_y, rot_z, name=None,
