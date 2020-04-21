@@ -3,6 +3,8 @@ from helper import MantidGeom
 import numpy as np
 import os
 from rectangle import Vector, getEuler, makeLocation
+from datetime import datetime
+
 
 class DetCalBank():
     '''Class that holds the information for a single panel/line of the detcal file'''
@@ -37,13 +39,9 @@ class DetCalBank():
         self.deltaY = height / self.ncols
         self.startY = 0.5 * (self.deltaY - height)
 
-
     def _calc_panel_pos_and_orient(self, base_vector, up_vector):
-        if self.det_num == 42:
-            print('base', base_vector)
-            print('up  ', up_vector)
         # all of these angles are in radians
-        phi, chi, omega = [item for item in getEuler(base_vector, up_vector, degrees=True,verbose=(self.det_num==42))]
+        phi, chi, omega = [item for item in getEuler(base_vector, up_vector, degrees=True)]
         # need the angle and what it is rotated around
         self.rotations = [(omega, [0, 1, 0]),
                           (chi, [0, 0, 1]),
@@ -59,12 +57,13 @@ class DetCalBank():
                                      ypixels=self.ncols, ystart=self.startY, ystep=self.deltaY)
 
         # write out the detector position
-        extra_attrs={"idstart":self.first_pixel, 'idfillbyfirst':'y', 'idstepbyrow':self.ncols}
+        extra_attrs = {"idstart": self.first_pixel, 'idfillbyfirst': 'y', 'idstepbyrow': self.ncols}
         det = instr.makeDetectorElement(type_name, extra_attrs=extra_attrs)
         makeLocation(instr, det, 'bank{}'.format(self.det_num), self.center, self.rotations)
 
 
 class DetCal():
+    '''Class holding information for a whole ISAW detcal file'''
     def __init__(self, filename):
         if not os.path.exists(filename):
             raise RuntimeError("File '%s' does not exist" % filename)
@@ -89,13 +88,103 @@ class DetCal():
                 else:
                     raise RuntimeError(f'Do not know how to deal with flag {flag}')
 
+
+parameters_template = '''<?xml version='1.0' encoding='UTF-8'?>
+<parameter-file instrument = "MANDI" valid-from   ="{validfrom}" valid-to     ="2100-12-31 23:59:59">
+
+<component-link name = "MANDI">
+<!-- Specify that any banks not in NeXus file are to be removed -->
+<parameter name="T0">
+ <value val="{T0}"/>
+</parameter>
+
+<!-- Need to fill in gaps for peak profile fitting -->
+<parameter name="fitConvolvedPeak" type="bool">
+ <value val="false"/>
+</parameter>
+
+<!-- Multiplier for profile fitting for BVG polar angle -->
+<parameter name="sigX0Scale">
+ <value val="1." />
+</parameter>
+
+<!-- Multiplier for profile fitting for BVG azimuthal angle -->
+<parameter name="sigY0Scale">
+ <value val="1." />
+</parameter>
+
+<!-- Number of rows between detector gaps for profile fitting -->
+<parameter name="numDetRows" type="int">
+ <value val="255" />
+</parameter>
+
+<!-- Number of cols between detector gaps for profile fitting -->
+<parameter name="numDetCols" type="int">
+ <value val="255" />
+</parameter>
+
+<!-- Number of polar bins for BVG histogramming when profile fitting -->
+<parameter name="numBinsTheta" type="int">
+ <value val="50" />
+</parameter>
+
+<!-- Number of azimuthal bins for BVG histogramming when profile fitting -->
+<parameter name="numBinsPhi" type="int">
+ <value val="50" />
+</parameter>
+
+<!-- Fraction along (h,k,l) to use for profile fitting. 0.5 is the next peak. -->
+<parameter name="fracHKL">
+ <value val="0.25" />
+</parameter>
+
+<!-- Side length of each voxel for fitting in units of angstrom^-1 -->
+<parameter name="dQPixel">
+ <value val="0.003" />
+</parameter>
+
+<!-- Minimum spacing for profile fitting the TOF profile. Units of microseconds -->
+<parameter name="mindtBinWidth">
+ <value val="15" />
+</parameter>
+
+<!-- Maximum spacing for profile fitting the TOF profile. Units of microseconds -->
+<parameter name="maxdtBinWidth">
+ <value val="50" />
+</parameter>
+
+<!-- Size of peak mask for background calculation in units of dQPixel -->
+<parameter name="peakMaskSize" type="int">
+ <value val="5" />
+</parameter>
+
+<!-- Initial guess parameters for coshPeakWidthModel -->
+<parameter name="sigSC0Params" type="string">
+ <value val="0.00413132 1.54103839 1.0 -0.00266634" />
+</parameter>
+
+<!-- Initial guess for sigma along the azimuthal direction (rad) -->
+<parameter name="sigAZ0">
+ <value val="0.0025" />
+</parameter>
+
+<!-- Initial guess parameters for fsigP (BVG covariance) -->
+<parameter name="sigP0Params" type="string">
+ <value val="0.1460775 1.85816592 0.26850086 -0.00725352" />
+</parameter>
+
+</component-link>
+</parameter-file>
+'''
+
 if __name__ == '__main__':
+    valid_from = '2020-04-01 00:00:00'
+
     # read in the detector calibration
     detcal = DetCal('MANDI/MANDI_April2020.DetCal')
 
     # write the instrument geometry
-    instr = MantidGeom('MANDI',
-                       valid_from='2020-04-01 00:00:00')
+    instr = MantidGeom('MANDI', valid_from=valid_from)
     instr.addComment('DEFAULTS')
     instr.addSnsDefaults(default_view='spherical_y')
 
@@ -107,7 +196,7 @@ if __name__ == '__main__':
     instr.addComment("MONITORS")
     instr.addMonitors(distance=[-2.935, -0.898, 1.042], names=["monitor1", 'monitor2', 'monitor3'])
 
-    # TODO add banks here
+    # add banks here
     for bank in detcal.banks:
         bank.addToXml(instr)
 
@@ -126,9 +215,13 @@ if __name__ == '__main__':
     instr.addDummyMonitor(0.01, .03)
 
     instr.addComment("MONITOR IDs")
-    instr.addMonitorIds([-1,-2,-3])
+    instr.addMonitorIds([-1, -2, -3])
 
     instr.writeGeom()
 
-
-    # TODO write out parameter file with T0
+    # write the parameter file
+    param_filename = 'MANDI_Parameters_{}.xml'.format(datetime.now().isoformat().split('T')[0])
+    param_contents = parameters_template.format(validfrom=valid_from, T0=detcal.t0)
+    print('writing', param_filename)
+    with open(param_filename, mode='w') as handle:
+        handle.write(param_contents)
