@@ -67,8 +67,9 @@ class Vector:
         length = self.length # cache value
         if abs(length) < TOLERANCE:
             raise RuntimeError("Zero vector of zero length")
-        if abs(length - 1.) > TOLERANCE:
-            self.data /= length
+
+        # divide the elements by the length
+        self.data /= length
 
         # set near zeros to zero
         self.data[np.abs(self.data) < TOLERANCE] = 0.
@@ -156,6 +157,14 @@ def getEuler(uVec, vVec, **kwargs):
     # make sure that u,v are perpendicular
     vVec = nVec.cross(uVec)
     vVec = vVec.normalize()
+
+    # make sure the new unit vectors are orthogonal
+    if abs(uVec.dot(vVec)) > TOLERANCE:
+        raise RuntimeError('u dot v is too large: {} > {}'.format(abs(uVec.dot(vVec)), TOLERANCE))
+    if abs(uVec.dot(nVec)) > TOLERANCE:
+        raise RuntimeError('u dot n is too large: {} > {}'.format(abs(uVec.dot(nVec)), TOLERANCE))
+    if abs(vVec.dot(nVec)) > TOLERANCE:
+        raise RuntimeError('v dot n is too large: {} > {}'.format(abs(vVec.dot(nVec)), TOLERANCE))
 
     if verbose:
         print("orthonormal:", uVec, vVec, nVec)
