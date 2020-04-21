@@ -42,6 +42,8 @@ class Vector:
     x = property(lambda self: self.data[0])
     y = property(lambda self: self.data[1])
     z = property(lambda self: self.data[2])
+    length = property(lambda self: np.sqrt(self.dot(self)))
+
 
     def cross(self, other):
         """
