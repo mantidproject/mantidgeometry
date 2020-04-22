@@ -1,6 +1,7 @@
 *.pyc
 *.py~
 *_Definition*.xml
+*_Parameters*.xml
 *.vtp
 
 # PyCharm artifacts
