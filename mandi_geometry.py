@@ -181,7 +181,7 @@ if __name__ == '__main__':
     filename = 'MANDI_Definition_{}.xml'.format(valid_from.split()[0])
 
     # read in the detector calibration
-    detcal = DetCal('MANDI/MANDI_April2020.DetCal')
+    detcal = DetCal('SNS/MANDI/MANDI_April2020.DetCal')
 
     # write the instrument geometry
     instr = MantidGeom('MANDI', valid_from=valid_from)
