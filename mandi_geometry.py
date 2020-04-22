@@ -3,7 +3,6 @@ from helper import MantidGeom
 import numpy as np
 import os
 from rectangle import Vector, getEuler, makeLocation
-from datetime import datetime
 
 
 class DetCalBank():
@@ -179,6 +178,7 @@ parameters_template = '''<?xml version='1.0' encoding='UTF-8'?>
 
 if __name__ == '__main__':
     valid_from = '2020-04-01 00:00:00'
+    filename = 'MANDI_Definition_{}.xml'.format(valid_from.split()[0])
 
     # read in the detector calibration
     detcal = DetCal('MANDI/MANDI_April2020.DetCal')
@@ -217,11 +217,11 @@ if __name__ == '__main__':
     instr.addComment("MONITOR IDs")
     instr.addMonitorIds([-1, -2, -3])
 
-    instr.writeGeom()
+    instr.writeGeom(filename)
 
     # write the parameter file
-    param_filename = 'MANDI_Parameters_{}.xml'.format(datetime.now().isoformat().split('T')[0])
+    filename = filename.replace('Definition', 'Parameters')
     param_contents = parameters_template.format(validfrom=valid_from, T0=detcal.t0)
-    print('writing', param_filename)
-    with open(param_filename, mode='w') as handle:
+    print('writing', filename)
+    with open(filename, mode='w') as handle:
         handle.write(param_contents)
