@@ -17,11 +17,11 @@ source = -3.6
 zChopper = -0.48
 
 # 2 Monitors
-zMon1 = -1.22 
-zMon2 = 1.65 #1.5 m + 0.125 m + 0.05 m margin, to be confirmed
+zMon1 = -1.3
+zMon2 = 1.5
 
 # distance between the sample and detectors:
-rSampleDetectors = 1.5
+rSampleDetectors = 1.5177 # distance from the sample of even detectors
 minTwoTheta = 0
 maxTwoTheta = 136
 
@@ -32,6 +32,11 @@ numberDetectors = 44
 # definition of a pixel
 tubeRadius = 0.0125
 tubeHeight = 0.25
+
+# definitions of intersection positions for detectors in the same casette
+externalIntersectonDistance = 11.0
+intersectionAngle = 0.4189 # externalIntersectonDistance / (rSampleDetectors - tubeRadius) = 0.4189 degrees
+detectorOffset = 1.114 # degree
 
 
 comment = """ This is the instrument definition file of the D7 diffuse scattering spectrometer at the ILL.
@@ -96,9 +101,14 @@ bankComponent = d7.addComponent(root=bank, type_name="pixel")
 
 # define detectors and their relative position inside the bank:
 for j in range(numberDetectors):
-    tubeTheta = 0.5*numberDetectors - j - 0.5
+    tubeTheta = 0.5*numberDetectors - j - detectorOffset
     detectorName = "pixel_%d" % (j+1)
-    d7.addLocationPolar(root=bankComponent, r=repr(rSampleDetectors), theta=repr(tubeTheta), phi=repr(0), name=detectorName)
+    rDetectors = rSampleDetectors
+    if j % 2 != 0: # odd detectors are closer to the sample 
+        rDetectors -= tubeRadius
+    else:
+        tubeTheta -= intersectionAngle
+    d7.addLocationPolar(root=bankComponent, r=repr(rDetectors), theta=repr(tubeTheta), phi=repr(0), name=detectorName)
 
 # define pixel type
 d7.addCylinderPixelAdvanced(
