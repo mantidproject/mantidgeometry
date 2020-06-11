@@ -10,6 +10,7 @@ from helper import MantidGeom
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--geometrytype', help='Generate real (R) or neutronic (N) positions.')
+parser.add_argument('--firsttubedefocus', help='Whether the analyser of the first tube are focused on the midpoint.')
 args = parser.parse_args()
 
 comment = """ This is the instrument definition file of the IN16B (BATS) at the ILL.
@@ -52,11 +53,16 @@ def tocartesian(r, t, p):
     z = r * cos(t)
     return [x, y, z]
 
-def mirror(x, y, z, analyser):
+def mirror(x, y, z, analyser, project=False):
     r, t, p = topolar(x, y, z)
-    r += 2*analyser
-    t = pi - t
-    p += pi
+    if project:
+        p = pi
+        t = pi - atan2(x, z)
+        r += 2 * analyser - psd
+    else:
+        p += pi
+        t = pi - t
+        r += 2 * analyser
     return tocartesian(r, t, p)
 
 geometry = MantidGeom(instrument_name, comment=comment, valid_from=valid_from)
@@ -88,12 +94,17 @@ for i in range(len(PSD_azimuths)):
     z = - psd * cos(t)
     for p in range(pixels):
         y = -height/2 + p * height/pixels
-        nx, ny, nz = mirror(x, y, z, psd_analyser)
+        nx, ny, nz = mirror(x, y, z, psd_analyser, i==0 and args.firsttubedefocus == 'Y')
         if args.geometrytype == 'N':
             geometry.addLocation(root=psdc, x=nx, y=ny, z=nz, name="tube_{0}_pixel_{1}".format(i+1, p+1))
         else:
             geometry.addLocation(root=psdc, x=x, y=y, z=z, nx=nx, ny=ny, nz=nz, name="tube_{0}_pixel_{1}".format(i+1, p+1), neutronic=True)
-geometry.addCylinderPixel("single_pixel", [0.0005, 90., -90.], [0.,1.,0.], 0.0027, 0.001)
+pixel_factor = 1.
+if args.geometrytype == 'N':
+    # make pixels bigger so they are visible in instrument view
+    pixel_factor = 10.
+geometry.addCylinderPixel("single_pixel", [0.0005, 90., -90.], [0.,1.,0.], 0.0027*pixel_factor, 0.001*pixel_factor)
 geometry.addDetectorIds("single_detectors", [PSDs*pixels+1,PSDs*pixels+SDs, None])
 geometry.addDetectorIds("psds", [1,PSDs*pixels,None])
-geometry.writeGeom("./ILL/IDF/" + instrument_name + "_Definition.xml")
+iname = 'F' if args.firsttubedefocus == 'Y' else ''
+geometry.writeGeom("./ILL/IDF/" + instrument_name + iname + "_Definition.xml")
