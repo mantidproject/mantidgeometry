@@ -75,7 +75,7 @@ comment = """ This is the instrument definition file of the D7 diffuse scatterin
        https://www.ill.eu/instruments-support/instruments-groups/instruments/d7/characteristics/
        """
 d7 = MantidGeom(instrumentName, comment=comment, valid_from=validFrom)
-d7.addSnsDefaults(default_view='3D',axis_view_3d='z-')
+d7.addSnsDefaults(default_view='3D', axis_view_3d='z-', theta_sign_axis="x")
 d7.addComment("SOURCE")
 d7.addComponentILL("Monochromator", 0., 0., source, "Source")
 d7.addComment("Sample position")
