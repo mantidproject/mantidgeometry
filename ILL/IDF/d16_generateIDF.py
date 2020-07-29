@@ -83,7 +83,7 @@ comment = """
 
 # Instrument creation
 d16 = MantidGeom(instrumentName, comment=comment, valid_from=validFrom)
-d16.addSnsDefaults(default_view='3D', axis_view_3d='z-')
+d16.addSnsDefaults(default_view='3D', axis_view_3d='z-', theta_sign_axis="x")
 
 d16.addComment("SOURCE")
 d16.addComponentILL("monochromator", 0., 0., monochromator_source, "Source")
