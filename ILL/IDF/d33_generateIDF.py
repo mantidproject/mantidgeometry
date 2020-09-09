@@ -14,10 +14,9 @@ zMon2 = -1.2
 # factor: 2 standard resolution
 factor = 2
 # definition of the quadratic detector
-numberPixelsRearVertical = 128
-numberPixelsRearHorizontal = 128 * factor
-numberPixelsFront = 32
-numberPixelsFrontLength = 128 * factor
+numberTubesRear = 128
+numberTubesFront = 32
+numberPixelsPerTubes = 128 * factor
 # definition of a quadratic pixel
 pixelName = "pixel"
 pixelWidth = 0.005 / factor
@@ -30,8 +29,8 @@ thickness = 0.0001
 zPosRear = 12.8
 # front detector
 zFront = 1.2
-dF = 0.08  # 160/2 mm half of the front detector's width
-dR = 0.32  # 640/2 mm half of the rear detector's width
+half_front_panel_width = numberTubesFront * pixelHeight / 2  # 160/2 mm half of the front detector's width
+half_rear_panel_width = numberPixelsPerTubes * pixelWidth / 2  # 640/2 mm half of the rear detector's width
 # start identification numbers
 id0 = repr(0)  # rear back detector
 id1 = repr(100000)  # front right detector
@@ -39,19 +38,19 @@ id2 = repr(200000)  # front left detector
 id3 = repr(300000)  # front bottom detector
 id4 = repr(400000)  # front top detector
 # rectangular detector
-xstart = repr(-pixelWidth * (numberPixelsRearHorizontal - 1) / 2)
+xstart = repr(-pixelWidth * (numberPixelsPerTubes - 1) / 2)
 xstep = repr(pixelWidth)
-xpixels = repr(numberPixelsRearHorizontal)
-ystart = repr(-pixelHeight * (numberPixelsRearVertical - 1) / 2)
+xpixels = repr(numberPixelsPerTubes)
+ystart = repr(-pixelHeight * (numberTubesRear - 1) / 2)
 ystep = repr(pixelHeight)
-ypixels = repr(numberPixelsRearVertical)
-pixelsFront = repr(numberPixelsFront)
-startFront = repr(-pixelHeight * (numberPixelsFront - 1) / 2)
+ypixels = repr(numberTubesRear)
+tubesFront = repr(numberTubesFront)
+pixelsFront = repr(numberPixelsPerTubes)
 # Choose either FF = "x", SR = repr(numberPixelsRearHorizontal) or FF = "y", SR = repr(numberPixelsRearVertical)
 FF = "y"  # idfillbyfirst
-SR = repr(numberPixelsRearVertical)  #idstepbyrow for rear
-SRF = repr(numberPixelsFrontLength) #idstepbyrow for front
-STB = repr(numberPixelsFront)
+SR = repr(numberPixelsPerTubes)  # idstepbyrow for rear
+SRF = repr(numberTubesFront)  # idstepbyrow for front
+STB = repr(numberPixelsPerTubes)
 detector0 = "back_detector"
 detector1 = "front_detector_right"
 detector2 = "front_detector_left"
@@ -102,7 +101,7 @@ comment = """ This is the instrument definition file of the D33 Massive dynamic 
        https://www.ill.eu/instruments-support/instruments-groups/instruments/d33/characteristics/
        """
 d33 = MantidGeom(instrumentName, comment=comment, valid_from=validFrom)
-d33.addSnsDefaults(default_view='3D',axis_view_3d='z-')
+d33.addSnsDefaults(default_view='3D', axis_view_3d='z-')
 d33.addComment("SOURCE")
 d33.addComponentILL("moderator", 0., 0., moderator_source, "Source")
 d33.addComment("Sample position")
@@ -117,26 +116,37 @@ d33.addMonitorIds([repr(500000), repr(500001)])
 d33.addComment("DETECTORS")
 d33.addComponentILL("detector", 0., 0., 0.)
 detector = d33.makeTypeElement("detector")
-d33.addComponentRectangularDetector(detector0, 0., 0., zPosRear, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR, roty=180., root=detector)
+d33.addComponentRectangularDetector(detector0, x=0., y=0., z=zPosRear,
+                                    idstart=id0, idfillbyfirst=FF, idstepbyrow=SR,
+                                    rotz=90,
+                                    root=detector)
 d33.addComponentILL("front_detector", 0., 0., 0., root=detector)
 front_detector = d33.makeTypeElement("front_detector")
-d33.addComponentRectangularDetector(detector1, -dF-dR, 0., zFront, idstart=id1, idfillbyfirst="x",
-                                    idstepbyrow=SRF, rotz=90., root=front_detector)
-d33.addComponentRectangularDetector(detector2, dR+dF, 0., zFront, idstart=id2, idfillbyfirst="x",
-                                    idstepbyrow=SRF, rotz=90., root=front_detector)
-d33.addComponentRectangularDetector(detector3, 0., -dF-dR, zFront, idstart=id3, idfillbyfirst=FF, idstepbyrow=STB, roty=180., root=front_detector)
-d33.addComponentRectangularDetector(detector4, 0., dR+dF, zFront, idstart=id4, idfillbyfirst=FF, idstepbyrow=STB, roty=180., root=front_detector)
+d33.addComponentRectangularDetector(detector1, x=0, y=0., z=zFront,
+                                    idstart=id1, idfillbyfirst="x", idstepbyrow=SRF,
+                                    roty=180.,
+                                    root=front_detector)
+d33.addComponentRectangularDetector(detector2, x=0, y=0., z=zFront,
+                                    idstart=id2, idfillbyfirst="x", idstepbyrow=SRF,
+                                    roty=180.,
+                                    root=front_detector)
+d33.addComponentRectangularDetector(detector3, x=0., y=0, z=zFront,
+                                    idstart=id3, idfillbyfirst="x", idstepbyrow=SRF,
+                                    rotz=90.,
+                                    root=front_detector)
+d33.addComponentRectangularDetector(detector4, 0., 0, zFront, idstart=id4, idfillbyfirst="x", idstepbyrow=SRF, rotz=90., root=front_detector)
 d33.addComment("REAR DETECTOR")
-d33.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
+d33.addRectangularDetector(detector0, pixelName, xstart, ystep, ypixels, ystart, xstep, xpixels)
 d33.addComment("4 FRONT DETECTORS, from detector to sample in +Z direction")
+
 d33.addComment("RIGHT")
-d33.addRectangularDetector(detector1, pixelName, xstart, xstep, xpixels, startFront, ystep, pixelsFront)
+d33.addRectangularDetector(detector1, pixelName, -half_front_panel_width, ystep, tubesFront, -half_rear_panel_width, xstep, pixelsFront)
 d33.addComment("LEFT")
-d33.addRectangularDetector(detector2, pixelName, xstart, xstep, xpixels, startFront, ystep, pixelsFront)
+d33.addRectangularDetector(detector2, pixelName, -half_front_panel_width, ystep, tubesFront, -half_rear_panel_width, xstep, pixelsFront)
 d33.addComment("BOTTOM")
-d33.addRectangularDetector(detector3, pixelName, xstart, xstep, xpixels, startFront, ystep, pixelsFront)
+d33.addRectangularDetector(detector3, pixelName, -half_front_panel_width, ystep, tubesFront, -half_rear_panel_width, xstep, pixelsFront)
 d33.addComment("TOP")
-d33.addRectangularDetector(detector4, pixelName, xstart, xstep, xpixels, startFront, ystep, pixelsFront)
+d33.addRectangularDetector(detector4, pixelName, -half_front_panel_width, ystep, tubesFront, -half_rear_panel_width, xstep, pixelsFront)
 d33.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d33.addCuboidPixel(pixelName, [-x, -y, thickness/2.], [-x, y, thickness/2.], [-x, -y, -thickness/2.], [x, -y, -thickness/2.], shape_id="pixel-shape")
 d33.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")
