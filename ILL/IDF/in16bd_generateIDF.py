@@ -3,8 +3,7 @@ from time import strftime, gmtime
 import os
 import sys
 
-path = os.path.abspath("")
-sys.path.insert(0, path)
+sys.path.insert(0, os.path.normpath(os.path.dirname(__file__)) + "/../../")
 
 from helper import MantidGeom
 
@@ -75,5 +74,5 @@ for i in range(pixel_per_tube):
 in16b.addCylinderPixel(name="pixel", center_bottom_base=[tube_radius, 90., -90.],
                        axis=[1, 0, 0],
                        pixel_radius=tube_radius, pixel_height=tube_width / pixel_per_tube)
-
-in16b.writeGeom("./ILL/IDF/" + instrument_name + "_Definition.xml")
+dir_path = os.path.normpath(os.path.dirname(__file__))
+in16b.writeGeom(dir_path + "/" + instrument_name + "_Definition.xml")
