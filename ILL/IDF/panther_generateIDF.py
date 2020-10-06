@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.normpath(os.path.dirname(__file__)) + "/../../")
 from helper import MantidGeom
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--TubeHeight', help='Tube height in meters', default=1.9125)
+parser.add_argument('--TubeHeight', help='Tube height in meters', default=1.92)
 parser.add_argument('--EquatorialPixel', help='The index of the pixel (counting from 1) which is in xz plane', default=80)
 parser.add_argument('--GlobalOffset', help='The global offset angle in degrees', default = 0.)
 args = parser.parse_args()
