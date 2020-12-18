@@ -16,7 +16,7 @@ pixel_center = "pixel_center"
 pixel_panels = "pixel_panels"
 # we need to apply 90 rotation to the center detector (only) to get the tube orientation right for tube masking
 # at the same time we want detector IDs start from lower left corner (looking from sample)
-# and increment first upwards, then rightwards, to avoid messy code in the loader
+# and increment first upwards, then rightwards, since that's how the data is stored in nexus
 # because of the rotation, here x and y are actually swapped!
 center_pixel_x = 8./1000
 center_pixel_y = 4./1000
@@ -85,12 +85,14 @@ d11b.addComment("LEFT")
 d11b.addRectangularDetector(detector1, pixel_panels, xstart_left, xstep_left, xpixels_left, ystart_left, ystep_left, ypixels_left)
 d11b.addComment("RIGHT")
 d11b.addRectangularDetector(detector2, pixel_panels, xstart_right, xstep_right, xpixels_right, ystart_right, ystep_right, ypixels_right)
+# here x and y are swapped
 x = center_pixel_x
 y = center_pixel_y
 d11b.addCuboidPixel(pixel_center,
                     [-x, -y, thickness/2.], [-x, y, thickness/2.],
                     [-x, -y, -thickness/2.], [x, -y, -thickness/2.],
                     shape_id=pixel_center)
+# for the panels we swap them back again
 x = center_pixel_y
 y = center_pixel_x
 d11b.addCuboidPixel(pixel_panels,
