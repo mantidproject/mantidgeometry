@@ -22,7 +22,7 @@ center_pixel_x = 8./1000
 center_pixel_y = 4./1000
 thickness = 0.0001
 distance = 8.
-z_gap = 0. # TO BE CHECKED
+z_gap = 0.105 # TO BE CHECKED
 x_gap = 0. # TO BE CHECKED
 
 id0 = '0'  # center detector
