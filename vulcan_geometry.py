@@ -106,10 +106,10 @@ if __name__ == "__main__":
     # add empty components to hang everything off of
     addEmptyComponent(instr, type_name='bank1')
     addEmptyComponent(instr, type_name='bank2')
-    addEmptyComponent(instr, type_name='bank3')
-    addEmptyComponent(instr, type_name='bank4')
+    #addEmptyComponent(instr, type_name='bank3')
+    #addEmptyComponent(instr, type_name='bank4')
     addEmptyComponent(instr, type_name='bank5')
-    addEmptyComponent(instr, type_name='bank6')
+    #addEmptyComponent(instr, type_name='bank6')
 
     # #### DETECTORS GO HERE! ######################################
     # all tubes (all banks) are same diameter with 512 pixels
@@ -122,21 +122,21 @@ if __name__ == "__main__":
                     x_center=-90.39 * INCH_TO_METRE, z_center=0., rot_y=90.)
 
     # bank3 (not installed) will have 18 8packs at 120deg
-    addBankPosition(instr, bankname='bank3', componentname='eightpack', num_panels=18,
-                    x_center=2*np.sin(np.deg2rad(120)), z_center=2*np.cos(np.deg2rad(120)),
-                    rot_y=180+120., rot_y_bank=-120)
+    #addBankPosition(instr, bankname='bank3', componentname='eightpack', num_panels=18,
+    #                x_center=2*np.sin(np.deg2rad(120)), z_center=2*np.cos(np.deg2rad(120)),
+    #                rot_y=180+120., rot_y_bank=-120)
     # bank4 (not installed) will have 18 8packs at 150deg
-    addBankPosition(instr, bankname='bank4', componentname='eightpack', num_panels=18,
-                    x_center=2.*np.sin(np.deg2rad(150.)), z_center=2.*np.cos(np.deg2rad(150.)),
-                    rot_y=180+150., rot_y_bank=-150)
+    #addBankPosition(instr, bankname='bank4', componentname='eightpack', num_panels=18,
+    #                x_center=2.*np.sin(np.deg2rad(150.)), z_center=2.*np.cos(np.deg2rad(150.)),
+    #                rot_y=180+150., rot_y_bank=-150)
     # bank5 is old bank 7 - has 9 8packs that are 0.7m long
     addBankPosition(instr, bankname='bank5', componentname='eightpackshort', num_panels=9,
                     x_center=2.*np.sin(np.deg2rad(-150.)), z_center=2.*np.cos(np.deg2rad(-150.)),
                     rot_y=180-150., rot_y_bank=150)
     # bank6 (not installed) will have 11 8packs at 60deg
-    addBankPosition(instr, bankname='bank6', componentname='eightpack', num_panels=11,
-                    x_center=2.*np.sin(np.deg2rad(-60.)), z_center=2.*np.cos(np.deg2rad(-60.)),
-                    rot_y=180-60., rot_y_bank=60)
+    #addBankPosition(instr, bankname='bank6', componentname='eightpack', num_panels=11,
+    #                x_center=2.*np.sin(np.deg2rad(-60.)), z_center=2.*np.cos(np.deg2rad(-60.)),
+    #                rot_y=180-60., rot_y_bank=60)
     # bank9 (future plan and not part of the upgrade) at 210/-150deg
 
     # 8-pack is being called a "eightpack"
@@ -170,10 +170,10 @@ if __name__ == "__main__":
     instr.addComment("DETECTOR IDs - panel is an 8-pack")
     addBankIds(instr, 'bank1', bank_offset=0, num_panels=20)
     addBankIds(instr, 'bank2', bank_offset=PIXELS_PER_BANK, num_panels=20)
-    addBankIds(instr, 'bank3', bank_offset=2*PIXELS_PER_BANK, num_panels=18)
-    addBankIds(instr, 'bank4', bank_offset=3*PIXELS_PER_BANK, num_panels=18)
+    #addBankIds(instr, 'bank3', bank_offset=2*PIXELS_PER_BANK, num_panels=18)
+    #addBankIds(instr, 'bank4', bank_offset=3*PIXELS_PER_BANK, num_panels=18)
     addBankIds(instr, 'bank5', bank_offset=4*PIXELS_PER_BANK, num_panels=9)
-    addBankIds(instr, 'bank6', bank_offset=5*PIXELS_PER_BANK, num_panels=11)
+    #addBankIds(instr, 'bank6', bank_offset=5*PIXELS_PER_BANK, num_panels=11)
 
     # shape for monitors
     instr.addComment(" Shape for Monitors")
