@@ -39,8 +39,9 @@ ystep = repr(pixelHeight)
 ypixels = repr(numberPixelsVertical)
 x_gap = 0. # TO BE CHECKED
 z_gap = 0. # TO BE CHECKED
-xstart_right = repr(pixelWidth * (numberPixelsHorizontal - 1) / 2 + x_gap)
+xstart_right = repr(-(pixelWidth * (numberTubesRightDetector + 1) / 2 + x_gap))
 xpixels_right = repr(numberTubesRightDetector)
+right_center_offset = (numberTubesRightDetector + numberPixelsHorizontal) * pixelWidth / 2
 # Choose either FF = "x", SR = repr(numberPixelsRearHorizontal) or FF = "y", SR = repr(numberPixelsRearVertical)
 FF = "y"  # idfillbyfirst
 SR = repr(numberPixelsVertical)  #idstepbyrow
@@ -102,7 +103,7 @@ d22.addMonitorIds([repr(100000), repr(100001)])
 d22.addComment("DETECTOR")
 d22.addComponentRectangularDetector(detector0, 0., 0., zPos, roty=180., idstart=id0, idfillbyfirst=FF, idstepbyrow=SR)
 d22.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
-d22.addComponentRectangularDetector(detector1, 0., 0., zPos-z_gap, roty=180., idstart=id1, idfillbyfirst=FF, idstepbyrow=SR)
+d22.addComponentRectangularDetector(detector1, -right_center_offset, 0., zPos-z_gap, roty=180., idstart=id1, idfillbyfirst=FF, idstepbyrow=SR)
 d22.addRectangularDetector(detector1, pixelName, xstart_right, xstep, xpixels_right, ystart, ystep, ypixels)
 d22.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d22.addCuboidPixel(pixelName, [-x, -y, thickness/2.], [-x, y, thickness/2.], [-x, -y, -thickness/2.], [x, -y, thickness/2.], shape_id="pixel-shape")
