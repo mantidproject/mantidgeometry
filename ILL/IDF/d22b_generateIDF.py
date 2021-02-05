@@ -5,7 +5,7 @@ sys.path.insert(0, path)
 from helper import MantidGeom
 
 # using metre as unit
-instrumentName = 'D22B'
+instrumentName = 'D22'
 validFrom = "2020-12-01 00:00:00"
 moderator_source = -2.0
 # 2 Monitors
@@ -45,8 +45,8 @@ right_center_offset = (numberTubesRightDetector + numberPixelsHorizontal) * pixe
 # Choose either FF = "x", SR = repr(numberPixelsRearHorizontal) or FF = "y", SR = repr(numberPixelsRearVertical)
 FF = "y"  # idfillbyfirst
 SR = repr(numberPixelsVertical)  #idstepbyrow
-detector0 = "detector"
-detector1 = "detector_right"
+detector0 = "detector_back"
+detector1 = "detector_front"
 
 comment = """ This is the instrument definition file of the D22B Large dynamic range small-angle diffractometer
        at the ILL.
@@ -101,10 +101,12 @@ d22.addDummyMonitor(0.01, 0.03)
 d22.addComment("MONITOR IDs")
 d22.addMonitorIds([repr(100000), repr(100001)])
 d22.addComment("DETECTOR")
-d22.addComponentRectangularDetector(detector0, 0., 0., zPos, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR)
+d22.addComponentILL("detector", 0., 0., 0.)
+detector = d22.makeTypeElement("detector")
+d22.addComponentRectangularDetector(detector0, 0., 0., zPos, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR, root=detector)
+d22.addComponentRectangularDetector(detector1, -right_center_offset, 0., zPos-z_gap, idstart=id1, idfillbyfirst=FF, idstepbyrow=SR, root=detector)
 d22.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
-d22.addComponentRectangularDetector(detector1, -right_center_offset, 0., zPos-z_gap, idstart=id1, idfillbyfirst=FF, idstepbyrow=SR)
 d22.addRectangularDetector(detector1, pixelName, xstart_right, xstep, xpixels_right, ystart, ystep, ypixels)
 d22.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d22.addCuboidPixel(pixelName, [-x, -y, thickness/2.], [-x, y, thickness/2.], [-x, -y, -thickness/2.], [x, -y, thickness/2.], shape_id="pixel-shape")
-d22.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")
+d22.writeGeom("./ILL/IDF/" + instrumentName + "B_Definition.xml")
