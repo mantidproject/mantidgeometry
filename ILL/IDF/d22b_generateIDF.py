@@ -5,7 +5,7 @@ sys.path.insert(0, path)
 from helper import MantidGeom
 
 # using metre as unit
-instrumentName = 'D22'
+instrumentName = 'D22B'
 validFrom = "2020-12-01 00:00:00"
 moderator_source = -2.0
 # 2 Monitors
@@ -109,4 +109,4 @@ d22.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart,
 d22.addRectangularDetector(detector1, pixelName, xstart_right, xstep, xpixels_right, ystart, ystep, ypixels)
 d22.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 d22.addCuboidPixel(pixelName, [-x, -y, thickness/2.], [-x, y, thickness/2.], [-x, -y, -thickness/2.], [x, -y, thickness/2.], shape_id="pixel-shape")
-d22.writeGeom("./ILL/IDF/" + instrumentName + "B_Definition.xml")
+d22.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")

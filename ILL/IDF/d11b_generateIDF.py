@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, path)
 from helper import MantidGeom
 
-instrument_name = 'D11'
+instrument_name = 'D11B'
 valid_from = "2020-12-01 00:00:00"
 monochromator_source = -22
 zMon1 = -16.7
@@ -99,4 +99,4 @@ d11b.addCuboidPixel(pixel_panels,
                     [-x, -y, thickness/2.], [-x, y, thickness/2.],
                     [-x, -y, -thickness/2.], [x, -y, -thickness/2.],
                     shape_id=pixel_panels)
-d11b.writeGeom("./ILL/IDF/" + instrument_name + "B_Definition.xml")
+d11b.writeGeom("./ILL/IDF/" + instrument_name + "_Definition.xml")
