@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import os
 
-def readFile(filename, hasLabels=True, headerLines=0):
+
+def readFile(filename, hasLabels=True, headerLines=0, delimiter=r'\s+'):
     """This loads in a n-column ascii file and converts it into a dictionary
     where the column headings are the keys, and the columns are as a list in
     the value. If the "hasLabels" variable is False then the keys are the
@@ -15,7 +16,7 @@ def readFile(filename, hasLabels=True, headerLines=0):
         lines = []
         numcol = None
         import re
-        splitter = re.compile(r'\s+')
+        splitter = re.compile(delimiter)
         for linenum, line in enumerate(datafile):
             if linenum < headerLines:
                 continue
@@ -26,7 +27,7 @@ def readFile(filename, hasLabels=True, headerLines=0):
                     numcol = len(line)
                 else:
                     if numcol != len(line):
-                        raise Exception("Number of columns varies at line %d in '%s'" \
+                        raise Exception("Number of columns varies at line %d in '%s'"
                                         % (linenum, filename))
                 lines.append(line)
 
@@ -47,6 +48,7 @@ def readFile(filename, hasLabels=True, headerLines=0):
 
     # return the result
     return result
+
 
 if __name__ == "__main__":
     info = readFile("SEQ_geom.txt")
