@@ -2,6 +2,8 @@
 from helper import INCH_TO_METRE, DEG_TO_RAD, MantidGeom
 from lxml import etree as le  # python-lxml on rpm based systems
 import numpy as np
+from sns_ncolumn import readFile
+
 
 L1: float = -43.754  # meter
 TUBE_LENGTH: float = 1.0  # meter
@@ -14,6 +16,45 @@ PIXELS_PER_BANK: int = PIXELS_PER_PANEL * 20  # maximum number of 8-pack in a ba
 SEPARATION: float = 0.323 * INCH_TO_METRE  # distance between front and back
 SLIP: float = 0.434 * INCH_TO_METRE  # distance between 2 and 4
 SLIP_PANEL: float = 3 * SLIP + 0.460 * INCH_TO_METRE  # bonus spacing between panel centers
+
+CSV_FILE: str = 'SNS/VULCAN/VULCAN_geom_20210210.csv'
+
+
+def readPositions(filename: str = CSV_FILE):
+    # read in and delete unneccessary columns
+    positions = readFile(filename, delimiter=',')
+    del positions['L']
+    del positions['C']
+
+    # set up a dict to split the data into
+    banks = {'bank1': {},
+             'bank2': {},
+             'bank5': {}}
+    for bank_label in banks.keys():
+        for column in positions.keys():
+            banks[bank_label][column] = []
+
+    # split the data into banks
+    for i, point_label in enumerate(positions['Point']):
+        bank_label = ''
+        if point_label.startswith('HA_'):
+            bank_label = 'bank5'
+        elif point_label.startswith('BR_'):
+            bank_label = 'bank2'
+        elif point_label.startswith('BL_'):
+            bank_label = 'bank1'
+        if bank_label:
+            banks[bank_label]['Point'].append(point_label.split('_')[-1])
+            banks[bank_label]['X'].append(positions['X'][i])
+            banks[bank_label]['Y'].append(positions['Y'][i])
+            banks[bank_label]['Z'].append(positions['Z'][i])
+
+    # convert the positions to ndarray of float
+    for bank_label in banks.keys():
+        for column in ['X', 'Y', 'Z']:
+            banks[bank_label][column] = np.array(banks[bank_label][column], dtype=float)
+
+    return banks
 
 
 def addEightPack(instr, name: str, tube_type: str):
@@ -104,14 +145,16 @@ if __name__ == "__main__":
     instr.addMonitors(distance=[4.83, 1.50], names=["monitor2", "monitor3"])
 
     # add empty components to hang everything off of
-    addEmptyComponent(instr, type_name='bank1')
-    addEmptyComponent(instr, type_name='bank2')
+    addEmptyComponent(instr, type_name='bank1')  # left  (when facing downstream)
+    addEmptyComponent(instr, type_name='bank2')  # right (when facing downstream)
     #addEmptyComponent(instr, type_name='bank3')
     #addEmptyComponent(instr, type_name='bank4')
-    addEmptyComponent(instr, type_name='bank5')
+    addEmptyComponent(instr, type_name='bank5')  # high angle
     #addEmptyComponent(instr, type_name='bank6')
 
     # #### DETECTORS GO HERE! ######################################
+    positions = readPositions()  # TODO these are not used yet
+
     # all tubes (all banks) are same diameter with 512 pixels
     # bank1 is old bank 1-3 - has 20 8packs that are 1m long
     addBankPosition(instr, bankname='bank1', componentname='eightpack', num_panels=20,
