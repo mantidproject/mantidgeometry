@@ -30,7 +30,7 @@ def getPositions(ids, compInfo):
 
 vulcan = LoadEmptyInstrument(Filename='VULCAN_Definition.xml', OutputWorkspace='vulcan')
 compInfo = vulcan.componentInfo()
-# detInfo = vulcan.detectorInfo()
+detInfo = vulcan.detectorInfo()
 
 
 for name in ['bank1', 'bank2', 'bank5']:
@@ -42,6 +42,15 @@ for name in ['bank1', 'bank2', 'bank5']:
     np.testing.assert_equal(x[:, 1:] - x[:, :-1], 0., err_msg="everything in same tube has same x")
     np.testing.assert_equal(y[1:, :] - y[:-1, :], 0., err_msg="everything in same row has same y")
     np.testing.assert_equal(z[:, 1:] - z[:, :-1], 0., err_msg="everything in same tube has same z")
+
+    # overall positions of some coordinates
+    if name == 'bank1':
+        assert np.alltrue(x > 0.)
+    elif name == 'bank2':
+        assert np.alltrue(x < 0.)
+    elif name == 'bank5':
+        assert np.alltrue(x < 0.)
+        assert np.alltrue(z < 0.)
 
     # confirm that lower-left is in the correct place
     # positions that are checked to 0.1mm
@@ -61,3 +70,12 @@ for name in ['bank1', 'bank2', 'bank5']:
     np.testing.assert_array_less(y[:, :-1], y[:, 1:], err_msg="everything in same row has increasing y")
     # TODO check X
     # TODO check Z
+
+    # calculate angle constrained in plane - NOT equal to "2theta"
+    anglesInPlane = np.abs(np.rad2deg(np.arctan2(x, z)))
+    if name in ['bank1']:  # RHS when facing downstream
+        np.testing.assert_array_less(anglesInPlane[1:, 0], anglesInPlane[:-1, 0],
+                                     err_msg="everything in same row has increasing y")
+    elif name in ['bank2', 'bank5']:  # LHS when facing downstream
+        np.testing.assert_array_less(anglesInPlane[:-1, 0], anglesInPlane[1:, 0],
+                                     err_msg="everything in same row has increasing y")
