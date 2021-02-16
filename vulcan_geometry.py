@@ -21,6 +21,7 @@ CSV_FILE: str = 'SNS/VULCAN/VULCAN_geom_20210210.csv'
 
 
 def readPositions(filename: str = CSV_FILE):
+    '''The CSV file has measurements of the front tubes of each 8-pack'''
     # read in and delete unneccessary columns
     positions = readFile(filename, delimiter=',')
     del positions['L']
@@ -40,9 +41,9 @@ def readPositions(filename: str = CSV_FILE):
         if point_label.startswith('HA_'):
             bank_label = 'bank5'
         elif point_label.startswith('BR_'):
-            bank_label = 'bank2'
-        elif point_label.startswith('BL_'):
             bank_label = 'bank1'
+        elif point_label.startswith('BL_'):
+            bank_label = 'bank2'
         if bank_label:
             banks[bank_label]['Point'].append(point_label.split('_')[-1])
             banks[bank_label]['X'].append(positions['X'][i])
@@ -145,11 +146,11 @@ if __name__ == "__main__":
     instr.addMonitors(distance=[4.83, 1.50], names=["monitor2", "monitor3"])
 
     # add empty components to hang everything off of
-    addEmptyComponent(instr, type_name='bank1')  # left  (when facing downstream)
-    addEmptyComponent(instr, type_name='bank2')  # right (when facing downstream)
+    addEmptyComponent(instr, type_name='bank1')  # right  (when facing downstream)
+    addEmptyComponent(instr, type_name='bank2')  # left (when facing downstream)
     #addEmptyComponent(instr, type_name='bank3')
     #addEmptyComponent(instr, type_name='bank4')
-    addEmptyComponent(instr, type_name='bank5')  # high angle
+    addEmptyComponent(instr, type_name='bank5')  # high angle on left where b4 will eventually be
     #addEmptyComponent(instr, type_name='bank6')
 
     # #### DETECTORS GO HERE! ######################################
@@ -158,11 +159,11 @@ if __name__ == "__main__":
     # all tubes (all banks) are same diameter with 512 pixels
     # bank1 is old bank 1-3 - has 20 8packs that are 1m long
     addBankPosition(instr, bankname='bank1', componentname='eightpack', num_panels=20,
-                    x_center=90.39 * INCH_TO_METRE, z_center=0., rot_y=-90.)
+                    x_center=-90.39 * INCH_TO_METRE, z_center=0., rot_y=90.)
 
     # bank2 is old bank 4-6 - has 20 8packs that are 1m long
     addBankPosition(instr, bankname='bank2', componentname='eightpack', num_panels=20,
-                    x_center=-90.39 * INCH_TO_METRE, z_center=0., rot_y=90.)
+                    x_center=90.39 * INCH_TO_METRE, z_center=0., rot_y=-90.)
 
     # bank3 (not installed) will have 18 8packs at 120deg
     #addBankPosition(instr, bankname='bank3', componentname='eightpack', num_panels=18,
@@ -174,8 +175,10 @@ if __name__ == "__main__":
     #                rot_y=180+150., rot_y_bank=-150)
     # bank5 is old bank 7 - has 9 8packs that are 0.7m long
     addBankPosition(instr, bankname='bank5', componentname='eightpackshort', num_panels=9,
-                    x_center=2.*np.sin(np.deg2rad(-150.)), z_center=2.*np.cos(np.deg2rad(-150.)),
-                    rot_y=180-150., rot_y_bank=150)
+                    x_center=2.*np.sin(np.deg2rad(150.)), z_center=2.*np.cos(np.deg2rad(150.)),
+                    rot_y=180+150., rot_y_bank=-150)
+    #      SHOULD    x_center=2.*np.sin(np.deg2rad(-150.)), z_center=2.*np.cos(np.deg2rad(-150.)),
+    #      SHOULD    rot_y=180-150., rot_y_bank=150)
     # bank6 (not installed) will have 11 8packs at 60deg
     #addBankPosition(instr, bankname='bank6', componentname='eightpack', num_panels=11,
     #                x_center=2.*np.sin(np.deg2rad(-60.)), z_center=2.*np.cos(np.deg2rad(-60.)),
