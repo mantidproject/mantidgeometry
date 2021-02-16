@@ -51,14 +51,8 @@ detInfo = vulcan.detectorInfo()
 banks_exp = readPositions()
 for name in ['bank1', 'bank2', 'bank5']:
     print('--------------', name)
-    pixels = ['D1T1T', 'D20T4T', 'D1T1B', 'D20T4B']
-    if name == 'bank5':
-        pixels = ['D1T1T', 'D9T4T', 'D1T1B', 'D9T4B']
-    for pixel in pixels:
-        index = banks_exp[name]['Point'].index(pixel)
-        print(pixel, position_to_str(banks_exp[name]['X'][index],
-                                     banks_exp[name]['Y'][index],
-                                     banks_exp[name]['Z'][index]))
+    for point in banks_exp[name].points:
+        print(point)
 
 for name in ['bank1', 'bank2', 'bank5']:
     print('=========================', name)

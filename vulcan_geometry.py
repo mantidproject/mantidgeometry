@@ -2,8 +2,8 @@
 from helper import INCH_TO_METRE, DEG_TO_RAD, MantidGeom
 from lxml import etree as le  # python-lxml on rpm based systems
 import numpy as np
+from rectangle import Rectangle, Vector
 from sns_ncolumn import readFile
-
 
 L1: float = -43.754  # meter
 TUBE_LENGTH: float = 1.0  # meter
@@ -24,16 +24,16 @@ def readPositions(filename: str = CSV_FILE):
     '''The CSV file has measurements of the front tubes of each 8-pack'''
     # read in and delete unneccessary columns
     positions = readFile(filename, delimiter=',')
-    del positions['L']
-    del positions['C']
+    del positions['L']  # tube length
+    del positions['C']  # tube centers
 
     # set up a dict to split the data into
-    banks = {'bank1': {},
-             'bank2': {},
-             'bank5': {}}
-    for bank_label in banks.keys():
+    banks_allpixels = {'bank1': {},
+                       'bank2': {},
+                       'bank5': {}}
+    for bank_label in banks_allpixels.keys():
         for column in positions.keys():
-            banks[bank_label][column] = []
+            banks_allpixels[bank_label][column] = []
 
     # split the data into banks
     for i, point_label in enumerate(positions['Point']):
@@ -45,15 +45,35 @@ def readPositions(filename: str = CSV_FILE):
         elif point_label.startswith('BL_'):
             bank_label = 'bank2'
         if bank_label:
-            banks[bank_label]['Point'].append(point_label.split('_')[-1])
-            banks[bank_label]['X'].append(positions['X'][i])
-            banks[bank_label]['Y'].append(positions['Y'][i])
-            banks[bank_label]['Z'].append(positions['Z'][i])
+            banks_allpixels[bank_label]['Point'].append(point_label.split('_')[-1])
+            banks_allpixels[bank_label]['X'].append(positions['X'][i])
+            banks_allpixels[bank_label]['Y'].append(positions['Y'][i])
+            banks_allpixels[bank_label]['Z'].append(positions['Z'][i])
 
     # convert the positions to ndarray of float
-    for bank_label in banks.keys():
+    for bank_label in banks_allpixels.keys():
         for column in ['X', 'Y', 'Z']:
-            banks[bank_label][column] = np.array(banks[bank_label][column], dtype=float)
+            banks_allpixels[bank_label][column] = np.array(banks_allpixels[bank_label][column], dtype=float)
+
+    def pointFromName(pixels, label: str) -> Vector:
+        index = pixels['Point'].index(label)
+        return Vector(pixels['X'][index], pixels['Y'][index], pixels['Z'][index])
+
+    def rectangleFromName(pixels, corners) -> Rectangle:
+        points = [pointFromName(pixels, name) for name in corners]
+        return Rectangle(*points, tolerance_len=0.035)
+
+    # get the 4 corners into a structure to return
+    # corners in the order LL, UL, UR, LR
+    # Rectangle says lower-left then clockwise
+    # survey/alignment labeled them as "tube 1" (i.e. T1) as most downstream
+    banks = {}
+    banks['bank1'] = rectangleFromName(banks_allpixels['bank1'],
+                                       ('D1T1B', 'D1T1T', 'D20T4T', 'D20T1B'))
+    banks['bank2'] = rectangleFromName(banks_allpixels['bank2'],
+                                       ('D20T1B', 'D20T4T', 'D1T1T', 'D1T1B'))
+    banks['bank5'] = rectangleFromName(banks_allpixels['bank5'],
+                                       ('D1T1B', 'D1T1T', 'D9T4T', 'D9T4B'))
 
     return banks
 
