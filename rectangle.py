@@ -110,6 +110,9 @@ class Vector:
     def __div__(self, other):
         return Vector(self.data / other) # only allow divide by a scalar
 
+    def __truediv__(self, other):
+        return Vector(self.data / other) # only allow divide by a scalar
+
     def __mul__(self, other):
         return Vector(self.data * other) # only allow multiply by a scalar
 
