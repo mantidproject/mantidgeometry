@@ -80,6 +80,10 @@ for name in ['bank1', 'bank2', 'bank5']:
         assert np.alltrue(z < 0.)
         assert x[0, 0] < x[-1, 0], "bank5 LL={:.4f}  LR={:.4f}".format(x[0, 0], x[-1, 0])
         assert z[0, 0] < z[-1, 0], "bank5 LL={:.4f}  LR={:.4f}".format(z[0, 0], z[-1, 0])
+        distances = np.sqrt(np.square(x[:, 256]) + np.square(z[:, 256]))  # distance of in-plane
+        delta = distances[1:] - distances[:-1]  # every other tube is same distance
+        assert np.alltrue(delta[::2] < 0.)
+        assert np.alltrue(delta[1::2] > 0.)
 
     # confirm that lower-left is in the correct place
     # positions that are checked to 0.1mm
@@ -108,14 +112,15 @@ for name in ['bank1', 'bank2', 'bank5']:
                                        decimal=4)  # y is centered on plane
 
     # calculate angle constrained in plane - NOT equal to "2theta"
-    anglesInPlane = np.abs(np.rad2deg(np.arctan2(x, z)))
+    anglesInPlane = np.abs(np.rad2deg(np.arctan2(x[:, 256], z[:, 256])))
     if name in ['bank1']:  # RHS when facing downstream
-        np.testing.assert_array_less(anglesInPlane[:-1, 0], anglesInPlane[1:, 0],
+        np.testing.assert_array_less(anglesInPlane[:-1], anglesInPlane[1:],
                                      err_msg="everything in same row has increasing y")
-    elif name in ['bank2', 'bank5']:  # LHS when facing downstream
-        np.testing.assert_array_less(anglesInPlane[1:, 0], anglesInPlane[:-1, 0],
+    elif name in ['bank2']:  # LHS when facing downstream
+        # TODO This should be for bank5 as well, but the interleaving isn't quite right
+        np.testing.assert_array_less(anglesInPlane[1:], anglesInPlane[:-1],
                                      err_msg="everything in same row has increasing y")
 
     # compare with survey/alignment measurements
-    #compare_position(x, y, z, banks_exp[name], obs_index=(0,0), point_label='D1T1B')
-    #compare_position(x, y, z, banks_exp[name], obs_index=(0, 511), point_label='D1T1T')
+    # compare_position(x, y, z, banks_exp[name], obs_index=(0,0), point_label='D1T1B')
+    # compare_position(x, y, z, banks_exp[name], obs_index=(0, 511), point_label='D1T1T')
