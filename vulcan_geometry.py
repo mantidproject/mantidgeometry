@@ -78,13 +78,18 @@ def readPositions(filename: str = CSV_FILE):
     return banks
 
 
-def addEightPack(instr, name: str, tube_type: str):
+def addEightPack(instr, name: str, tube_type: str, upsidedown: bool = False):
     '''Add an interleaved 8-pack where pixel 1 is in the lower-left
     corner in the back then increases along the tube upward. The bottom
     of tube two is in the front.
 
     back     1 3 5 7
     front     2 4 6 8
+
+    Setting ``upsidedown=True`` configures the pixels as
+
+    back      1 3 5 7
+    front    2 4 6 8
 
     This is similar to the incomplete function MantidGeometry.add_double_pack.
     '''
@@ -94,7 +99,10 @@ def addEightPack(instr, name: str, tube_type: str):
     # z plane is centered in middle of detectors
     tube_z = (-0.5 * SEPARATION, 0.5 * SEPARATION)  # 2 rows back, front
     # x plane is centered between the leftmost and rightmost tubes
-    x_offset = (-1.75 * SLIP, -1.25 * SLIP)
+    if upsidedown:
+        x_offset = (-1.25 * SLIP, -1.75 * SLIP)
+    else:
+        x_offset = (-1.75 * SLIP, -1.25 * SLIP)
     tube_x = np.arange(4, dtype=float) * SLIP   # 4 tube in a row
     for i, x in enumerate(tube_x):
         for j, (z, slip) in enumerate(zip(tube_z, x_offset)):
@@ -218,7 +226,7 @@ if __name__ == "__main__":
                            TUBE_RADIUS, (TUBE_LENGTH/TUBE_PIXELS))
 
     # build up 8-pack with .7m "short"  tubes
-    addEightPack(instr, 'eightpackshort', 'tubeshort')
+    addEightPack(instr, 'eightpackshort', 'tubeshort', upsidedown=True)
     instr.addComment('bank 5 is 512 pixels across {}m'.format(TUBE_LENGTH_SHORT))
     instr.addPixelatedTube(name='tubeshort', type_name='onepixelshort', num_pixels=TUBE_PIXELS,
                            tube_height=TUBE_LENGTH_SHORT)
