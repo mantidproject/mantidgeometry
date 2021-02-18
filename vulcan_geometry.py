@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from helper import INCH_TO_METRE, DEG_TO_RAD, MantidGeom
+from helper import INCH_TO_METRE, MantidGeom
 from lxml import etree as le  # python-lxml on rpm based systems
 import numpy as np
 from rectangle import Rectangle, Vector
@@ -102,15 +102,16 @@ def addEightPack(instr, name: str, tube_type: str):
                           x=f'{x + slip:.5f}', z=f'{z:.5f}')
 
 
-def addEmptyComponent(instr, type_name: str):
+# TODO add full orientation
+def addEmptyComponent(instr, type_name: str, x_center: float, z_center: float, rot_y: float):
     '''type_name is reused as idlist name'''
     component = instr.addComponent(type_name=type_name, idlist=type_name)
-    le.SubElement(component, "location")  # empty location tag
+    instr.addLocation(component, x=x_center, y=0, z=z_center, rot_y=rot_y)
 
 
 def addBankPosition(instr, bankname: str, componentname: str,
                     num_panels: int,
-                    x_center: float, z_center: float, rot_y: float, rot_y_bank=None):
+                    x_center: float, z_center: float):
     '''
     for <location> the rotations happen before the translation
 
@@ -120,21 +121,11 @@ def addBankPosition(instr, bankname: str, componentname: str,
     '''
     bank = instr.makeTypeElement(bankname)
 
-    if rot_y_bank is None:
-        rot_y_bank = rot_y
-    sine = np.sin(DEG_TO_RAD * rot_y_bank)
-    cosine = np.cos(DEG_TO_RAD * rot_y_bank)
-    # print('========================================')
-    # print(bankname, 'sin={:.5f}'.format(sine), 'cos={:.5f}'.format(cosine))
-
     for i in range(num_panels):
         position_index = i - 0.5*(num_panels-1)
-        x_panel = -1. * cosine * SLIP_PANEL * position_index + x_center
-        z_panel = -1. * sine * SLIP_PANEL * position_index + z_center
-        # print('x={:10.7f} z={:10.7f}'.format(x_panel, z_panel))
-        panel = instr.addComponent(type_name=componentname, root=bank)
-        # also has rot_x, rot_y, rot_z
-        instr.addLocation(x=x_panel, y=0., z=z_panel, rot_y=rot_y, root=panel)
+        packname = 'pack{:02d}'.format(i+1)
+        panel = instr.addComponent(type_name=componentname, root=bank, name=packname)
+        instr.addLocation(panel, x=(-1. * SLIP_PANEL * position_index), y=0., z=0., rot_y=180.)
 
 
 def addBankIds(instr, bankname: str, bank_offset: int, num_panels: int):
@@ -165,13 +156,16 @@ if __name__ == "__main__":
     instr.addComment("MONITORS")
     instr.addMonitors(distance=[4.83, 1.50], names=["monitor2", "monitor3"])
 
-    # add empty components to hang everything off of
-    addEmptyComponent(instr, type_name='bank1')  # right  (when facing downstream)
-    addEmptyComponent(instr, type_name='bank2')  # left (when facing downstream)
-    #addEmptyComponent(instr, type_name='bank3')
-    #addEmptyComponent(instr, type_name='bank4')
-    addEmptyComponent(instr, type_name='bank5')  # high angle on left where b4 will eventually be
-    #addEmptyComponent(instr, type_name='bank6')
+    # add empty "bank" components with the correct centers and to hang everything off of
+    addEmptyComponent(instr, type_name='bank1',  # right  (when facing downstream)
+                      x_center=-90.39 * INCH_TO_METRE, z_center=0., rot_y=-90.)
+    addEmptyComponent(instr, type_name='bank2',  # left (when facing downstream)
+                      x_center=90.39 * INCH_TO_METRE, z_center=0., rot_y=90.)
+    # addEmptyComponent(instr, type_name='bank3')
+    # addEmptyComponent(instr, type_name='bank4')
+    addEmptyComponent(instr, type_name='bank5',  # high angle on left where b4 will eventually be
+                      x_center=2.*np.sin(np.deg2rad(150.)), z_center=2.*np.cos(np.deg2rad(150.)), rot_y=150.)
+    # addEmptyComponent(instr, type_name='bank6')
 
     # #### DETECTORS GO HERE! ######################################
     positions = readPositions()  # TODO these are not used yet
@@ -179,28 +173,27 @@ if __name__ == "__main__":
     # all tubes (all banks) are same diameter with 512 pixels
     # bank1 is old bank 1-3 - has 20 8packs that are 1m long
     addBankPosition(instr, bankname='bank1', componentname='eightpack', num_panels=20,
-                    x_center=-90.39 * INCH_TO_METRE, z_center=0., rot_y=90.)
+                    x_center=-90.39 * INCH_TO_METRE, z_center=0.)
 
     # bank2 is old bank 4-6 - has 20 8packs that are 1m long
     addBankPosition(instr, bankname='bank2', componentname='eightpack', num_panels=20,
-                    x_center=90.39 * INCH_TO_METRE, z_center=0., rot_y=-90.)
+                    x_center=90.39 * INCH_TO_METRE, z_center=0.)
 
     # bank3 (not installed) will have 18 8packs at 120deg
-    #addBankPosition(instr, bankname='bank3', componentname='eightpack', num_panels=18,
+    # addBankPosition(instr, bankname='bank3', componentname='eightpack', num_panels=18,
     #                x_center=2*np.sin(np.deg2rad(120)), z_center=2*np.cos(np.deg2rad(120)),
     #                rot_y=180+120., rot_y_bank=-120)
     # bank4 (not installed) will have 18 8packs at 150deg
-    #addBankPosition(instr, bankname='bank4', componentname='eightpack', num_panels=18,
+    # addBankPosition(instr, bankname='bank4', componentname='eightpack', num_panels=18,
     #                x_center=2.*np.sin(np.deg2rad(150.)), z_center=2.*np.cos(np.deg2rad(150.)),
     #                rot_y=180+150., rot_y_bank=-150)
     # bank5 is old bank 7 - has 9 8packs that are 0.7m long
     addBankPosition(instr, bankname='bank5', componentname='eightpackshort', num_panels=9,
-                    x_center=2.*np.sin(np.deg2rad(150.)), z_center=2.*np.cos(np.deg2rad(150.)),
-                    rot_y=180+150., rot_y_bank=-150)
+                    x_center=2.*np.sin(np.deg2rad(150.)), z_center=2.*np.cos(np.deg2rad(150.)))
     #      SHOULD    x_center=2.*np.sin(np.deg2rad(-150.)), z_center=2.*np.cos(np.deg2rad(-150.)),
     #      SHOULD    rot_y=180-150., rot_y_bank=150)
     # bank6 (not installed) will have 11 8packs at 60deg
-    #addBankPosition(instr, bankname='bank6', componentname='eightpack', num_panels=11,
+    # addBankPosition(instr, bankname='bank6', componentname='eightpack', num_panels=11,
     #                x_center=2.*np.sin(np.deg2rad(-60.)), z_center=2.*np.cos(np.deg2rad(-60.)),
     #                rot_y=180-60., rot_y_bank=60)
     # bank9 (future plan and not part of the upgrade) at 210/-150deg
@@ -236,10 +229,10 @@ if __name__ == "__main__":
     instr.addComment("DETECTOR IDs - panel is an 8-pack")
     addBankIds(instr, 'bank1', bank_offset=0, num_panels=20)
     addBankIds(instr, 'bank2', bank_offset=PIXELS_PER_BANK, num_panels=20)
-    #addBankIds(instr, 'bank3', bank_offset=2*PIXELS_PER_BANK, num_panels=18)
-    #addBankIds(instr, 'bank4', bank_offset=3*PIXELS_PER_BANK, num_panels=18)
+    # addBankIds(instr, 'bank3', bank_offset=2*PIXELS_PER_BANK, num_panels=18)
+    # addBankIds(instr, 'bank4', bank_offset=3*PIXELS_PER_BANK, num_panels=18)
     addBankIds(instr, 'bank5', bank_offset=4*PIXELS_PER_BANK, num_panels=9)
-    #addBankIds(instr, 'bank6', bank_offset=5*PIXELS_PER_BANK, num_panels=11)
+    # addBankIds(instr, 'bank6', bank_offset=5*PIXELS_PER_BANK, num_panels=11)
 
     # shape for monitors
     instr.addComment(" Shape for Monitors")
