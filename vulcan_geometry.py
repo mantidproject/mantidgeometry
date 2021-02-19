@@ -88,17 +88,21 @@ def addEightPack(instr, name: str, tube_type: str, upsidedown: bool = False):
 
     Setting ``upsidedown=True`` configures the pixels as
 
-    back      1 3 5 7
-    front    2 4 6 8
+    back      2 4 6 8
+    front    1 3 5 7
 
     This is similar to the incomplete function MantidGeometry.add_double_pack.
     '''
     type_element = le.SubElement(instr.root, 'type', name=name)
     le.SubElement(type_element, 'properties')
     component = le.SubElement(type_element, 'component', type=tube_type)
-    # z plane is centered in middle of detectors
+    # z plane is centered in middle of the front plane of detectors
     tube_z = (-1. * SEPARATION, SEPARATION)  # 2 rows back, front
     # x plane is centered between the leftmost and rightmost tubes
+    # this puts the center of the 8-pack somewhere between tubes 4 and 5 (start counting from one)
+    # the values -1.25 and -1.75 were emperically found by putting a single
+    # 8-pack direcly in the beam and shifting it until the outter tubes
+    # were equidistant from the center
     if upsidedown:
         x_offset = (-1.25 * SLIP, -1.75 * SLIP)
     else:
@@ -110,7 +114,6 @@ def addEightPack(instr, name: str, tube_type: str, upsidedown: bool = False):
                           x=f'{x + slip:.5f}', z=f'{z:.5f}')
 
 
-# TODO add full orientation
 def addEmptyComponent(instr, type_name: str, rect=None,
                       x_center: float = 0., z_center: float = 0., rot_y: float = 0.):
     '''
@@ -157,7 +160,7 @@ if __name__ == "__main__":
     # boiler plate stuff
     instr = MantidGeom(inst_name,
                        comment="Created by " + ", ".join(authors),
-                       valid_from="2020-01-01 00:00:01")
+                       valid_from="2021-01-01 00:00:01")
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults()
     instr.addComment("SOURCE")
