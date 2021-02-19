@@ -36,12 +36,10 @@ def position_to_str(x, y, z):
 def compare_position(x, y, z, expected, obs_index, point_label):
     index = expected['Point'].index(point_label)
     print('======>', point_label)
-    print(position_to_str(x[obs_index], y[obs_index], z[obs_index]))
-    print(position_to_str(expected['X'][index], expected['Y'][index], expected['Z'][index]))
     # TODO shrink the tolerance from .1m to .1mm
-    np.testing.assert_almost_equal(x[obs_index], expected['X'][index], decimal=1)
-    np.testing.assert_almost_equal(y[obs_index], expected['Y'][index], decimal=1)
-    np.testing.assert_almost_equal(z[obs_index], expected['Z'][index], decimal=1)
+    np.testing.assert_almost_equal(x[obs_index], expected['X'][index], decimal=3)
+    np.testing.assert_almost_equal(y[obs_index], expected['Y'][index], decimal=3)
+    np.testing.assert_almost_equal(z[obs_index], expected['Z'][index], decimal=3)
 
 
 vulcan = LoadEmptyInstrument(Filename='VULCAN_Definition.xml', OutputWorkspace='vulcan')
@@ -89,13 +87,8 @@ for name in ['bank1', 'bank2', 'bank5']:
     distances = np.sqrt(np.square(x[:, 256]) + np.square(z[:, 256]))  # distance of in-plane
     delta = distances[1:] - distances[:-1]  # every other tube is same distance
     if name in ['bank1', 'bank2', 'bank5']:
-        assert np.alltrue(delta[::2] > 0.)
-        assert np.alltrue(delta[1::2] < 0.)
+        assert np.alltrue(delta[::2] < 0.)
+        assert np.alltrue(delta[1::2] > 0.)
 
     # confirm that the positions are increasing in other directions
     np.testing.assert_array_less(y[:, :-1], y[:, 1:], err_msg="everything in same row has increasing y")
-
-    # compare with survey/alignment measurements
-
-    # compare_position(x, y, z, banks_exp[name], obs_index=(0,0), point_label='D1T1B')
-    # compare_position(x, y, z, banks_exp[name], obs_index=(0, 511), point_label='D1T1T')

@@ -138,7 +138,7 @@ def addBankPosition(instr, bankname: str, componentname: str,
         position_index = i - 0.5*(num_panels-1)
         packname = 'pack{:02d}'.format(i+1)
         panel = instr.addComponent(type_name=componentname, root=bank, name=packname)
-        instr.addLocation(panel, x=(-1. * SLIP_PANEL * position_index), y=0., z=0., rot_y=180.)
+        instr.addLocation(panel, x=(SLIP_PANEL * position_index), y=0., z=0., rot_y=0.)
 
 
 def addBankIds(instr, bankname: str, bank_offset: int, num_panels: int):
