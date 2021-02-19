@@ -59,68 +59,43 @@ for name in ['bank1', 'bank2', 'bank5']:
     bank = getTubeIds(compInfo, name)
     x, y, z = getPositions(bank, compInfo)
 
-    # confirm that the positions are constant in certain directions
-    np.testing.assert_equal(x[:, 1:] - x[:, :-1], 0., err_msg="everything in same tube has same x")
-    np.testing.assert_equal(y[1:, :] - y[:-1, :], 0., err_msg="everything in same row has same y")
-    np.testing.assert_equal(z[:, 1:] - z[:, :-1], 0., err_msg="everything in same tube has same z")
-
-    # overall positions of some coordinates
-    if name == 'bank1':
+    # confirm which quadrants things are in - x-axis
+    if name in ['bank1']:
         assert np.alltrue(x < 0.)
-        np.testing.assert_almost_equal(x[0, 0], x[-2, 0], err_msg="bank1 same plane", decimal=4)
-        assert z[0, 0] > z[-1, 0], "bank1 LL={:.4f}  LR={:.4f}".format(z[0, 0], z[-1, 0])
-        assert x[0, 0] < x[1, 0], "bank1 plane LL={:.4f} LR={:.4f}".format(x[0, 0], x[1, 0])  # diff plane
-    elif name == 'bank2':
+    elif name in ['bank2', 'bank5']:
         assert np.alltrue(x > 0.)
-        np.testing.assert_almost_equal(x[0, 0], x[-2, 0], err_msg="bank1 same plane", decimal=4)
-        assert z[0, 0] < z[-1, 0], "bank2 LL={:.4f}  LR={:.4f}".format(z[0, 0], z[-1, 0])
-        assert x[0, 0] > x[1, 0], "bank2 plane LL={:.4f} LR={:.4f}".format(x[0, 0], x[1, 0])  # diff plane
-    elif name == 'bank5':  # currently in bank4 location
-        assert np.alltrue(x > 0.)
+    # confirm which quadrants things are in - z-axis
+    if name in ['bank5']:
         assert np.alltrue(z < 0.)
-        assert x[0, 0] < x[-1, 0], "bank5 LL={:.4f}  LR={:.4f}".format(x[0, 0], x[-1, 0])
-        assert z[0, 0] < z[-1, 0], "bank5 LL={:.4f}  LR={:.4f}".format(z[0, 0], z[-1, 0])
-        distances = np.sqrt(np.square(x[:, 256]) + np.square(z[:, 256]))  # distance of in-plane
-        delta = distances[1:] - distances[:-1]  # every other tube is same distance
-        assert np.alltrue(delta[::2] < 0.)
-        assert np.alltrue(delta[1::2] > 0.)
 
-    # confirm that lower-left is in the correct place
-    # positions that are checked to 0.1mm
-    assert y[0, 0] == y.min(), 'y-value'  # always gravitationally down
-    if name == 'bank1':
-        np.testing.assert_almost_equal(x[0, 0], x.min(), err_msg='x-value lower-left', decimal=4)
-        np.testing.assert_almost_equal(z[0, 0], z.max(), err_msg='x-value lower-left', decimal=4)
-    elif name == 'bank2':
-        np.testing.assert_almost_equal(x[0, 0], x.max(), err_msg='x-value lower-left', decimal=4)
-        np.testing.assert_almost_equal(z[0, 0], z.min(), err_msg='x-value lower-left', decimal=4)
-        # bank2 x-max, z-max
-    else:
-        # bank5 x in front plane, z-max, but looks complicated
-        print(f'NOT checking location of lower-left for {name}')
+    # confirm that the y-center bank center
+    center_exp = banks_exp[name].center
+    np.testing.assert_almost_equal(x.mean(), center_exp.x, err_msg='detector panel is x-center',
+                                   decimal=4)
+    np.testing.assert_almost_equal(y.mean(), center_exp.y, err_msg='detector panel is y-center',
+                                   decimal=4)
+    np.testing.assert_almost_equal(z.mean(), center_exp.z, err_msg='detector panel is z-center',
+                                   decimal=4)
+
+    # confirm that the positions are constant in certain directions
+    np.testing.assert_almost_equal(x[:, 1:] - x[:, :-1], 0., decimal=4,
+                                   err_msg="everything in same tube has same x")
+    np.testing.assert_almost_equal(y[1:, :] - y[:-1, :], 0., decimal=4,
+                                   err_msg="everything in same row has same y")
+    np.testing.assert_almost_equal(z[:, 1:] - z[:, :-1], 0., decimal=4,
+                                   err_msg="everything in same tube has same z")
+
+    # verify the interleaving tubes
+    distances = np.sqrt(np.square(x[:, 256]) + np.square(z[:, 256]))  # distance of in-plane
+    delta = distances[1:] - distances[:-1]  # every other tube is same distance
+    if name in ['bank1', 'bank2', 'bank5']:
+        assert np.alltrue(delta[::2] > 0.)
+        assert np.alltrue(delta[1::2] < 0.)
 
     # confirm that the positions are increasing in other directions
     np.testing.assert_array_less(y[:, :-1], y[:, 1:], err_msg="everything in same row has increasing y")
-    # TODO check X
-    # TODO check Z
-
-    # confirm that the y-center bank center
-    np.testing.assert_almost_equal(y.mean(), 0., err_msg='detector panel is centered on horizontal plane',
-                                   decimal=4)  # y is centered on plane
-    if name in ['bank1', 'bank2']:
-        np.testing.assert_almost_equal(z.mean(), 0., err_msg='detector panel is centered on sample',
-                                       decimal=4)  # y is centered on plane
-
-    # calculate angle constrained in plane - NOT equal to "2theta"
-    anglesInPlane = np.abs(np.rad2deg(np.arctan2(x[:, 256], z[:, 256])))
-    if name in ['bank1']:  # RHS when facing downstream
-        np.testing.assert_array_less(anglesInPlane[:-1], anglesInPlane[1:],
-                                     err_msg="everything in same row has increasing y")
-    elif name in ['bank2']:  # LHS when facing downstream
-        # TODO This should be for bank5 as well, but the interleaving isn't quite right
-        np.testing.assert_array_less(anglesInPlane[1:], anglesInPlane[:-1],
-                                     err_msg="everything in same row has increasing y")
 
     # compare with survey/alignment measurements
+
     # compare_position(x, y, z, banks_exp[name], obs_index=(0,0), point_label='D1T1B')
     # compare_position(x, y, z, banks_exp[name], obs_index=(0, 511), point_label='D1T1T')

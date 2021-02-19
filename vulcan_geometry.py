@@ -2,7 +2,7 @@
 from helper import INCH_TO_METRE, MantidGeom
 from lxml import etree as le  # python-lxml on rpm based systems
 import numpy as np
-from rectangle import Rectangle, Vector
+from rectangle import Rectangle, Vector, makeLocation
 from sns_ncolumn import readFile
 
 L1: float = -43.754  # meter
@@ -97,7 +97,7 @@ def addEightPack(instr, name: str, tube_type: str, upsidedown: bool = False):
     le.SubElement(type_element, 'properties')
     component = le.SubElement(type_element, 'component', type=tube_type)
     # z plane is centered in middle of detectors
-    tube_z = (-0.5 * SEPARATION, 0.5 * SEPARATION)  # 2 rows back, front
+    tube_z = (-1. * SEPARATION, SEPARATION)  # 2 rows back, front
     # x plane is centered between the leftmost and rightmost tubes
     if upsidedown:
         x_offset = (-1.25 * SLIP, -1.75 * SLIP)
@@ -111,21 +111,26 @@ def addEightPack(instr, name: str, tube_type: str, upsidedown: bool = False):
 
 
 # TODO add full orientation
-def addEmptyComponent(instr, type_name: str, x_center: float, z_center: float, rot_y: float):
-    '''type_name is reused as idlist name'''
-    component = instr.addComponent(type_name=type_name, idlist=type_name)
-    instr.addLocation(component, x=x_center, y=0, z=z_center, rot_y=rot_y)
-
-
-def addBankPosition(instr, bankname: str, componentname: str,
-                    num_panels: int,
-                    x_center: float, z_center: float):
+def addEmptyComponent(instr, type_name: str, rect=None,
+                      x_center: float = 0., z_center: float = 0., rot_y: float = 0.):
     '''
     for <location> the rotations happen before the translation
 
-    x_center: center of the bank as a whole
-    z_center: center of the bank as a whole
-    rot_y: rotation of the bank around the positive y-axis
+    type_name is reused as idlist name
+    '''
+    component = instr.addComponent(type_name=type_name, idlist=type_name)
+    if rect:
+        rotations = list(rect.euler_rot_yzy)
+        rotations.reverse()  # they are specified in the opposite direction
+        makeLocation(instr, component, None, rect.center, rotations)
+    else:
+        instr.addLocation(component, x=x_center, y=0., z=z_center, rot_y=rot_y)
+
+
+def addBankPosition(instr, bankname: str, componentname: str,
+                    num_panels: int):
+    '''
+    Add all of the 8-packs relative to the bank position
     '''
     bank = instr.makeTypeElement(bankname)
 
@@ -164,28 +169,27 @@ if __name__ == "__main__":
     instr.addComment("MONITORS")
     instr.addMonitors(distance=[4.83, 1.50], names=["monitor2", "monitor3"])
 
+    # read in survey/alignment values for where the banks are located
+    bank_positions = readPositions()
+
     # add empty "bank" components with the correct centers and to hang everything off of
     addEmptyComponent(instr, type_name='bank1',  # right  (when facing downstream)
-                      x_center=-90.39 * INCH_TO_METRE, z_center=0., rot_y=-90.)
+                      rect=bank_positions['bank1'])
     addEmptyComponent(instr, type_name='bank2',  # left (when facing downstream)
-                      x_center=90.39 * INCH_TO_METRE, z_center=0., rot_y=90.)
+                      rect=bank_positions['bank2'])
     # addEmptyComponent(instr, type_name='bank3')
     # addEmptyComponent(instr, type_name='bank4')
     addEmptyComponent(instr, type_name='bank5',  # high angle on left where b4 will eventually be
-                      x_center=2.*np.sin(np.deg2rad(150.)), z_center=2.*np.cos(np.deg2rad(150.)), rot_y=150.)
+                      rect=bank_positions['bank5'])
     # addEmptyComponent(instr, type_name='bank6')
 
     # #### DETECTORS GO HERE! ######################################
-    positions = readPositions()  # TODO these are not used yet
-
     # all tubes (all banks) are same diameter with 512 pixels
     # bank1 is old bank 1-3 - has 20 8packs that are 1m long
-    addBankPosition(instr, bankname='bank1', componentname='eightpack', num_panels=20,
-                    x_center=-90.39 * INCH_TO_METRE, z_center=0.)
+    addBankPosition(instr, bankname='bank1', componentname='eightpack', num_panels=20)
 
     # bank2 is old bank 4-6 - has 20 8packs that are 1m long
-    addBankPosition(instr, bankname='bank2', componentname='eightpack', num_panels=20,
-                    x_center=90.39 * INCH_TO_METRE, z_center=0.)
+    addBankPosition(instr, bankname='bank2', componentname='eightpack', num_panels=20)
 
     # bank3 (not installed) will have 18 8packs at 120deg
     # addBankPosition(instr, bankname='bank3', componentname='eightpack', num_panels=18,
@@ -196,8 +200,7 @@ if __name__ == "__main__":
     #                x_center=2.*np.sin(np.deg2rad(150.)), z_center=2.*np.cos(np.deg2rad(150.)),
     #                rot_y=180+150., rot_y_bank=-150)
     # bank5 is old bank 7 - has 9 8packs that are 0.7m long
-    addBankPosition(instr, bankname='bank5', componentname='eightpackshort', num_panels=9,
-                    x_center=2.*np.sin(np.deg2rad(150.)), z_center=2.*np.cos(np.deg2rad(150.)))
+    addBankPosition(instr, bankname='bank5', componentname='eightpackshort', num_panels=9)
     #      SHOULD    x_center=2.*np.sin(np.deg2rad(-150.)), z_center=2.*np.cos(np.deg2rad(-150.)),
     #      SHOULD    rot_y=180-150., rot_y_bank=150)
     # bank6 (not installed) will have 11 8packs at 60deg
