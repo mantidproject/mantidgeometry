@@ -110,6 +110,9 @@ class Vector:
     def __div__(self, other):
         return Vector(self.data / other) # only allow divide by a scalar
 
+    def __truediv__(self, other):
+        return Vector(self.data / other) # only allow divide by a scalar
+
     def __mul__(self, other):
         return Vector(self.data * other) # only allow multiply by a scalar
 
@@ -469,6 +472,7 @@ class Rectangle:
     orientation = property(lambda self: self.__orient[:],
                            doc="Orientation as a set of three basis vectors")
     euler_rot = property(__euler_rotations_zyz)
+    euler_rot_yzy = property(__euler_rotations_yzy)
     points = property(lambda self: self.__points[:],
                       doc="The four corners originally supplied in the constructor")
 
