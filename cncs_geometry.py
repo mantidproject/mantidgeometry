@@ -40,7 +40,7 @@ if __name__ == "__main__":
     # Get geometry information file
     inst_name = "CNCS"
     detinfo = readFile(geom_input_file)
-    num_dets = len(detinfo.values()[0])
+    num_dets = len(list(detinfo.values())[0])
     xml_outfile = inst_name+"_Definition.xml"
  
     det = MantidGeom(inst_name, comment=comment, valid_from=valid_from)
