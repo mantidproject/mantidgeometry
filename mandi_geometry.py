@@ -177,11 +177,11 @@ parameters_template = '''<?xml version='1.0' encoding='UTF-8'?>
 '''
 
 if __name__ == '__main__':
-    valid_from = '2020-04-01 00:00:00'
+    valid_from = '2021-02-01 00:00:00'
     filename = 'MANDI_Definition_{}.xml'.format(valid_from.split()[0])
 
     # read in the detector calibration
-    detcal = DetCal('SNS/MANDI/MANDI_April2020.DetCal')
+    detcal = DetCal('SNS/MANDI/MaNDi-February2021.DetCal')
 
     # write the instrument geometry
     instr = MantidGeom('MANDI', valid_from=valid_from)
