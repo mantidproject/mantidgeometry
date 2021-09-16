@@ -17,11 +17,8 @@ instrumentName = 'D7'
 validFrom = "1900-01-31 23:59:59"
 validTo="2100-01-31 23:59:59"
 
-# Monochromator position
-source = -3.6
-
-# Fermi chopper
-zChopper = -0.48
+# Fermi chopper position (treated as source for TOF)
+source = -0.48
 
 # 2 Monitors
 zMon1 = -1.3
@@ -66,7 +63,7 @@ comment = """ This is the instrument definition file of the D7 diffuse scatterin
        - Spectroscopy time-of-flight 
           - using Fermi chopper, with the same possible wavelengths
 
-       Source-to-sample distances is 3.6 m 
+       Source-to-sample distance is 0.48 m
        Three detector banks with 44 position-insensitive He3 detectors each
        Each detector located 1.5 m from the sample
        covering 2 Theta range from about 10 to 155 degrees
@@ -77,11 +74,9 @@ comment = """ This is the instrument definition file of the D7 diffuse scatterin
 d7 = MantidGeom(instrumentName, comment=comment, valid_from=validFrom)
 d7.addSnsDefaults(default_view='3D', axis_view_3d='z-', theta_sign_axis="x")
 d7.addComment("SOURCE")
-d7.addComponentILL("Monochromator", 0., 0., source, "Source")
+d7.addComponentILL('SOURCE', 0.0, 0.0, source, 'Source')
 d7.addComment("Sample position")
 d7.addComponentILL("sample_position", 0., 0., 0., "SamplePos")
-d7.addComment("Fermi chopper")
-d7.addComponentILL('fermi_chopper', 0.0, 0.0, zChopper, 'ChopperPos')
 d7.addComment("MONITORS")
 d7.addMonitors(names=["monitor1", "monitor2"], distance=[zMon1, zMon2])
 d7.addComment("MONITOR SHAPE")
