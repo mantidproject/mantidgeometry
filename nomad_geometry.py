@@ -62,7 +62,7 @@ def getRectangle(bank_num, positions, corners, tolerance_len=0.006):
             four = Vector(four.x, four.y+y_offset, four.z)
         return Rectangle(one, two, three, four, tolerance_len=tolerance_len)
     except RuntimeError as e:
-        print 'bank', bank_num, corners
+        print ('bank', bank_num, corners)
         raise e
 
 def readEngineeringPositions(filename):
@@ -116,9 +116,11 @@ if __name__ == "__main__":
     xml_outfile = inst_name+"_Definition.xml"
 
     # boiler plate stuff
-    instr = MantidGeom(inst_name,
-                       comment=" Created by Peter Peterson",
-                       valid_from="2017-06-05 00:00:01")
+    instr = MantidGeom(
+        inst_name,
+        comment=" Created by Peter Peterson",
+        valid_from="2017-06-05 00:00:01",
+        )
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults()
     instr.addComment("SOURCE")
@@ -134,18 +136,16 @@ if __name__ == "__main__":
     instr.addComment("TODO: Update to real shape")
     instr.addDummyMonitor(0.01, .03)
 
-
     # TODO choppers and slits could go here
-
 
     ####################
     # read the positions of the pixels that was provided
     positions = readEngineeringPositions('SNS/NOMAD/NOM_detpos.txt')
 
     # update engineering postions with values from survey - survey values are worse
-    #positionsSurvey = readSurveyPositions('SNS/NOMAD/NOMAD_survey_20180530_group6.csv')
-    #for i, key in enumerate(positionsSurvey.keys()):
-    #    positions[key] = positionsSurvey[key]
+    positionsSurvey = readSurveyPositions('SNS/NOMAD/NOMAD_survey_20180530_group6.csv')
+    for i, key in enumerate(positionsSurvey.keys()):
+        positions[key] = positionsSurvey[key]
 
     num_banks = [14, 23, 14,12, 18, 18]
 
@@ -170,8 +170,8 @@ if __name__ == "__main__":
         bank = "bank%d" % bank_num
         corners = getCorners(bank_num)
         rect = getRectangle(bank_num, positions, corners)
-       	det = instr.makeDetectorElement('pack', root=group)
-       	rect.makeLocation(instr, det, bank)
+        det = instr.makeDetectorElement('pack', root=group)
+        rect.makeLocation(instr, det, bank)
 
     # group 2 is banks 15-37 (inclusive)
     bank_offset += num_banks[0]
@@ -183,8 +183,8 @@ if __name__ == "__main__":
         # appears to be backwards!!!!!!!!!!!!!!!!
         corners = [corners[1], corners[0], corners[3], corners[2]]
         rect = getRectangle(bank_num, positions, corners)
-       	det = instr.makeDetectorElement('pack', root=group)
-       	rect.makeLocation(instr, det, bank)
+        det = instr.makeDetectorElement('pack', root=group)
+        rect.makeLocation(instr, det, bank)
 
     # group 3 is banks 38-51 (inclusive)
     bank_offset += num_banks[1]
@@ -194,8 +194,8 @@ if __name__ == "__main__":
         bank = "bank%d" % bank_num
         corners = getCorners(bank_num)
         rect = getRectangle(bank_num, positions, corners)
-       	det = instr.makeDetectorElement('pack', root=group)
-       	rect.makeLocation(instr, det, bank)
+        det = instr.makeDetectorElement('pack', root=group)
+        rect.makeLocation(instr, det, bank)
 
     # group 4 is banks 52-63 (inclusive)
     bank_offset += num_banks[2]
@@ -204,11 +204,9 @@ if __name__ == "__main__":
         bank_num = bank_offset+i+1
         bank = "bank%d" % bank_num
         corners = getCorners(bank_num)
-
         rect = getRectangle(bank_num, positions, corners)
-
-       	det = instr.makeDetectorElement('pack', root=group)
-       	rect.makeLocation(instr, det, bank)
+        det = instr.makeDetectorElement('pack', root=group)
+        rect.makeLocation(instr, det, bank)
 
     # group 5 is banks 64-81 (inclusive) - 72 and 73 are special
     bank_offset += num_banks[3]
@@ -227,10 +225,10 @@ if __name__ == "__main__":
         rect = getRectangle(bank_num, positions, corners)
 
         if bank_num in special:
-       	    det = instr.makeDetectorElement('packhalfshort', root=group)
+            det = instr.makeDetectorElement('packhalfshort', root=group)
         else:
-       	    det = instr.makeDetectorElement('packhalf', root=group)
-       	rect.makeLocation(instr, det, bank)
+            det = instr.makeDetectorElement('packhalf', root=group)
+        rect.makeLocation(instr, det, bank)
 
 
     # group 6 is banks 81-99 (inclusive) - 90 and 91 are special
@@ -263,41 +261,81 @@ if __name__ == "__main__":
         rect = getRectangle(bank_num, positions, corners)
 
         if bank_num in special:
-       	    det = instr.makeDetectorElement('packhalfshort', root=group)
+            det = instr.makeDetectorElement('packhalfshort', root=group)
         else:
-       	    det = instr.makeDetectorElement('packhalf', root=group)
-       	rect.makeLocation(instr, det, bank)
+            det = instr.makeDetectorElement('packhalf', root=group)
+        rect.makeLocation(instr, det, bank)
 
     ####################
     # define various "packs" of detectors
     # 1m x 1" 8-pack
     instr.addComment('banks 1 - 4 - 128x8 panel (128x8) - one inch')
-    instr.addNPack(name='pack', type_name='tube', num_tubes=8,
-                   tube_width=INCH_TO_METRE, air_gap=AIR_GAP)
-    instr.addPixelatedTube(name='tube', type_name='onepixel', num_pixels=128,
-                           tube_height=TUBE_LENGTH)
-    instr.addCylinderPixel("onepixel", (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
-                           (.5*INCH_TO_METRE), (TUBE_LENGTH/128.))
-
+    instr.addNPack(
+        name='pack',
+        type_name='tube',
+        num_tubes=8,
+        tube_width=INCH_TO_METRE,
+        air_gap=AIR_GAP,
+        )
+    instr.addPixelatedTube(
+        name='tube',
+        type_name='onepixel',
+        num_pixels=128,
+        tube_height=TUBE_LENGTH,
+        )
+    instr.addCylinderPixel(
+        "onepixel",
+        (0.0, 0.0, 0.0),
+        (0.0, 1.0, 0.0),
+        (.5*INCH_TO_METRE),
+        (TUBE_LENGTH/128.),
+        )
 
     # 1m x .5" 8-pack
     instr.addComment('banks 5 and 6 - 128x8 panel - half inch by 1m')
-    instr.addNPack(name='packhalf', type_name='halftube', num_tubes=8,
-                   tube_width=0.25*INCH_TO_METRE, air_gap=AIR_GAP_END)
-    instr.addPixelatedTube(name='halftube', type_name='halfonepixel', num_pixels=128,
-                           tube_height=TUBE_LENGTH_END)
-    instr.addCylinderPixel('halfonepixel', (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
-                           (.25*INCH_TO_METRE), (TUBE_LENGTH_END/128.))
-
+    instr.addNPack(
+        name='packhalf',
+        type_name='halftube',
+        num_tubes=8,
+        tube_width=0.25*INCH_TO_METRE,
+        air_gap=AIR_GAP_END,
+        )
+    instr.addPixelatedTube(
+        name='halftube',
+        type_name='halfonepixel',
+        num_pixels=128,
+        tube_height=TUBE_LENGTH_END,
+        )
+    instr.addCylinderPixel(
+        'halfonepixel',
+        (0.0, 0.0, 0.0),
+        (0.0, 1.0, 0.0),
+        (.25*INCH_TO_METRE),
+        (TUBE_LENGTH_END/128.),
+        )
 
     # sausage .5m x .5" 6-pack
     instr.addComment('banks 5 and 6 - 64x8 panel - half inch by .5m')
-    instr.addNPack(name='packhalfshort', type_name='halfshorttube', num_tubes=16,
-                   tube_width=0.25*INCH_TO_METRE, air_gap=AIR_GAP_END)
-    instr.addPixelatedTube(name='halfshorttube', type_name='shortonepixel', num_pixels=64,
-                           tube_height=TUBE_LENGTH_SHORT)
-    instr.addCylinderPixel('shortonepixel', (0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
-                           (.25*INCH_TO_METRE), TUBE_LENGTH_SHORT/64.)
+    instr.addNPack(
+        name='packhalfshort',
+        type_name='halfshorttube',
+        num_tubes=16,
+        tube_width=0.25*INCH_TO_METRE,
+        air_gap=AIR_GAP_END,
+        )
+    instr.addPixelatedTube(
+        name='halfshorttube',
+        type_name='shortonepixel',
+        num_pixels=64,
+        tube_height=TUBE_LENGTH_SHORT,
+        )
+    instr.addCylinderPixel(
+        'shortonepixel',
+        (0.0, 0.0, 0.0),
+        (0.0, 1.0, 0.0),
+        (.25*INCH_TO_METRE),
+        TUBE_LENGTH_SHORT/64.,
+        )
 
     # write out the file
     instr.writeGeom(xml_outfile)
