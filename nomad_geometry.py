@@ -106,17 +106,8 @@ def readSurveyPositions(filename):
     id.extend(getCorners(93))
     id.extend(getCorners(94))
     '''
-
-    # skip reading measurements for these banks
-    # NOTE: including these causes errors when Rectangles are created
-    bad_banks = [58, 59, 60, 61, 62, 63]
-
     ids = []
 
-    # mapping between survey points to getCorner indices
-    # this allows survey measurements to be in any ordering in the file
-    # getCorners returns in order: LL, UL, UR, LR
-    mapping = {"1U": 3, "2U": 0, "2D": 1, "1D": 2}
     for i in range(0, len(labels), 4):
         det = labels[i]
 
@@ -124,9 +115,14 @@ def readSurveyPositions(filename):
         [bank, _] = det.split("_")
         bank = int(bank.lstrip("Det"))
 
-        if bank in bad_banks:
-            print("Skipping bank {}!".format(bank))
-            continue
+        # mapping between survey points to getCorner indices
+        # this allows survey measurements to be in any ordering in the file
+        # getCorners returns in order: LL, UL, UR, LR
+        if bank in [58, 59, 60, 61, 62, 63]:
+            # for banks 58 - 63 the LL and LR need to be swapped (for 2021-01-21 survey)
+            mapping = {"1U": 0, "2U": 3, "2D": 1, "1D": 2}
+        else:
+            mapping = {"1U": 3, "2U": 0, "2D": 1, "1D": 2}
 
         # loop over each measurement for this bank and find the correct
         # detector id it corresponds to
