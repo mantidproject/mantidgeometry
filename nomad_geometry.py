@@ -88,24 +88,11 @@ def readSurveyPositions(filename):
     positions = readFile(filename, hasLabels=False, headerLines=1)
 
     labels = positions[0]
-    #id = np.array(map(float, positions[0]))
-    #id = np.array(map(int, id))
     # NOTE: label2 column is empty on latest survey, so these indices are shifted back one
     x = np.fromiter(map(float, positions[2]), dtype=float)
     y = np.fromiter(map(float, positions[3]), dtype=float)
     z = np.fromiter(map(float, positions[1]), dtype=float)
 
-    # this is an intentional truncation of the information in the file
-    # the values of the front and back planes do not make sense together
-    # arbitrarily pick one of the sets
-    '''
-    id = []
-    id.extend(getCornersSpecial(90))
-    id.extend(getCornersSpecial(91))
-    id.extend(getCorners(92))
-    id.extend(getCorners(93))
-    id.extend(getCorners(94))
-    '''
     ids = []
 
     for i in range(0, len(labels), 4):
@@ -118,11 +105,7 @@ def readSurveyPositions(filename):
         # mapping between survey points to getCorner indices
         # this allows survey measurements to be in any ordering in the file
         # getCorners returns in order: LL, UL, UR, LR
-        if bank in [58, 59, 60, 61, 62, 63]:
-            # for banks 58 - 63 the LL and LR need to be swapped (for 2021-01-21 survey)
-            mapping = {"1U": 0, "2U": 3, "2D": 1, "1D": 2}
-        else:
-            mapping = {"1U": 3, "2U": 0, "2D": 1, "1D": 2}
+        mapping = {"1U": 3, "2U": 0, "2D": 1, "1D": 2}
 
         # loop over each measurement for this bank and find the correct
         # detector id it corresponds to
@@ -175,12 +158,11 @@ if __name__ == "__main__":
     positions = readEngineeringPositions('SNS/NOMAD/NOM_detpos.txt')
 
     # update engineering postions with values from survey - survey values are worse
-    #positionsSurvey = readSurveyPositions('SNS/NOMAD/NOMAD_survey_20180530_group6.csv')
     positionsSurvey = readSurveyPositions('SNS/NOMAD/NOMAD_survey_20210121.csv')
     for i, key in enumerate(positionsSurvey.keys()):
         positions[key] = positionsSurvey[key]
 
-    num_banks = [14, 23, 14,12, 18, 18]
+    num_banks = [14, 23, 14, 12, 18, 18]
 
     ####################
     # add the id lists for groups - [start, stop, step]

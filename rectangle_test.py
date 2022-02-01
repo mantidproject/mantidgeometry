@@ -80,7 +80,7 @@ class TestOrientation(unittest.TestCase):
     def checkOrientation(self, rotation):
         try:
             checkRotation(rotation)
-        except RuntimeError, e:
+        except RuntimeError as e:
             raise AssertionError(e)
 
     def checkRotation(self, axis, angle, exp):
