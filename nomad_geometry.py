@@ -133,7 +133,7 @@ if __name__ == "__main__":
     # boiler plate stuff
     instr = MantidGeom(inst_name,
                        comment=" Created by Peter Peterson",
-                       valid_from="2017-06-05 00:00:01")
+                       valid_from="2022-05-05 00:00:01")
     instr.addComment("DEFAULTS")
     instr.addSnsDefaults(theta_sign_axis="x")
     instr.addComment("SOURCE")
