@@ -32,7 +32,7 @@ class Vector:
 
         # check the length
         if self.data.size != Vector.LENGTH:
-            msg = "Expected %d values, found %d" % (Vector.LENGTH, self.__data.size)
+            msg = "Expected %d values, found %d" % (Vector.LENGTH, self.data.size)
             raise RuntimeError(msg)
 
         # sanity check the numbers

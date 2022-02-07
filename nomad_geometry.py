@@ -62,20 +62,20 @@ def getRectangle(bank_num, positions, corners, tolerance_len=0.006):
             four = Vector(four.x, four.y+y_offset, four.z)
         return Rectangle(one, two, three, four, tolerance_len=tolerance_len)
     except RuntimeError as e:
-        print 'bank', bank_num, corners
+        print('bank', bank_num, corners)
         raise e
 
 def readEngineeringPositions(filename):
     positions = readFile(filename, hasLabels=False)
 
-    tube = np.array(map(int, positions[0]))
-    pixel = np.array(map(int, positions[1]))
+    tube = np.fromiter(map(int, positions[0]), dtype=int)
+    pixel = np.fromiter(map(int, positions[1]), dtype=int)
     id = tube*128+pixel
 
-    x = -1. * np.array(map(float, positions[6]))
+    x = -1. * np.fromiter(map(float, positions[6]), dtype=float)
     x[x == -0.] = 0.
-    y = np.array(map(float, positions[5]))
-    z = np.array(map(float, positions[7]))
+    y = np.fromiter(map(float, positions[5]), dtype=float)
+    z = np.fromiter(map(float, positions[7]), dtype=float)
 
     positions = {}
     for i, x_i,y_i,z_i in zip(id, x,y,z):
@@ -87,28 +87,43 @@ def readSurveyPositions(filename):
     # label1, label2, z, x, y
     positions = readFile(filename, hasLabels=False, headerLines=1)
 
-    label = positions[0]
-    #id = np.array(map(float, positions[0]))
-    #id = np.array(map(int, id))
-    x = np.array(map(float, positions[3]))
-    y = np.array(map(float, positions[4]))
-    z = np.array(map(float, positions[2]))
+    labels = positions[0]
+    # NOTE: label2 column is empty on latest survey, so these indices are shifted back one
+    x = np.fromiter(map(float, positions[2]), dtype=float)
+    y = np.fromiter(map(float, positions[3]), dtype=float)
+    z = np.fromiter(map(float, positions[1]), dtype=float)
 
-    # this is an intentional truncation of the information in the file
-    # the values of the front and back planes do not make sense together
-    # arbitrarily pick one of the sets
-    id = []
-    id.extend(getCornersSpecial(90))
-    id.extend(getCornersSpecial(91))
-    id.extend(getCorners(92))
-    id.extend(getCorners(93))
-    id.extend(getCorners(94))
+    ids = []
+
+    for i in range(0, len(labels), 4):
+        det = labels[i]
+
+        # this assumes the label column is in the format "Det#_[1U,2U,1D,2D]"
+        [bank, _] = det.split("_")
+        bank = int(bank.lstrip("Det"))
+
+        # mapping between survey points to getCorner indices
+        # this allows survey measurements to be in any ordering in the file
+        # getCorners returns in order: LL, UL, UR, LR
+        mapping = {"1U": 3, "2U": 0, "2D": 1, "1D": 2}
+
+        # loop over each measurement for this bank and find the correct
+        # detector id it corresponds to
+        corners = getCorners(bank)
+        for j in range(0, 4):
+            [b, pos] = labels[i + j].split("_")
+            b = int(b.lstrip("Det"))
+            # print("bank {} - {} --> {} ({})".format(b, pos, mapping[pos], corners[mapping[pos]]))
+            # verify that this bank is the one we are working on
+            assert (b == bank)
+            ids.append(corners[mapping[pos]])
 
     positions = {}
-    for i, x_i,y_i,z_i in zip(id, x,y,z):
+    for i, x_i, y_i, z_i in zip(ids, x, y, z):
         if x_i == 0. and y_i == 0. and z_i == 0:
             continue
-        positions[i] = Vector(x_i, y_i, z_i)
+        # subtract off distance to source from z values
+        positions[i] = Vector(x_i, y_i, z_i - 19.5)
     return positions
 
 if __name__ == "__main__":
@@ -118,9 +133,9 @@ if __name__ == "__main__":
     # boiler plate stuff
     instr = MantidGeom(inst_name,
                        comment=" Created by Peter Peterson",
-                       valid_from="2017-06-05 00:00:01")
+                       valid_from="2022-05-05 00:00:01")
     instr.addComment("DEFAULTS")
-    instr.addSnsDefaults()
+    instr.addSnsDefaults(theta_sign_axis="x")
     instr.addComment("SOURCE")
     instr.addModerator(-19.5)
     instr.addComment("SAMPLE")
@@ -143,11 +158,11 @@ if __name__ == "__main__":
     positions = readEngineeringPositions('SNS/NOMAD/NOM_detpos.txt')
 
     # update engineering postions with values from survey - survey values are worse
-    #positionsSurvey = readSurveyPositions('SNS/NOMAD/NOMAD_survey_20180530_group6.csv')
-    #for i, key in enumerate(positionsSurvey.keys()):
-    #    positions[key] = positionsSurvey[key]
+    positionsSurvey = readSurveyPositions('SNS/NOMAD/NOMAD_survey_20210121.csv')
+    for i, key in enumerate(positionsSurvey.keys()):
+        positions[key] = positionsSurvey[key]
 
-    num_banks = [14, 23, 14,12, 18, 18]
+    num_banks = [14, 23, 14, 12, 18, 18]
 
     ####################
     # add the id lists for groups - [start, stop, step]
@@ -159,7 +174,8 @@ if __name__ == "__main__":
 
     for i, _ in enumerate(num_banks):
         group = 'Group%d' % (i+1)
-        group = instr.addComponent(group, idlist=group)
+        # set blank_location=False to add <location/> tag to component
+        group = instr.addComponent(group, idlist=group, blank_location=False)
 
     ####################
     # group 1 is banks 1-14 (inclusive)
