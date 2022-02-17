@@ -37,7 +37,7 @@ psd = 0.102
 SDs = 8
 PSDs = 16
 pixels = 128
-height = 0.3
+height = 0.254
 SD_azimuths = np.linspace(10,120,SDs).tolist()
 PSD_azimuths = [25.1,32.9,40.7,48.5,56.3,64.1,71.9,79.7,87.5,95.3,103.1,110.9,118.7,126.5,134.3,142.1]
 
@@ -93,7 +93,7 @@ for i in range(len(PSD_azimuths)):
     x = psd * sin(t)
     z = - psd * cos(t)
     for p in range(pixels):
-        y = -height/2 + p * height/pixels
+        y = -height/2 + (p + 0.5) * height/pixels
         nx, ny, nz = mirror(x, y, z, psd_analyser, i==0 and args.firsttubedefocus == 'Y')
         if args.geometrytype == 'N':
             geometry.addLocation(root=psdc, x=nx, y=ny, z=nz, name="tube_{0}_pixel_{1}".format(i+1, p+1))
