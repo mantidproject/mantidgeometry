@@ -5,9 +5,9 @@ import numpy as np
 from rectangle import Rectangle, Vector, makeLocation
 from sns_ncolumn import readFile
 
-L1: float = -43.754  # meter
-TUBE_LENGTH: float = 1.0  # meter
-TUBE_LENGTH_SHORT: float = 0.7  # meters
+L1: float = -43.755  # meter
+TUBE_LENGTH: float = 1.044628  # meter
+TUBE_LENGTH_SHORT: float = 0.773575  # meters
 TUBE_RADIUS: float = 0.317 * INCH_TO_METRE * 0.5  # given as diameter
 TUBE_PIXELS: int = 512
 PIXELS_PER_EIGHTPACK: int = 8*TUBE_PIXELS  # number of actual pixels
@@ -44,7 +44,7 @@ Phase II:
 this script generates the IDF for phase II
 '''
 #CSV_FILE: str = 'SNS/VULCAN/VULCAN_geom_20210210.csv'
-CSV_FILE: str = 'BL7_combine_B1_B2_B3_B4_B5_20220420.csv'
+CSV_FILE: str = 'SNS/VULCAN/BL7_combine_B1_B2_B3_B4_B5_20220420.csv'
 
 def readPositions(filename: str = CSV_FILE):
     '''The CSV file has measurements of the front tubes of each 8-pack.
