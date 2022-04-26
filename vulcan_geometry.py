@@ -17,52 +17,50 @@ SEPARATION: float = 0.323 * INCH_TO_METRE  # distance between front and back
 SLIP: float = 0.434 * INCH_TO_METRE  # distance between 2 and 4
 SLIP_PANEL: float = 3 * SLIP + 0.460 * INCH_TO_METRE  # bonus spacing between panel centers
 
-upgradePhase = 1 # VULCAN is undergoing a phased upgrade. retaining backwards capability by introducing this variable.
-                 # upgradePhase = 1 corresponds to the addition of one new bank, total banks = 3
-                 # upgradePhase = 2 corresponds to the addition of three additional banks, total banks = 6
-                 # note bank numbering is not inspired by chronology, or geometry
-                 # here's a rough sketch from above, dashed line is beam, + is inst centre point.
-                 # Phase 1:
-                 #              |
-                 #              |   5
-                 #              |
-                 #      1       +       2
-                 #              |
-                 #              |
-                 #              V
-                 # Phase 2:
-                 #              |
-                 #          5   |   4
-                 #              |     3
-                 #      1       +       2
-                 #        6     |
-                 #              |
-                 #              V
-if upgradePhase ==1:
-    CSV_FILE: str = 'SNS/VULCAN/VULCAN_geom_20210210.csv'
-elif upgradePhase ==2:
-    CSV_FILE: str = 'SNS/VULCAN/VULCAN_geom_temp.csv'
+'''VULCAN has undergone a phased upgrade. 
+Phase I added a single additional bank (bank5) with total No. banks = 3
+Phase II added three additional banks, and moved bank5, total No. banks = 6
 
-def readPositions(filename: str = CSV_FILE, phase: int = upgradePhase):
+Thus, note, bank numbering is not inspired by chronology, or geometry
+here's a rough sketch from above, dashed line is beam, + is inst centre point.
+
+Phase I:
+              |
+              |   5
+              |
+      1       +       2
+              |
+              |
+              V
+Phase II:
+              |
+          5   |   4
+              |     3
+      1       +       2
+        6     |
+              |
+              V
+              
+this script generates the IDF for phase II
+'''
+#CSV_FILE: str = 'SNS/VULCAN/VULCAN_geom_20210210.csv'
+CSV_FILE: str = '/Users/66j/Documents/GitHub/mantidgeometry/BL7_combine_B1_B2_B3_B4_B5_20220420.csv'
+
+def readPositions(filename: str = CSV_FILE):
     '''The CSV file has measurements of the front tubes of each 8-pack.
     The labels for banks were chosen by metrology team, and the number of banks changes with upgrade phase'''
     # read in and delete unnecessary columns
     positions = readFile(filename, delimiter=',')
-    del positions['L']  # tube length
-    del positions['C']  # tube centers
+    #del positions['L']  # tube length
+    #del positions['C']  # tube centers
 
     # set up a dict to split the data into, defined according to construction phase
-    if phase == 1:
-        banks_allpixels = {'bank1': {},
-                       'bank2': {},
-                       'bank5': {}}
-    elif phase == 2:
-        banks_allpixels = {'bank1':{},
-                           'bank2':{},
-                           'bank3':{},
-                           'bank4':{},
-                           'bank5':{},
-                           'bank6':{}}
+    banks_allpixels = {'bank1':{},
+                        'bank2':{},
+                        'bank3':{},
+                        'bank4':{},
+                        'bank5':{}}
+                        # 'bank6':{}}
     for bank_label in banks_allpixels.keys():
         for column in positions.keys():
             banks_allpixels[bank_label][column] = []
@@ -75,14 +73,7 @@ def readPositions(filename: str = CSV_FILE, phase: int = upgradePhase):
     for i, point_label in enumerate(positions['Point']):
         bank_label = ''
         #Phase 1 labels
-        if point_label.startswith('HA_'):
-            bank_label = 'bank5'
-        elif point_label.startswith('BR_'):
-            bank_label = 'bank1'
-        elif point_label.startswith('BL_'):
-            bank_label = 'bank2'
-        #Phase 2 labels
-        elif point_label.startswith('B1_'):
+        if point_label.startswith('B1_'):
             bank_label = 'bank1'
         elif point_label.startswith('B2_'):
             bank_label = 'bank2'
@@ -117,13 +108,26 @@ def readPositions(filename: str = CSV_FILE, phase: int = upgradePhase):
     # corners in the order LL, UL, UR, LR
     # Rectangle says lower-left then clockwise
     # survey/alignment labeled them as "tube 1" (i.e. T1) as most downstream
+    #
+    # 20220413: Still waiting to receive metrology file, so have assumed convention
+    # follows previous numbering (*TO CHECK*)
+    # The following are ordered beam right, high to low angle. Then, beam left high to low
+    # angle:
     banks = {}
-    banks['bank1'] = rectangleFromName(banks_allpixels['bank1'],
-                                       ('D1T1B', 'D1T1T', 'D20T4T', 'D20T1B'))
-    banks['bank2'] = rectangleFromName(banks_allpixels['bank2'],
-                                       ('D20T1B', 'D20T4T', 'D1T1T', 'D1T1B'))
+
     banks['bank5'] = rectangleFromName(banks_allpixels['bank5'],
-                                       ('D1T1B', 'D1T1T', 'D9T4T', 'D9T4B'))
+                                       ('D9T2B', 'D9T2T', 'D1T8T', 'D1T8B'))
+    banks['bank1'] = rectangleFromName(banks_allpixels['bank1'],
+                                       ('D20T2B', 'D20T2T', 'D1T8T', 'D1T8B'))
+    #banks['bank6'] = rectangleFromName(banks_allpixels['bank6'],
+    #                                  ('D11T2B', 'D11T2T', 'D1T8T', 'D1T8B'))
+    banks['bank4'] = rectangleFromName(banks_allpixels['bank4'],
+                                       ('D1T2B', 'D1T2T', 'D18T8T', 'D18T8B'))
+    banks['bank3'] = rectangleFromName(banks_allpixels['bank3'],
+                                       ('D1T2B', 'D1T2T', 'D18T8T', 'D18T8B'))
+    banks['bank2'] = rectangleFromName(banks_allpixels['bank2'],
+                                       ('D1T2B', 'D1T2T', 'D20T8T', 'D20T8B'))
+
 
     return banks
 
@@ -142,6 +146,8 @@ def addEightPack(instr, name: str, tube_type: str, upsidedown: bool = False):
     front    1 3 5 7
 
     This is similar to the incomplete function MantidGeometry.add_double_pack.
+
+    UPDATE: FROM PHASE-II ONWARDS UPSIDEDOWN=TRUE IS NO LONGER USED
     '''
     type_element = le.SubElement(instr.root, 'type', name=name)
     le.SubElement(type_element, 'properties')
@@ -204,16 +210,12 @@ def addBankIds(instr, bankname: str, bank_offset: int, num_panels: int):
 
 if __name__ == "__main__":
     inst_name = "VULCAN"
-    xml_outfile = inst_name+"_Definition.xml"
-    authors = ["Peter Peterson"]
+    xml_outfile = inst_name+"_Definition_tmp.xml"
+    authors = ["Peter Peterson","Malcolm Guthrie"]
 
     # boiler plate stuff
-    if upgradePhase == 1:
-        instr = MantidGeom(inst_name,
-                       comment="Created by " + ", ".join(authors),
-                       valid_from="2021-01-01 00:00:01")
-    elif upgradePhase == 2:
-        instr = MantidGeom(inst_name,
+
+    instr = MantidGeom(inst_name,
                            comment="Created by " + ", ".join(authors),
                            valid_from="2022-05-15 00:00:01")
     instr.addComment("DEFAULTS")
@@ -231,28 +233,21 @@ if __name__ == "__main__":
     bank_positions = readPositions()
 
     # add empty "bank" components with the correct centers and to hang everything off of
-    if upgradePhase == 1:
-        addEmptyComponent(instr, type_name='bank1',  # right  (when facing downstream)
+    #beam right, high to low angle
+    addEmptyComponent(instr, type_name='bank5',
+                       rect=bank_positions['bank5'])
+    addEmptyComponent(instr, type_name='bank1',
                       rect=bank_positions['bank1'])
-        addEmptyComponent(instr, type_name='bank2',  # left (when facing downstream)
+    # addEmptyComponent(instr, type_name='bank6',
+    #                   rect=bank_positions['bank6'])
+
+    # #beam left, high to low angle
+    addEmptyComponent(instr, type_name='bank4',
+                      rect=bank_positions['bank4'])
+    addEmptyComponent(instr, type_name='bank3',
+                      rect=bank_positions['bank3'])
+    addEmptyComponent(instr, type_name='bank2',
                       rect=bank_positions['bank2'])
-        addEmptyComponent(instr, type_name='bank5',  # high angle on left where b4 will eventually be
-                      rect=bank_positions['bank5'])
-    elif upgradePhase == 2:
-        #beam right, low to high angle
-        addEmptyComponent(instr, type_name='bank6',
-                          rect=bank_positions['bank6'])
-        addEmptyComponent(instr, type_name='bank1',
-                          rect=bank_positions['bank1'])
-        addEmptyComponent(instr, type_name='bank5',
-                          rect=bank_positions['bank5'])
-        #beam left, low to high angle
-        addEmptyComponent(instr, type_name='bank2',
-                          rect=bank_positions['bank2'])
-        addEmptyComponent(instr, type_name='bank3',
-                          rect=bank_positions['bank3'])
-        addEmptyComponent(instr, type_name='bank4',
-                          rect=bank_positions['bank4'])
 
     # #### DETECTORS GO HERE! ######################################
     # all tubes (all banks) are same diameter with 512 pixels
@@ -262,20 +257,20 @@ if __name__ == "__main__":
     # bank2 is old bank 4-6 - has 20 8packs that are 1m long
     addBankPosition(instr, bankname='bank2', componentname='eightpack', num_panels=20)
 
-    # bank3 (not installed) will have 18 8packs at 120deg
-    # addBankPosition(instr, bankname='bank3', componentname='eightpack', num_panels=18,
+    # bank3 has 18 8packs at 120deg
+    addBankPosition(instr, bankname='bank3', componentname='eightpack', num_panels=18)
     #                x_center=2*np.sin(np.deg2rad(120)), z_center=2*np.cos(np.deg2rad(120)),
     #                rot_y=180+120., rot_y_bank=-120)
-    # bank4 (not installed) will have 18 8packs at 150deg
-    # addBankPosition(instr, bankname='bank4', componentname='eightpack', num_panels=18,
+    # bank4 has 18 8packs at 150deg
+    addBankPosition(instr, bankname='bank4', componentname='eightpack', num_panels=18)
     #                x_center=2.*np.sin(np.deg2rad(150.)), z_center=2.*np.cos(np.deg2rad(150.)),
     #                rot_y=180+150., rot_y_bank=-150)
-    # bank5 is old bank 7 - has 9 8packs that are 0.7m long
+    # bank5 has 9 8packs that are 0.7m long. This is the only "short" bank
     addBankPosition(instr, bankname='bank5', componentname='eightpackshort', num_panels=9)
     #      SHOULD    x_center=2.*np.sin(np.deg2rad(-150.)), z_center=2.*np.cos(np.deg2rad(-150.)),
     #      SHOULD    rot_y=180-150., rot_y_bank=150)
     # bank6 (not installed) will have 11 8packs at 60deg
-    # addBankPosition(instr, bankname='bank6', componentname='eightpack', num_panels=11,
+    # addBankPosition(instr, bankname='bank6', componentname='eightpack', num_panels=11)
     #                x_center=2.*np.sin(np.deg2rad(-60.)), z_center=2.*np.cos(np.deg2rad(-60.)),
     #                rot_y=180-60., rot_y_bank=60)
     # bank9 (future plan and not part of the upgrade) at 210/-150deg
@@ -300,7 +295,7 @@ if __name__ == "__main__":
                            TUBE_RADIUS, (TUBE_LENGTH/TUBE_PIXELS))
 
     # build up 8-pack with .7m "short"  tubes
-    addEightPack(instr, 'eightpackshort', 'tubeshort', upsidedown=True)
+    addEightPack(instr, 'eightpackshort', 'tubeshort', upsidedown=False)
     instr.addComment('bank 5 is 512 pixels across {}m'.format(TUBE_LENGTH_SHORT))
     instr.addPixelatedTube(name='tubeshort', type_name='onepixelshort', num_pixels=TUBE_PIXELS,
                            tube_height=TUBE_LENGTH_SHORT)
@@ -311,10 +306,10 @@ if __name__ == "__main__":
     instr.addComment("DETECTOR IDs - panel is an 8-pack")
     addBankIds(instr, 'bank1', bank_offset=0, num_panels=20)
     addBankIds(instr, 'bank2', bank_offset=PIXELS_PER_BANK, num_panels=20)
-    # addBankIds(instr, 'bank3', bank_offset=2*PIXELS_PER_BANK, num_panels=18)
-    # addBankIds(instr, 'bank4', bank_offset=3*PIXELS_PER_BANK, num_panels=18)
+    addBankIds(instr, 'bank3', bank_offset=2*PIXELS_PER_BANK, num_panels=18)
+    addBankIds(instr, 'bank4', bank_offset=3*PIXELS_PER_BANK, num_panels=18)
     addBankIds(instr, 'bank5', bank_offset=4*PIXELS_PER_BANK, num_panels=9)
-    # addBankIds(instr, 'bank6', bank_offset=5*PIXELS_PER_BANK, num_panels=11)
+    #addBankIds(instr, 'bank6', bank_offset=5*PIXELS_PER_BANK, num_panels=11)
 
     # shape for monitors
     instr.addComment(" Shape for Monitors")

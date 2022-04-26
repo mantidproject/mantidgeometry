@@ -1,6 +1,6 @@
 from mantid.simpleapi import LoadEmptyInstrument
 import numpy as np
-from vulcan_geometry import readPositions
+from vulcan2_geometry import readPositions
 
 
 def getTubeIds(compInfo, name):
@@ -35,33 +35,34 @@ def position_to_str(x, y, z):
 
 
 if __name__ == "__main__":
-    vulcan = LoadEmptyInstrument(Filename='VULCAN_Definition.xml', OutputWorkspace='vulcan')
+    vulcan = LoadEmptyInstrument(Filename='/Users/66j/Documents/GitHub/mantidgeometry/VULCAN_Definition_tmp.xml', OutputWorkspace='vulcan')
     compInfo = vulcan.componentInfo()
     detInfo = vulcan.detectorInfo()
 
     banks_exp = readPositions()
-    for name in ['bank1', 'bank2', 'bank5']:
+    for name in ['bank1', 'bank2', 'bank3', 'bank4', 'bank5']:#, 'bank6']:
         print('--------------', name)
         for point in banks_exp[name].points:
             print(point)
 
-    for name in ['bank1', 'bank2', 'bank5']:
+    for name in ['bank1', 'bank2', 'bank3', 'bank4', 'bank5']:#, 'bank6']:
         print('=========================', name)
         bank = getTubeIds(compInfo, name)
         x, y, z = getPositions(bank, compInfo)
 
         # confirm which quadrants things are in - x-axis
-        #                        | bank5
-        #                        |
-        # bank1----------------sample---------- bank2
-        #                        |
+        #                  bank5 | bank4
+        #                        |      bank 3
+        # bank1----------------sample---------->(x) bank2
+        #                  bank6 |
         #                        v     incident beam
-        if name in ['bank1']:
+        #                       (z)
+        if name in ['bank1','bank5']:
             assert np.alltrue(x < 0.)
-        elif name in ['bank2', 'bank5']:
+        elif name in ['bank4', 'bank3','bank2']:
             assert np.alltrue(x > 0.)
             # confirm which quadrants things are in - z-axis
-        if name in ['bank5']:
+        if name in ['bank3','bank4','bank5']:
             assert np.alltrue(z < 0.)
 
         # confirm that the y-center bank center
@@ -84,7 +85,7 @@ if __name__ == "__main__":
         # verify the interleaving tubes
         distances = np.sqrt(np.square(x[:, 256]) + np.square(z[:, 256]))  # distance of in-plane
         delta = distances[1:] - distances[:-1]  # every other tube is same distance
-        if name in ['bank1', 'bank2', 'bank5']:
+        if name in ['bank1', 'bank2', 'bank3', 'bank4', 'bank5']:
             assert np.alltrue(delta[::2] < 0.)
             assert np.alltrue(delta[1::2] > 0.)
 
