@@ -1,6 +1,6 @@
 from mantid.simpleapi import LoadEmptyInstrument
 import numpy as np
-from vulcan2_geometry import readPositions
+from vulcan_geometry import readPositions
 
 
 def getTubeIds(compInfo, name):
@@ -35,7 +35,7 @@ def position_to_str(x, y, z):
 
 
 if __name__ == "__main__":
-    vulcan = LoadEmptyInstrument(Filename='/Users/66j/Documents/GitHub/mantidgeometry/VULCAN_Definition_tmp.xml', OutputWorkspace='vulcan')
+    vulcan = LoadEmptyInstrument(Filename='VULCAN_Definition_tmp.xml', OutputWorkspace='vulcan')
     compInfo = vulcan.componentInfo()
     detInfo = vulcan.detectorInfo()
 

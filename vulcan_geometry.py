@@ -17,7 +17,7 @@ SEPARATION: float = 0.323 * INCH_TO_METRE  # distance between front and back
 SLIP: float = 0.434 * INCH_TO_METRE  # distance between 2 and 4
 SLIP_PANEL: float = 3 * SLIP + 0.460 * INCH_TO_METRE  # bonus spacing between panel centers
 
-'''VULCAN has undergone a phased upgrade. 
+'''VULCAN has undergone a phased upgrade.
 Phase I added a single additional bank (bank5) with total No. banks = 3
 Phase II added three additional banks, and moved bank5, total No. banks = 6
 
@@ -40,11 +40,11 @@ Phase II:
         6     |
               |
               V
-              
+
 this script generates the IDF for phase II
 '''
 #CSV_FILE: str = 'SNS/VULCAN/VULCAN_geom_20210210.csv'
-CSV_FILE: str = '/Users/66j/Documents/GitHub/mantidgeometry/BL7_combine_B1_B2_B3_B4_B5_20220420.csv'
+CSV_FILE: str = 'BL7_combine_B1_B2_B3_B4_B5_20220420.csv'
 
 def readPositions(filename: str = CSV_FILE):
     '''The CSV file has measurements of the front tubes of each 8-pack.
