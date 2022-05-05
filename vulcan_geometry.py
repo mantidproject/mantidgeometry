@@ -132,7 +132,7 @@ if __name__ == "__main__":
     #
     inst_name = "VULCAN"
     xml_outfile = f"{inst_name}_Definition_tmp.xml"
-    authors = ["Peter Peterson", "Malcolm Guthrie"]
+    authors = ["Peter Peterson", "Malcolm Guthrie", "Chen Zhang"]
 
     # -- ROOT --
     vulcan_geom = MantidGeom(
