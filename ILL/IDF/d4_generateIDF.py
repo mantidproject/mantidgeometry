@@ -11,17 +11,16 @@ cd mantidgeometry/ILL/IDF; python d4_generateIDF.py | tidy -utf8 -xml -w 255 -i 
 
 import time
 
-instrumentName = 'D4C_hr'
-#nCellsPerPlate = 64 # D4C
-nCellsPerPlate = 128 # D4C_hr
-#cellWidth = 0.0025 # D4C
-cellWidth = 0.00125 # D4C_hr
+instrumentName = 'D4C'
+nCellsPerPlate = 64 # D4C
+cellWidth = 0.0025 # D4C
+angular_cell_width = 0.125 # degrees
 
 nPlates = 9
 radius = 1.146
 cellHeight = 0.1
 cellDepth = 0.03
-starting2Theta = 5.5
+starting2Theta = (nCellsPerPlate * 0.5 - 1) * angular_cell_width # the edge of the second cell ends directly on the beam line
 panel2Theta = 8
 gap2Theta = 7
 L1 = 2.61
