@@ -18,14 +18,14 @@ instrumentName = 'SHARP'
 numberOfTubes = 240
 numberOfPixelsPerTube = 256
 firstDetectorId = 1
-l1 = 3.3
+l1 = 0.551
 l2 = 2.5
 pixelRadius = 0.0127
 tubeHeight = float(args.TubeHeight)
 equator = float(args.EquatorialPixel)
 pixelHeight = tubeHeight / numberOfPixelsPerTube
 tubeVerticalShift = (numberOfPixelsPerTube / 2 - equator) * pixelHeight
-monitorZ = -0.533
+monitorZ = -0.362
 
 pixelSpacingDegrees = 0.605
 tubeAngles = np.linspace(0., (numberOfTubes-1)*pixelSpacingDegrees, numberOfTubes)
