@@ -1,53 +1,35 @@
 import os
-path = os.path.abspath("")
 import sys
+from math import asin, pi, sin, cos
+from lxml import etree as le
+import numpy as np
+
+path = os.path.abspath("")
 sys.path.insert(0, path)
 from helper import MantidGeom
-
 
 # unit is metre
 instrumentName = 'D16B'
 validFrom = "2022-12-01 00:00:00"
 
-
 monochromator_source = -2.8
 
 # 2 monitors
-zMon1 = -1
-zMon2 = -1.5
+zMon1 = -1  # TODO distance ?
 
 # definition of the quadratic detector
-numberPixelsVertical = 192
-numberPixelsHorizontal = 1152
+numberPixelsPerWire = 192
+numberWires = 1152
+
+radius = 1.150
 
 # definition of a quadratic pixel
 pixelName = "pixel"
-pixelWidth = 0.001
-pixelHeight = 0.001
+pixelWidth = 0.0015
+pixelHeight = 0.002
 x = pixelWidth / 2.
 y = pixelHeight / 2.
 z = 0.
-thickness = 0.0001
-
-# detector
-zPosDetector = 0  # will be moved dynamically when reading the IDF
-
-# identification numbers
-id0 = repr(0)
-
-# rectangular detector
-xstart = repr(pixelWidth * (numberPixelsHorizontal - 1) / 2)
-xstep = repr(-pixelWidth)
-xpixels = repr(numberPixelsHorizontal)
-ystart = repr(-pixelHeight * (numberPixelsVertical - 1) / 2)
-ystep = repr(pixelHeight)
-ypixels = repr(numberPixelsVertical)
-
-FF = "y"  # idfillbyfirst
-SR = repr(numberPixelsVertical)  # idstepbyrow
-
-# detector name
-detector0 = "detector"
 
 # introductory comment
 comment = """
@@ -66,14 +48,11 @@ comment = """
 
        width x direction, height y direction
 
-       Sample
-       Typical sample dimension is 30 mm x 10 mm for diffraction and 7 mm x 7 mm for high resolution SANS.
-
        One detector
-       Distance to sample: 0.3 to 1 m
-       Single panel mono-block: 320 mm x 320 mm
+       Distance to sample: 1.15m
+       Curvature: 1.15m
        Rotation: -5 < 2*theta < 125
-       Pixel size 1 x 1 mm^2 ( 320 x 320 pixels )
+       Pixel size: 1.5mm (width) x 2mm (height) ( 1152 x 192 pixels )
 
        For more information, please visit
        https://www.ill.eu/instruments-support/instruments-groups/instruments/d16/characteristics/
@@ -82,7 +61,7 @@ comment = """
 
 # Instrument creation
 d16 = MantidGeom(instrumentName, comment=comment, valid_from=validFrom)
-d16.addSnsDefaults(default_view='Side_by_side', axis_view_3d="z-")
+d16.addSnsDefaults(default_view='CYLINDRICAL_Y')
 
 d16.addComment("SOURCE")
 d16.addComponentILL("monochromator", 0., 0., monochromator_source, "Source")
@@ -91,18 +70,56 @@ d16.addComponentILL("monochromator", 0., 0., monochromator_source, "Source")
 d16.addComment("Sample position")
 d16.addComponentILL("sample_position", 0., 0., 0., "SamplePos")
 
+# Place 2 monitors
 d16.addComment("MONITORS")
-d16.addMonitors(names=["monitor1", "monitor2"], distance=[zMon1, zMon2])
+d16.addMonitors(names=["monitor1"], distance=[zMon1])
 d16.addComment("MONITOR SHAPE")
 d16.addDummyMonitor(0.01, 0.01)
 d16.addComment("MONITOR IDs")
-d16.addMonitorIds([repr(500000), repr(500001)])
+d16.addMonitorIds([repr(500000)])
 
-d16.addComment("DETECTOR")
-d16.addComponentRectangularDetector(detector0, 0., 0., -zPosDetector, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR)
-d16.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
+# Place the detectors
+d16.addComment("DETECTORS")
+theta = 2 * asin(pixelWidth / (2 * radius)) # the angular distance between 2 wires
 
-d16.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
-d16.addCuboidPixel(pixelName, [-x, -y, thickness/2.], [-x, y, thickness/2.], [-x, -y, -thickness/2.], [x, -y, -thickness/2.], shape_id="pixel-shape")
+# define a cylindrical pixel object
+d16.addCylinderPixelAdvanced(
+    pixelName, center_bottom_base={'x': 0., 'y': -pixelHeight / 2., 'z': 0.},
+    axis={'x': 0., 'y': 1., 'z': 0.}, pixel_radius=pixelWidth / 2,
+    pixel_height=pixelHeight,
+    algebra='pixel_shape')
+
+root = d16.getRoot()
+detectorType = le.SubElement(root, 'type', name='detector')
+wires = le.SubElement(detectorType, 'component', type='wire')
+
+# place the wires
+for i in range(numberWires):
+    wireAngle = (i - numberWires // 2) * theta
+    x = radius * sin(wireAngle)
+    z = radius * cos(wireAngle)
+    attributes = {
+        'x': str(x),
+        'y': str(0.),
+        'z': str(z),
+        'name': 'wire_{}'.format(i + 1)
+    }
+    le.SubElement(wires, 'location', **attributes)
+
+# define wires
+wireType = le.SubElement(root, 'type', name='wire', outline='yes')
+wire = le.SubElement(wireType, 'component', type=pixelName)
+
+wire_bottom_pos = -(numberPixelsPerWire // 2) * pixelHeight
+wire_top_pos = (numberPixelsPerWire // 2) * pixelHeight
+pixelPositions = np.linspace(wire_bottom_pos, wire_top_pos, numberPixelsPerWire)
+
+# define a wire by describing pixel positions
+for i, pos in enumerate(pixelPositions):
+    le.SubElement(wire, 'location', y=str(pos), name='pixel_{}'.format(i + 1))
+
+detector = d16.addComponent('detector', idlist='detectors')
+le.SubElement(detector, 'location')
+d16.addDetectorIds('detectors', [1, numberPixelsPerWire * numberWires, None])
 
 d16.writeGeom("./ILL/IDF/" + instrumentName + "_Definition.xml")
