@@ -95,7 +95,7 @@ wires = le.SubElement(detectorType, 'component', type='wire')
 
 # place the wires
 for i in range(numberWires):
-    wireAngle = (i - numberWires // 2) * theta
+    wireAngle = (numberWires // 2 - i) * theta
     x = radius * sin(wireAngle)
     z = radius * cos(wireAngle)
     attributes = {
