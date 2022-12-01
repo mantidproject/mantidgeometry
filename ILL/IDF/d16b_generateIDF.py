@@ -15,7 +15,7 @@ validFrom = "2022-12-01 00:00:00"
 monochromator_source = -2.8
 
 # 2 monitors
-zMon1 = -1  # TODO distance ?
+zMon1 = -1  # TOF distance is not relevant for D16B, so an arbitrary value should be fine here for now.
 
 # definition of the quadratic detector
 numberPixelsPerWire = 192
