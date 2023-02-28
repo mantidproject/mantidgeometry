@@ -25,7 +25,7 @@ tube_theta_angles_start = 165.0
 tube_theta_angles_end = 6.25
 
 number_of_pixels = 128
-detector_tube_length = 0.3545
+detector_tube_length = 0.30
 pixel_height = detector_tube_length / number_of_pixels
 """This is the effective radius of a detector tube. The actual dimater of the tubes are
    2.54 mm (1 inch), but the collimators mean they only see 0.05 degrees in sold angle,
