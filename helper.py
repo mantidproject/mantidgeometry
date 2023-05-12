@@ -2,7 +2,7 @@ from __future__ import (print_function)
 
 import sys
 from datetime import datetime
-from lxml import etree as le # python-lxml on rpm based systems
+from lxml import etree as le  # python-lxml on rpm based systems
 import numpy as np
 from itertools import groupby
 from operator import itemgetter
@@ -174,10 +174,10 @@ class MantidGeom:
         if location is None:
             le.SubElement(source, "location", x="0.0", y="0.0", z="0.0")
         else:
-            if coord_type is "cartesian":
+            if coord_type == "cartesian":
                 le.SubElement(source, "location", x=str(location[0]),
                               y=str(location[1]), z=str(location[2]))
-            if coord_type is "spherical":
+            elif coord_type == "spherical":
                 le.SubElement(source, "location", r=str(location[0]),
                               t=str(location[1]), p=str(location[2]))
 

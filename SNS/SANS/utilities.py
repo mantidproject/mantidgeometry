@@ -396,7 +396,7 @@ def add_double_curved_panel_type(det, iinfo, first_bank_number=1,
     back = add_curved_panel_type(*args, **kwargs)
     # Insert type for double panel
     add_comment_section(det, 'TYPE: DOUBLE CURVED PANEL', notes=comment)
-    double_panel = le.SubElement(det.root, 'type', name='double-curved-panel')
+    double_panel = le.SubElement(det.root, 'type', name=iinfo['curved_panel_types']['double'])
     le.SubElement(double_panel, 'properties')
     front_panel = le.SubElement(double_panel, 'component',
                                 type=front.attrib['name'])
