@@ -4,7 +4,7 @@ from helper import MantidGeom
 from SNS.SANS.utilities import (kw, ag, make_filename, add_basic_types, add_double_flat_panel_type,
                                 add_double_flat_panel_component, add_double_curved_panel_type,
                                 add_double_curved_panel_component, add_double_panel_idlist, add_comment_section,
-                                insert_location_from_logs)
+                                insert_location_from_logs,insert_side_by_side_view)
 # third party imports
 
 # standard imports
@@ -24,6 +24,7 @@ Explanation of some entries in iinfo dictionary
  fourpack_separation  distance between front and back fourpacks
  fourpack_slip        slip vector between the two fourpacks along X-axis
  number_eightpacks    number of eight-packs in the detector array
+ side_view_xy         X and Y coordinates for the rendering of the side-by-side view of the detector
 """
 iinfo = dict(valid_from='2023-10-01 00:00:00',
              valid_to='2100-12-31 23:59:59',
@@ -41,7 +42,8 @@ iinfo = dict(valid_from='2023-10-01 00:00:00',
              tube_separation=0.0112522,
              fourpack_separation=0.008205216,
              fourpack_slip=0.0055103014,
-             number_eightpacks=24)
+             number_eightpacks=24,
+             side_view_xy=(0.0, 0.0))
 
 # Instrument handle
 det = MantidGeom(iinfo['instrument_name'], **kw(iinfo, 'comment', 'valid_from', 'valid_to'))
@@ -64,6 +66,7 @@ pixel_idlist = 'flat_panel_ids'
 double_panel = add_double_flat_panel_component(double_panel, 'flat_panel_ids', det, iinfo['flat_array'])
 insert_location_from_logs(double_panel, log_key=['detector_trans_Readback', 'sample_detector_distance'],
                           coord_name=['x', 'z'], equation=['-0.001*value', 'value'])
+insert_side_by_side_view(double_panel, *iinfo['side_view_xy'])
 add_double_panel_idlist(det, iinfo, pixel_idlist)
 last_pixel_id = 8 * iinfo['number_eightpacks'] * iinfo['pixels_per_tube'] - 1
 last_bank_number = 2 * iinfo['number_eightpacks']
@@ -76,6 +79,7 @@ Explanation of some entries in the below jinfo dictionary
  anchor_offset    add this to bank_radius for distance between focal-point
                   and eightpack midline
  eightpack_angle  effective angle subtended by each eightpack, in degrees
+ side_view_xy         X and Y coordinates for the rendering of the side-by-side view of the detector
 """
 jinfo = dict(curved_array='wing_detector',  # name of the wing detector
              curved_panel_types=dict(front='front-wing-panel',
@@ -85,7 +89,8 @@ jinfo = dict(curved_array='wing_detector',  # name of the wing detector
              bank_radius=1.129538,
              anchor_offset=0.0,
              eightpack_angle=2.232094,
-             panel_translation_log_key='detectorZ')
+             panel_translation_log_key='detectorZ',
+             side_view_xy=(0.96, 0.0))
 panel_info = deepcopy(iinfo)
 panel_info.update(jinfo)
 r_eightpack = panel_info['bank_radius'] + panel_info['anchor_offset']
@@ -100,6 +105,7 @@ rot_y += 0.5 * panel_info['fourpack_slip'] / panel_info['bank_radius'] * 180. / 
 det.addLocation(double_panel, 0., 0., 0, rot_y=f'{rot_y:.2f}')
 insert_location_from_logs(double_panel, log_key=['ww_rot_Readback', 'ww_rot_Readback'],
                           coord_name=['t-position', 'roty'], equation=[f'{rot_y:.2f}-value', f'{rot_y:.2f}-value'])
+insert_side_by_side_view(double_panel, *panel_info['side_view_xy'])
 add_double_panel_idlist(det, panel_info, pixel_idlist, start=1 + last_pixel_id)
 last_pixel_id += 8 * panel_info['number_eightpacks'] * panel_info['pixels_per_tube']
 last_bank_number += 2 * panel_info['number_eightpacks']
@@ -112,6 +118,7 @@ Explanation of some entries in the below kinfo dictionary
  anchor_offset    add this to bank_radius for distance between focal-point
                   and eightpack midline
  eightpack_angle  effective angle subtended by each eightpack, in degrees
+ side_view_xy         X and Y coordinates for the rendering of the side-by-side view of the detector
 """
 kinfo = dict(curved_array='midrange_detector',  # name of the midrange detector
              curved_panel_types=dict(front='front-midrange-panel',
@@ -121,7 +128,8 @@ kinfo = dict(curved_array='midrange_detector',  # name of the midrange detector
              bank_radius=3.9662,  # shift so that the arc between the front and back panels is 4m away
              anchor_offset=0.0,
              eightpack_angle=0.629663,
-             panel_translation_log_key='midrange_rot_Readback')
+             panel_translation_log_key='midrange_rot_Readback',
+             side_view_xy=(-0.71, 0.0))
 panel_info = deepcopy(iinfo)
 panel_info.update(kinfo)
 r_eightpack = panel_info['bank_radius'] + panel_info['anchor_offset']
@@ -138,6 +146,7 @@ insert_location_from_logs(double_panel,
                           log_key=[panel_info['panel_translation_log_key'], panel_info['panel_translation_log_key']],
                           coord_name=['t-position', 'roty'],
                           equation=[f'{rot_y:.2f}-value', f'{rot_y:.2f}-value'])
+insert_side_by_side_view(double_panel, *panel_info['side_view_xy'])
 add_double_panel_idlist(det, panel_info, pixel_idlist, start=1 + last_pixel_id)
 #
 # Write to file
