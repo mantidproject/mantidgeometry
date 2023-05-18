@@ -502,3 +502,22 @@ def insert_location_from_logs(element, log_key='detectorZ',
     for i in range(len(log_keys)):
         par = le.SubElement(loc, 'parameter', **dict(name=coord_names[i]))
         le.SubElement(par, 'logfile', **dict(id=log_keys[i], eq=equations[i]))
+
+
+def insert_side_by_side_view(element, x, y):
+    r"""
+    Insert a side-by-side view of the detector
+
+    Example:
+        <side-by-side-view-location x="-0.3" y="0.0"/>
+
+    Parameters
+    ----------
+    element: lmxl.etree.Element
+        Element receiving the location
+    x: float
+        x coordinate to place the center of the element, in meters
+    y: float
+        y coordinate to place the center of the element, in meters
+    """
+    view = le.SubElement(element, 'side-by-side-view-location', **dict(x=str(x), y=str(y)))
