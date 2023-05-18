@@ -128,7 +128,7 @@ kinfo = dict(curved_array='midrange_detector',  # name of the midrange detector
              bank_radius=3.9662,  # shift so that the arc between the front and back panels is 4m away
              anchor_offset=0.0,
              eightpack_angle=0.629663,
-             panel_translation_log_key='midrange_rot_Readback',
+             panel_translation_log_key='md_rot_Readback',
              side_view_xy=(-0.71, 0.0))
 panel_info = deepcopy(iinfo)
 panel_info.update(kinfo)
