@@ -145,7 +145,7 @@ det.addLocation(double_panel, 0., 0., 0, rot_y=f'{rot_y:.2f}')
 insert_location_from_logs(double_panel,
                           log_key=[panel_info['panel_translation_log_key'], panel_info['panel_translation_log_key']],
                           coord_name=['t-position', 'roty'],
-                          equation=[f'{rot_y:.2f}-value', f'{rot_y:.2f}-value'])
+                          equation=[f'{rot_y:.2f}+value', f'{rot_y:.2f}+value'])
 insert_side_by_side_view(double_panel, *panel_info['side_view_xy'])
 add_double_panel_idlist(det, panel_info, pixel_idlist, start=1 + last_pixel_id)
 #
