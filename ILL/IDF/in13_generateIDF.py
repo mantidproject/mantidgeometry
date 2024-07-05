@@ -126,7 +126,7 @@ monitor_start_id = psd_number_of_panels*psd_number_of_tubes_per_panel*psd_number
 monitor_name = "monitor_1"
 monitor_distance = 0.580
 in13.addMonitors(names=[monitor_name], distance=[monitor_distance])
-monitor_id = repr(monitor_start_id + i)
+monitor_id = repr(monitor_start_id)
 in13.addMonitorIds([monitor_id])
 in13.addDummyMonitor(monitor_radius, 0.01)
 
