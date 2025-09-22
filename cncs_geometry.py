@@ -40,7 +40,7 @@ if __name__ == "__main__":
     # Get geometry information file
     inst_name = "CNCS"
     detinfo = readFile(geom_input_file)
-    num_dets = len(detinfo.values()[0])
+    num_dets = len(list(detinfo.values())[0])
     xml_outfile = inst_name+"_Definition.xml"
  
     det = MantidGeom(inst_name, comment=comment, valid_from=valid_from)
@@ -53,7 +53,7 @@ if __name__ == "__main__":
                     distance=["-29.949", "-28.706", "-1.416"])
 
     label = "detectors"
-    det.addComponent(label, label)
+    det.addComponent(label, label, blank_location=False)
     doc_handle = det.makeTypeElement(label)
     for i in range(num_dets):
         detname = BANKFMT % (i+1)
@@ -61,7 +61,7 @@ if __name__ == "__main__":
         xpos = convert(detinfo["Bank_xpos"][i])
         ypos = convert(detinfo["Bank_ypos"][i])
         zpos = convert(detinfo["Bank_zpos"][i])
-        det.addComponent(detname, root=doc_handle)
+        det.addComponent(detname, root=doc_handle, blank_location=False)
         det.addDetector(xpos, ypos, zpos, ROTX, roty, ROTZ, detname, "eightpack")
 
     det.addComment("STANDARD 8-PACK")
