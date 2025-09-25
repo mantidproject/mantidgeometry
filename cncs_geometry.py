@@ -49,8 +49,8 @@ if __name__ == "__main__":
     det.addModerator(-36.262)
     det.addSamplePosition()
     det.addComment("MONITORS")
-    det.addMonitors(names=["monitor1", "monitor2", "monitor3"],
-                    distance=["-29.949", "-28.706", "-1.416"])
+    det.addMonitors(names=["monitor1", "monitor2", "monitor3", "monitor4"],
+                    distance=["-29.949", "-28.706", "-1.416", "3.7338"])
 
     label = "detectors"
     det.addComponent(label, label, blank_location=False)
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     det.addDetectorIds(label, [0, (num_dets * PIXELS_PER_BANK) - 1 , None])
 
     det.addComment("MONITOR IDs")
-    det.addMonitorIds(["-1", "-2", "-3"])
+    det.addMonitorIds(["-1", "-2", "-3", "-4"])
 
     det.addComment("DETECTOR PARAMETERS")
     det.addDetectorParameters(label, TUBE_PRESSURE, TUBE_THICKNESS,
