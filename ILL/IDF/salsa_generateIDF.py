@@ -8,13 +8,12 @@ instrumentName = 'SALSA'
 validFrom = "1901-01-01 00:00:00"
 
 # source
-zSource = -2
+zSource = -2.0
 
 # monitor
-zMonitor = -1
+zMonitor = -1.0
 
 # detector
-zDetector = 1.25
 detectorHeight = 0.25
 detectorWidth = 0.25
 
@@ -28,23 +27,16 @@ pixelThickness = 0.0001
 x = pixelWidth / 2.0
 y = pixelHeight / 2.0
 z = pixelThickness / 2.0
-xstart = repr(pixelWidth * (nPixelsHorizontal - 1) / 2)
-xstep = repr(-pixelWidth)
-xpixels = repr(nPixelsHorizontal)
-ystart = repr(-pixelHeight * (nPixelsVertical - 1) / 2)
-ystep = repr(pixelHeight)
-ypixels = repr(nPixelsVertical)
-
-# identification numbers
-id0 = repr(0)
+xstart = -pixelWidth * (nPixelsHorizontal - 1) / 2
+xstep = pixelWidth
+xpixels = nPixelsHorizontal
+ystart = -pixelHeight * (nPixelsVertical - 1) / 2
+ystep = pixelHeight
+ypixels = nPixelsVertical
 
 # rectangular detector
-
 FF = "n"  # idfillbyfirst
 SR = repr(nPixelsVertical)  # idstepbyrow
-
-# detector name
-detector0 = "detector"
 
 # introductory comment
 comment = """
@@ -75,8 +67,11 @@ salsa.addComment("MONITOR IDs")
 salsa.addMonitorIds([repr(256*256)])
 
 salsa.addComment("DETECTOR")
-salsa.addRectangularDetector(detector0, pixelName, xstart, xstep, xpixels, ystart, ystep, ypixels)
-salsa.addComponentRectangularDetector(detector0, 0., 0., zDetector, idstart=id0, idfillbyfirst=FF, idstepbyrow=SR)
+salsa.addComponentILL("detector", 0., 0., 0.)
+detector = salsa.makeTypeElement("detector")
+for i in range(256):
+    salsa.addRectangularDetector("channel_" + str(i), pixelName, xstart, xstep, xpixels, 0, ystep, 1)
+    salsa.addComponentRectangularDetector("channel_" + str(i), 0., -detectorHeight/2 + i * xstep, 0., idstart=str(0 + i * 256), idfillbyfirst="n", idstepbyrow=SR, root=detector)
 
 salsa.addComment("PIXEL, EACH PIXEL IS A DETECTOR")
 salsa.addCuboidPixel(pixelName, [-x, -y,  z],
