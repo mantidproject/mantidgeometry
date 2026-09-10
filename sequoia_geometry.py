@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # Get geometry information file
 
     detinfo = readFile(geom_input_file)
-    num_dets = len(detinfo.values()[0])
+    num_dets = len(list(detinfo.values())[0])
     xml_outfile = INST_NAME+"_Definition.xml"
     
     det = MantidGeom(INST_NAME, comment=comment, valid_from=valid_from)
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     det.addModerator(-20.0114)
     det.addSamplePosition()
     det.addComment("CHOPPERS")
-    det.addChopper("t0-chopper",-10.51)
+    det.addChopper("t0-chopper",-10.21)
     det.addVerticalAxisT0Chopper("t0-chopper")
     det.addChopper("fermi-chopper",-2.00180)
     det.addFermiChopper("fermi-chopper")

@@ -35,11 +35,11 @@ if __name__ == "__main__":
 
     # Get geometry information file
     detinfo = readFile(geom_input_file)
-    num_dets = len(detinfo.values()[0])
+    num_dets = len(list(detinfo.values())[0])
     xml_outfile = INST_NAME+"_Definition.xml"
     
     det = MantidGeom(INST_NAME, comment=comment, valid_from=valid_from)
-    det.addSnsDefaults(default_view="cylindrical_y")
+    det.addSnsDefaults(default_view="cylindrical_y", theta_sign_axis="x")
     det.addComment("SOURCE AND SAMPLE POSITION")
     det.addModerator(-13.60)
     det.addSamplePosition()
@@ -62,10 +62,10 @@ if __name__ == "__main__":
             row_id = location[0]
             row_id_list.append(row_id)
             row_id_str = row_id + " row"
-            det.addComponent(row_id_str, row_id_str)
+            det.addComponent(row_id_str, row_id_str, blank_location=False)
             doc_handle = det.makeTypeElement(row_id_str)
 
-        det.addComponent(location, root=doc_handle)
+        det.addComponent(location, root=doc_handle, blank_location=False)
         
         xpos = convert(detinfo["Xsci"][i])
         ypos = convert(detinfo["Ysci"][i])
