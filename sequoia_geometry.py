@@ -17,6 +17,7 @@ FLIPY = 180.0 # flip y orientation
 TUBE_PRESSURE = ("tube_pressure", 10.0, "atm")
 TUBE_THICKNESS = ("tube_thickness", 0.0008, "metre")
 TUBE_TEMPERATURE = ("tube_temperature", 290.0, "K")
+ADD_CHOPPERS = True
     
 def convert(value):
     return float(value) / CONVERT_TO_METERS
@@ -29,10 +30,10 @@ if __name__ == "__main__":
     try:
         geom_input_file = sys.argv[1]
     except IndexError:
-        geom_input_file = "SNS/SEQ/SEQ_geom_19890-.txt"
+        geom_input_file = "SNS/SEQ/SEQ_geom_05142018.txt"
         
     # Set header information
-    comment = "Created by Michael Reuter"
+    comment = "For runs after May 14, 2018"
     # Time needs to be in UTC?
     valid_from = "2012-04-04 14:15:46"
 
@@ -43,15 +44,16 @@ if __name__ == "__main__":
     xml_outfile = INST_NAME+"_Definition.xml"
     
     det = MantidGeom(INST_NAME, comment=comment, valid_from=valid_from)
-    det.addSnsDefaults()
+    det.addSnsDefaults(default_view="cylindrical_y", theta_sign_axis="x")
     det.addComment("SOURCE AND SAMPLE POSITION")
     det.addModerator(-20.0114)
     det.addSamplePosition()
-    det.addComment("CHOPPERS")
-    det.addChopper("t0-chopper",-10.21)
-    det.addVerticalAxisT0Chopper("t0-chopper")
-    det.addChopper("fermi-chopper",-2.00180)
-    det.addFermiChopper("fermi-chopper")
+    if ADD_CHOPPERS:
+        det.addComment("CHOPPERS")
+        det.addChopper("t0-chopper",-10.51)
+        det.addVerticalAxisT0Chopper("t0-chopper")
+        det.addChopper("fermi-chopper",-2.00180)
+        det.addFermiChopper("fermi-chopper")
     det.addComment("MONITORS")
     det.addMonitors(names=["monitor1", "monitor2"],
                     distance=["-1.77808", "8.99184"])
@@ -60,20 +62,19 @@ if __name__ == "__main__":
     row_id_list = []
     doc_handle = None
     for i in range(num_dets):
-        location = detinfo["Location"][i]
-        # REMOVE ME: when A and E rows are filled
-        if location.startswith("A") or \
-               location.startswith("E"):
+        inuse = int(detinfo["InUse"][i])
+        if not inuse: 
             continue
-        
+
+        location = detinfo["Location"][i]
         if row_id != location[0]:
             row_id = location[0]
             row_id_list.append(row_id)
             row_id_str = row_id + " row"
-            det.addComponent(row_id_str, row_id_str)
+            det.addComponent(row_id_str, row_id_str, blank_location=False)
             doc_handle = det.makeTypeElement(row_id_str)
 
-        det.addComponent(location, root=doc_handle)
+        det.addComponent(location, root=doc_handle, blank_location=False)
         
         xpos = convert(detinfo["X"][i])
         ypos = convert(detinfo["Y"][i])
@@ -125,20 +126,27 @@ if __name__ == "__main__":
     det.addDummyMonitor(0.01, 0.03)
 
     det.addComment("DETECTOR IDs")
-    # FIXME: Set to zero when A and E rows are filled
-    offset = 37888
+
+    id_dict = {}
     for i in range(len(row_id_list)):
         row_id_str = row_id_list[i] + " row"
-        det_names = [x for x in detinfo["Location"] if x.startswith(row_id_list[i])]
-        id_list = []
-        for j in range(len(det_names)):
-            id_list.append(j * PIXELS_PER_BANK + offset)
-            id_list.append((j+1) * PIXELS_PER_BANK - 1 + offset)
-            id_list.append(None)
+        id_dict[row_id_str] = []
 
-        offset += (PIXELS_PER_BANK * (j + 1))
+    for i in range(num_dets):
+        inuse = int(detinfo["InUse"][i])
+        if not inuse:
+            continue
+        else:
+            location = detinfo["Location"][i]
+            row_id_str = location[0] + " row"
+            id_dict[row_id_str].append(i * PIXELS_PER_BANK)
+            id_dict[row_id_str].append((i+1) * PIXELS_PER_BANK - 1)
+            id_dict[row_id_str].append(None)
 
-        det.addDetectorIds(row_id_str, id_list)
+    for i in range(len(row_id_list)):
+        row_id_str = row_id_list[i] + " row"
+        if id_dict[row_id_str]:
+            det.addDetectorIds(row_id_str, id_dict[row_id_str])
 
     det.addComment("MONITOR IDs")
     det.addMonitorIds(["-1", "-2"])
